@@ -1,0 +1,68 @@
+apiVersion: 1
+
+datasources:
+
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: false
+    jsonData:
+      httpMethod: POST
+      timeInterval: 15s
+
+  # ── Tempo ────────────────────────────────────────────────────────────────────
+  # Trace-to-Logs: clicking a span opens the matching Loki log stream.
+  # Trace-to-Metrics: service map is backed by Prometheus.
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    editable: false
+    jsonData:
+      httpMethod: GET
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      traceQuery:
+        timeShiftEnabled: true
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+      # Trace → Logs: from any span, jump to Loki and filter by trace ID
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        filterByTraceID: false
+        filterBySpanID: false
+        customQuery: true
+        # ${__trace.traceId} is replaced by Grafana with the selected span's trace ID.
+        # `| json` parses the Loki JSON body; `traceId=` matches the structured field
+        # emitted by Serilog.Enrichers.Span – faster than substring search on high volume.
+        query: '{app="company-product-webapi"} | json | traceId="${__trace.traceId}"'
+
+  # ── Loki ─────────────────────────────────────────────────────────────────────
+  # derivedFields: extract TraceId from each log line and create a link to Tempo.
+  - name: Loki
+    type: loki
+    uid: loki
+    access: proxy
+    url: http://loki:3100
+    isDefault: false
+    editable: false
+    jsonData:
+      derivedFields:
+        # Matches the lowercase 'traceId' property emitted by Serilog.Enrichers.Span
+        # (configured via SpanOptions.LogEventPropertiesNames.TraceId = "traceId").
+        - name: traceId
+          matcherRegex: '"traceId":"([0-9a-f]{32})"'
+          url: "${__value.raw}"
+          # Internal Grafana link → opens the trace in the Tempo datasource
+          datasourceUid: tempo

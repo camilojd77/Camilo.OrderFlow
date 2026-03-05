@@ -1,0 +1,116 @@
+name: company-product-observability
+
+networks:
+  observability:
+    name: observability
+
+volumes:
+  tempo-data:
+  prometheus-data:
+  grafana-data:
+  loki-data:
+
+services:
+
+  # ─────────────────────────────────────────────────────────────────
+  # Grafana Tempo  –  receives OTLP traces from the collector
+  # ─────────────────────────────────────────────────────────────────
+  tempo:
+    image: grafana/tempo:2.6.1
+    platform: linux/amd64
+    container_name: tempo
+    command: ["-config.file=/etc/tempo/tempo.yml"]
+    volumes:
+      - ./tempo.yml:/etc/tempo/tempo.yml:ro
+      - tempo-data:/var/tempo
+    ports:
+      - "3200:3200"     # Tempo HTTP query API
+    networks:
+      - observability
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────
+  # Grafana Loki  –  receives logs from the .NET API via Serilog
+  # ─────────────────────────────────────────────────────────────────
+  loki:
+    image: grafana/loki:3.3.2
+    platform: linux/amd64
+    container_name: loki
+    command: ["-config.file=/etc/loki/loki.yml"]
+    volumes:
+      - ./loki.yml:/etc/loki/loki.yml:ro
+      - loki-data:/loki
+    ports:
+      - "3100:3100"     # Loki HTTP push + query API
+    networks:
+      - observability
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────
+  # OpenTelemetry Collector  –  receives OTLP from the .NET API
+  # ─────────────────────────────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.120.0
+    container_name: otel-collector
+    command: ["--config=/etc/otelcol-contrib/config.yaml"]
+    volumes:
+      - ./otel-collector-config.yml:/etc/otelcol-contrib/config.yaml:ro
+    ports:
+      - "4317:4317"     # OTLP gRPC  (API → Collector)
+      - "4318:4318"     # OTLP HTTP  (API → Collector)
+      - "8888:8888"     # Collector internal metrics
+      - "8889:8889"     # Prometheus exporter endpoint
+    networks:
+      - observability
+    depends_on:
+      - tempo
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────
+  # Prometheus  –  scrapes metrics from the Collector exporter
+  # ─────────────────────────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    platform: linux/amd64
+    container_name: prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.enable-lifecycle"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"     # Prometheus UI
+    networks:
+      - observability
+    depends_on:
+      - otel-collector
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────────────────────────────
+  # Grafana  –  visualise traces (Tempo) + metrics (Prometheus)
+  # ─────────────────────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.4.0
+    platform: linux/amd64
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=false
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"     # Grafana UI
+    networks:
+      - observability
+    depends_on:
+      - prometheus
+      - tempo
+      - loki
+    restart: unless-stopped
