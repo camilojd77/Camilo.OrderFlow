@@ -1,0 +1,33 @@
+using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
+using Company.Product.BuildingBlocks.SharedKernel.Messaging;
+using Company.Product.BuildingBlocks.SharedKernel.Persistence;
+using Company.Product.Modules.Identity.Application.Abstractions;
+
+namespace Company.Product.Modules.Identity.Application.Commands.Users.DeactivateUser;
+
+public sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, Unit>
+{
+    private readonly IUserRepository _userRepository;
+    private readonly IExecutionContext _executionContext;
+
+    public DeactivateUserCommandHandler(IUserRepository userRepository, IExecutionContext executionContext)
+    {
+        _userRepository = userRepository;
+        _executionContext = executionContext;
+    }
+
+    public async Task<Unit> Handle(DeactivateUserCommand request, CancellationToken ct)
+    {
+        var user = await _userRepository.GetByIdAsync(request.UserId, ct)
+            ?? throw new NotFoundException("User", request.UserId);
+
+        if (await _userRepository.IsOnlyActiveAdminAsync(request.UserId, ct))
+            throw new ConflictException("Cannot deactivate the last active admin user.");
+
+        user.Deactivate();
+        _userRepository.Update(user);
+        await _executionContext.CommitAsync(ct);
+
+        return Unit.Value;
+    }
+}

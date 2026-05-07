@@ -1,11 +1,11 @@
+using Company.Product.BuildingBlocks.SharedKernel.Messaging;
 using FluentValidation;
-using MediatR;
 using DomainValidationException = Company.Product.BuildingBlocks.SharedKernel.Exceptions.ValidationException;
 
 namespace Company.Product.Modules.Identity.Application.Behaviors;
 
 public sealed class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+    where TRequest : IRequest<TResponse>
 {
     private readonly IEnumerable<IValidator<TRequest>> _validators;
 
@@ -17,15 +17,15 @@ public sealed class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineB
     public async Task<TResponse> Handle(
         TRequest request,
         RequestHandlerDelegate<TResponse> next,
-        CancellationToken cancellationToken)
+        CancellationToken ct)
     {
         if (!_validators.Any())
-            return await next(cancellationToken);
+            return await next(ct);
 
         var context = new ValidationContext<TRequest>(request);
 
         var failures = (await Task.WhenAll(
-                _validators.Select(v => v.ValidateAsync(context, cancellationToken))))
+                _validators.Select(v => v.ValidateAsync(context, ct))))
             .SelectMany(r => r.Errors)
             .Where(f => f is not null)
             .ToList();
@@ -41,6 +41,6 @@ public sealed class ValidationPipelineBehavior<TRequest, TResponse> : IPipelineB
             throw new DomainValidationException(errors);
         }
 
-        return await next(cancellationToken);
+        return await next(ct);
     }
 }

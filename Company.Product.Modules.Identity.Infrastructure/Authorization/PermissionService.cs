@@ -1,46 +1,65 @@
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Company.Product.Modules.Identity.Infrastructure.Authorization;
 
 public sealed class PermissionService : IPermissionService
 {
-    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
+    private const string UserKeyPrefix = "perms:user:";
+    private const string RoleTagPrefix = "role:";
 
     private readonly IdentityDbContext _context;
-    private readonly IMemoryCache _cache;
+    private readonly HybridCache _hybridCache;
+    private readonly HybridCacheEntryOptions _entryOptions;
 
-    public PermissionService(IdentityDbContext context, IMemoryCache cache)
+    public PermissionService(
+        IdentityDbContext context,
+        HybridCache hybridCache,
+        HybridCacheEntryOptions entryOptions)
     {
         _context = context;
-        _cache = cache;
+        _hybridCache = hybridCache;
+        _entryOptions = entryOptions;
     }
 
     public async Task<HashSet<string>> GetPermissionsAsync(
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var cacheKey = $"perm:{userId}";
-
-        if (_cache.TryGetValue(cacheKey, out HashSet<string>? cached) && cached is not null)
-            return cached;
-
-        var permissions = (await _context.UserRoles
+        // Role IDs are needed to build cache tags even on cache hit.
+        // This is a lightweight indexed FK lookup.
+        var roleIds = await _context.UserRoles
             .AsNoTracking()
             .Where(ur => ur.UserId == userId)
-            .SelectMany(ur => ur.Role.RolePermissions)
-            .Select(rp => rp.Permission.Code)
-            .Distinct()
-            .ToListAsync(cancellationToken));
+            .Select(ur => ur.RoleId)
+            .ToListAsync(cancellationToken);
 
-        var set = permissions.ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var tags = roleIds.Count > 0
+            ? roleIds.ConvertAll(id => RoleTagPrefix + id)
+            : null;
 
-        _cache.Set(cacheKey, permissions, new MemoryCacheEntryOptions
-        {
-            SlidingExpiration = CacheDuration
-        });
-
-        return set;
+        return await _hybridCache.GetOrCreateAsync(
+            UserKeyPrefix + userId,
+            async ct =>
+            {
+                var codes = await _context.UserRoles
+                    .AsNoTracking()
+                    .Where(ur => ur.UserId == userId)
+                    .SelectMany(ur => ur.Role.RolePermissions)
+                    .Select(rp => rp.Permission.Code)
+                    .Distinct()
+                    .ToListAsync(ct);
+                return codes.ToHashSet(StringComparer.OrdinalIgnoreCase);
+            },
+            _entryOptions,
+            tags,
+            cancellationToken);
     }
+
+    public async Task InvalidateUserAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await _hybridCache.RemoveAsync(UserKeyPrefix + userId, cancellationToken);
+
+    public async Task InvalidateRoleAsync(Guid roleId, CancellationToken cancellationToken = default)
+        => await _hybridCache.RemoveByTagAsync(RoleTagPrefix + roleId, cancellationToken);
 }

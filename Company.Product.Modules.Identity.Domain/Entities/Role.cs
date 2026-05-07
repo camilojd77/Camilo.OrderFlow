@@ -17,5 +17,11 @@
             Name = name.Trim();
             Description = description?.Trim();
         }
+
+        public void Update(string name, string? description)
+        {
+            Name = name.Trim();
+            Description = description?.Trim();
+        }
     }
 }

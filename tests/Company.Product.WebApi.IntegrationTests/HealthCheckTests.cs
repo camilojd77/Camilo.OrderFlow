@@ -1,4 +1,4 @@
-using FluentAssertions;
+using Shouldly;
 using System.Net;
 using Xunit;
 
@@ -6,7 +6,7 @@ namespace Company.Product.WebApi.IntegrationTests;
 
 /// <summary>
 /// Smoke tests against the health endpoints.
-/// Uses <see cref="WebApiFactory"/> which replaces EF Core with InMemory
+/// Uses <see cref="WebApiFactory"/> which replaces EF Core with SQLite in-memory
 /// so no external infrastructure is required.
 /// </summary>
 public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
@@ -23,7 +23,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     {
         var response = await _client.GetAsync("/health/live");
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
 
     [Fact]
@@ -32,7 +32,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
         var response = await _client.GetAsync("/health/live");
         var body = await response.Content.ReadAsStringAsync();
 
-        body.Should().Contain("Healthy");
+        body.ShouldContain("Healthy");
     }
 
     [Fact]
@@ -40,8 +40,8 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     {
         var response = await _client.GetAsync("/health/live");
 
-        response.Headers.Should().ContainKey("X-Content-Type-Options");
-        response.Headers.GetValues("X-Content-Type-Options").Should().Contain("nosniff");
+        response.Headers.Contains("X-Content-Type-Options").ShouldBeTrue();
+        response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
     }
 
     [Fact]
@@ -51,6 +51,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
         // what matters is that the endpoint exists and returns a well-formed response.
         var response = await _client.GetAsync("/health/ready");
 
-        response.StatusCode.Should().BeOneOf(HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable);
+        new[] { HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable }
+            .ShouldContain(response.StatusCode);
     }
 }

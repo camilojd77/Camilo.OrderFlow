@@ -1,5 +1,5 @@
-using FluentAssertions;
 using NetArchTest.Rules;
+using Shouldly;
 using Xunit;
 
 namespace Company.Product.ArchitectureTests;
@@ -27,7 +27,7 @@ public sealed class CleanArchitectureTests
     private static readonly System.Reflection.Assembly InfrastructureAsm = typeof(Company.Product.Modules.Identity.Infrastructure.DependencyInjection.ServiceCollectionExtensions).Assembly;
     private static readonly System.Reflection.Assembly WebApiAsm         = typeof(Program).Assembly;
 
-    // ── Tests ─────────────────────────────────────────────────────────────
+    // ── Dependency direction tests ────────────────────────────────────────
 
     [Fact(DisplayName = "Domain must NOT depend on Infrastructure")]
     public void Domain_ShouldNot_DependOn_Infrastructure()
@@ -37,9 +37,9 @@ public sealed class CleanArchitectureTests
             .HaveDependencyOn(InfrastructureAssembly)
             .GetResult();
 
-        result.IsSuccessful.Should().BeTrue(
-            because: $"Domain is the innermost layer and must not reference {InfrastructureAssembly}. " +
-                      "Failing types: {0}", string.Join(", ", result.FailingTypeNames ?? []));
+        result.IsSuccessful.ShouldBeTrue(
+            $"Domain is the innermost layer and must not reference {InfrastructureAssembly}. " +
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
 
     [Fact(DisplayName = "Domain must NOT depend on WebApi")]
@@ -50,9 +50,9 @@ public sealed class CleanArchitectureTests
             .HaveDependencyOn(WebApiAssembly)
             .GetResult();
 
-        result.IsSuccessful.Should().BeTrue(
-            because: $"Domain must not reference {WebApiAssembly}. " +
-                      "Failing types: {0}", string.Join(", ", result.FailingTypeNames ?? []));
+        result.IsSuccessful.ShouldBeTrue(
+            $"Domain must not reference {WebApiAssembly}. " +
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
 
     [Fact(DisplayName = "Application must NOT depend on Infrastructure")]
@@ -63,9 +63,9 @@ public sealed class CleanArchitectureTests
             .HaveDependencyOn(InfrastructureAssembly)
             .GetResult();
 
-        result.IsSuccessful.Should().BeTrue(
-            because: $"Application defines use-cases and must not reference {InfrastructureAssembly}. " +
-                      "Failing types: {0}", string.Join(", ", result.FailingTypeNames ?? []));
+        result.IsSuccessful.ShouldBeTrue(
+            $"Application defines use-cases and must not reference {InfrastructureAssembly}. " +
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
 
     [Fact(DisplayName = "Application must NOT depend on WebApi")]
@@ -76,9 +76,9 @@ public sealed class CleanArchitectureTests
             .HaveDependencyOn(WebApiAssembly)
             .GetResult();
 
-        result.IsSuccessful.Should().BeTrue(
-            because: $"Application must not reference {WebApiAssembly}. " +
-                      "Failing types: {0}", string.Join(", ", result.FailingTypeNames ?? []));
+        result.IsSuccessful.ShouldBeTrue(
+            $"Application must not reference {WebApiAssembly}. " +
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
 
     [Fact(DisplayName = "Infrastructure must NOT depend on WebApi")]
@@ -89,8 +89,73 @@ public sealed class CleanArchitectureTests
             .HaveDependencyOn(WebApiAssembly)
             .GetResult();
 
-        result.IsSuccessful.Should().BeTrue(
-            because: $"Infrastructure must not reference {WebApiAssembly}. " +
-                      "Failing types: {0}", string.Join(", ", result.FailingTypeNames ?? []));
+        result.IsSuccessful.ShouldBeTrue(
+            $"Infrastructure must not reference {WebApiAssembly}. " +
+            $"Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+    }
+
+    // ── Defensive rules: banned packages ────────────────────────────────
+    // These prevent re-introducing commercial or architecturally wrong dependencies.
+
+    [Fact(DisplayName = "Domain must NOT reference AutoMapper")]
+    public void Domain_ShouldNot_Reference_AutoMapper()
+    {
+        var result = Types.InAssembly(DomainAsm)
+            .ShouldNot().HaveDependencyOn("AutoMapper")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue("Domain must not reference AutoMapper (commercial license).");
+    }
+
+    [Fact(DisplayName = "Domain must NOT reference MediatR")]
+    public void Domain_ShouldNot_Reference_MediatR()
+    {
+        var result = Types.InAssembly(DomainAsm)
+            .ShouldNot().HaveDependencyOn("MediatR")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue("Domain must not reference MediatR (commercial license).");
+    }
+
+    [Fact(DisplayName = "Domain must NOT reference EntityFrameworkCore")]
+    public void Domain_ShouldNot_Reference_EntityFrameworkCore()
+    {
+        var result = Types.InAssembly(DomainAsm)
+            .ShouldNot().HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(
+            $"Domain must not reference EF Core. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
+    }
+
+    [Fact(DisplayName = "Application must NOT reference AutoMapper")]
+    public void Application_ShouldNot_Reference_AutoMapper()
+    {
+        var result = Types.InAssembly(ApplicationAsm)
+            .ShouldNot().HaveDependencyOn("AutoMapper")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue("Application must not reference AutoMapper (commercial license).");
+    }
+
+    [Fact(DisplayName = "Application must NOT reference MediatR")]
+    public void Application_ShouldNot_Reference_MediatR()
+    {
+        var result = Types.InAssembly(ApplicationAsm)
+            .ShouldNot().HaveDependencyOn("MediatR")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue("Application must not reference MediatR (commercial license).");
+    }
+
+    [Fact(DisplayName = "Application must NOT reference EntityFrameworkCore")]
+    public void Application_ShouldNot_Reference_EntityFrameworkCore()
+    {
+        var result = Types.InAssembly(ApplicationAsm)
+            .ShouldNot().HaveDependencyOn("Microsoft.EntityFrameworkCore")
+            .GetResult();
+
+        result.IsSuccessful.ShouldBeTrue(
+            $"Application must not reference EF Core. Failing types: {string.Join(", ", result.FailingTypeNames ?? [])}");
     }
 }

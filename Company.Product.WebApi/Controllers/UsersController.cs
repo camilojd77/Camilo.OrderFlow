@@ -1,26 +1,155 @@
 using Asp.Versioning;
-using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
+using Company.Product.BuildingBlocks.SharedKernel.Messaging;
+using Company.Product.Modules.Identity.Application.Commands.Users.ActivateUser;
+using Company.Product.Modules.Identity.Application.Commands.Users.AssignRolesToUser;
+using Company.Product.Modules.Identity.Application.Commands.Users.CreateUser;
+using Company.Product.Modules.Identity.Application.Commands.Users.DeactivateUser;
+using Company.Product.Modules.Identity.Application.Commands.Users.UpdateUserProfile;
+using Company.Product.Modules.Identity.Application.Queries.Users.GetMe;
+using Company.Product.Modules.Identity.Application.Queries.Users.GetMyPermissions;
+using Company.Product.Modules.Identity.Application.Queries.Users.GetUserById;
+using Company.Product.Modules.Identity.Application.Queries.Users.ListUsers;
 using Company.Product.Modules.Identity.Infrastructure.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Company.Product.WebApi.Controllers;
 
 [ApiVersion("1.0")]
 [ApiController]
+[Route("api/users")]
 public sealed class UsersController : ControllerBase
 {
+    private readonly ISender _sender;
+
+    public UsersController(ISender sender) => _sender = sender;
+
+    [HttpGet]
     [AuthorizePermission("users.read")]
-    [HttpGet("api/users")]
-    public IActionResult GetUsers()
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        CancellationToken cancellationToken = default)
     {
-        return Ok(new { message = "Authorized", user = User.Identity?.Name });
+        var result = await _sender.Send(new ListUsersQuery(page, pageSize, search), cancellationToken);
+        return Ok(result);
     }
 
-    [HttpGet("api/test/notfound")]
-    public IActionResult TestNotFound()
-    => throw new NotFoundException("User", Guid.Parse("c3d4e5f6-e003-0000-0000-000000000001"));
+    [HttpGet("{id:guid}")]
+    [AuthorizePermission("users.read")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetUserByIdQuery(id), cancellationToken);
+        return Ok(result);
+    }
 
-    [HttpGet("api/test/conflict")]
-    public IActionResult TestConflict()
-    => throw new ConflictException("Email already registered.");
+    [HttpPost]
+    [AuthorizePermission("users.write")]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateUserCommand command,
+        CancellationToken cancellationToken)
+    {
+        var dto = await _sender.Send(command, cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = dto.Id }, dto);
+    }
+
+    [HttpPut("{id:guid}/profile")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> UpdateProfile(
+        Guid id,
+        [FromBody] UpdateProfileBody body,
+        CancellationToken cancellationToken)
+    {
+        var dto = await _sender.Send(
+            new UpdateUserProfileCommand(id, body.FirstName, body.LastName, body.PhoneNumber, body.AvatarUrl),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("{id:guid}/deactivate")]
+    [AuthorizePermission("users.write")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
+    public async Task<IActionResult> Deactivate(Guid id, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new DeactivateUserCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPost("{id:guid}/activate")]
+    [AuthorizePermission("users.write")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Activate(Guid id, CancellationToken cancellationToken)
+    {
+        await _sender.Send(new ActivateUserCommand(id), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpPut("{id:guid}/roles")]
+    [AuthorizePermission("users.write")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> AssignRoles(
+        Guid id,
+        [FromBody] AssignRolesBody body,
+        CancellationToken cancellationToken)
+    {
+        await _sender.Send(new AssignRolesToUserCommand(id, body.RoleIds), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpGet("me")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetMeQuery(), cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpGet("me/permissions")]
+    [Authorize]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetMyPermissions(CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new GetMyPermissionsQuery(), cancellationToken);
+        return Ok(result);
+    }
 }
+
+public sealed record UpdateProfileBody(
+    string FirstName,
+    string LastName,
+    string? PhoneNumber,
+    string? AvatarUrl);
+
+public sealed record AssignRolesBody(IReadOnlyList<Guid> RoleIds);

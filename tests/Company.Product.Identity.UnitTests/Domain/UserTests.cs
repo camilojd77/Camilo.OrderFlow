@@ -1,5 +1,5 @@
 using Company.Product.Modules.Identity.Domain.Entities;
-using FluentAssertions;
+using Shouldly;
 using Xunit;
 
 namespace Company.Product.Identity.UnitTests.Domain;
@@ -13,7 +13,7 @@ public sealed class UserTests
     {
         var user = new User(Guid.NewGuid(), "ADMIN@Example.COM", "admin", "hash");
 
-        user.Email.Should().Be("admin@example.com");
+        user.Email.ShouldBe("admin@example.com");
     }
 
     [Fact]
@@ -21,7 +21,7 @@ public sealed class UserTests
     {
         var user = new User(Guid.NewGuid(), "  admin@example.com  ", "admin", "hash");
 
-        user.Email.Should().Be("admin@example.com");
+        user.Email.ShouldBe("admin@example.com");
     }
 
     [Fact]
@@ -29,7 +29,7 @@ public sealed class UserTests
     {
         var user = new User(Guid.NewGuid(), "admin@example.com", "  admin  ", "hash");
 
-        user.UserName.Should().Be("admin");
+        user.UserName.ShouldBe("admin");
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public sealed class UserTests
     {
         var user = new User(Guid.NewGuid(), "admin@example.com", "admin", "hash");
 
-        user.IsActive.Should().BeTrue();
+        user.IsActive.ShouldBeTrue();
     }
 
     [Fact]
@@ -47,7 +47,8 @@ public sealed class UserTests
 
         var user = new User(Guid.NewGuid(), "admin@example.com", "admin", "hash");
 
-        user.CreatedAtUtc.Should().BeAfter(before).And.BeBefore(DateTime.UtcNow.AddSeconds(1));
+        user.CreatedAtUtc.ShouldBeGreaterThan(before);
+        user.CreatedAtUtc.ShouldBeLessThan(DateTime.UtcNow.AddSeconds(1));
     }
 
     // ── Deactivate ──────────────────────────────────────────────────────────
@@ -59,7 +60,7 @@ public sealed class UserTests
 
         user.Deactivate();
 
-        user.IsActive.Should().BeFalse();
+        user.IsActive.ShouldBeFalse();
     }
 
     [Fact]
@@ -70,8 +71,8 @@ public sealed class UserTests
 
         user.Deactivate();
 
-        user.UpdatedAtUtc.Should().NotBeNull()
-            .And.Subject.As<DateTime?>().Value.Should().BeAfter(before);
+        user.UpdatedAtUtc.ShouldNotBeNull();
+        user.UpdatedAtUtc!.Value.ShouldBeGreaterThan(before);
     }
 
     [Fact]
@@ -82,7 +83,7 @@ public sealed class UserTests
         user.Deactivate();
         user.Deactivate();
 
-        user.IsActive.Should().BeFalse();
+        user.IsActive.ShouldBeFalse();
     }
 
     // ── UpdatePasswordHash ──────────────────────────────────────────────────
@@ -94,7 +95,7 @@ public sealed class UserTests
 
         user.UpdatePasswordHash("new-hash");
 
-        user.PasswordHash.Should().Be("new-hash");
+        user.PasswordHash.ShouldBe("new-hash");
     }
 
     [Fact]
@@ -104,6 +105,6 @@ public sealed class UserTests
 
         user.UpdatePasswordHash("new-hash");
 
-        user.UpdatedAtUtc.Should().NotBeNull();
+        user.UpdatedAtUtc.ShouldNotBeNull();
     }
 }

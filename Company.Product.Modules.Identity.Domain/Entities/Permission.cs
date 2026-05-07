@@ -16,5 +16,10 @@
             Code = code.Trim().ToLowerInvariant();
             Name = name.Trim();
         }
+
+        public void UpdateName(string name)
+        {
+            Name = name.Trim();
+        }
     }
 }

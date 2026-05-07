@@ -1,4 +1,6 @@
-﻿namespace Company.Product.Modules.Identity.Domain.Entities
+using Company.Product.Modules.Identity.Domain.ValueObjects;
+
+namespace Company.Product.Modules.Identity.Domain.Entities
 {
     public sealed class User
     {
@@ -10,6 +12,13 @@
 
         public DateTime CreatedAtUtc { get; private set; }
         public DateTime? UpdatedAtUtc { get; private set; }
+
+        public UserProfile? Profile { get; private set; }
+
+        public int FailedLoginAttempts { get; private set; }
+        public DateTime? LockoutEndUtc { get; private set; }
+
+        public bool IsLockedOut => LockoutEndUtc.HasValue && LockoutEndUtc.Value > DateTime.UtcNow;
 
         // Navegación
         public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
@@ -32,9 +41,37 @@
             UpdatedAtUtc = DateTime.UtcNow;
         }
 
+        public void Activate()
+        {
+            IsActive = true;
+            UpdatedAtUtc = DateTime.UtcNow;
+        }
+
         public void UpdatePasswordHash(string passwordHash)
         {
             PasswordHash = passwordHash;
+            UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        public void UpdateProfile(UserProfile newProfile)
+        {
+            ArgumentNullException.ThrowIfNull(newProfile);
+            Profile = newProfile;
+            UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        public void RegisterFailedLogin(int maxAttempts, TimeSpan lockoutDuration)
+        {
+            FailedLoginAttempts++;
+            if (FailedLoginAttempts >= maxAttempts)
+                LockoutEndUtc = DateTime.UtcNow.Add(lockoutDuration);
+            UpdatedAtUtc = DateTime.UtcNow;
+        }
+
+        public void ResetFailedLoginAttempts()
+        {
+            FailedLoginAttempts = 0;
+            LockoutEndUtc = null;
             UpdatedAtUtc = DateTime.UtcNow;
         }
     }

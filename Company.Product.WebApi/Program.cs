@@ -1,8 +1,11 @@
+using Company.Product.BuildingBlocks.Infrastructure.DependencyInjection;
+using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.DependencyInjection;
 using Company.Product.Modules.Identity.Infrastructure.Auth;
 using Company.Product.Modules.Identity.Infrastructure.DependencyInjection;
 using Company.Product.WebApi.Errors;
 using Company.Product.WebApi.Extensions;
+using Company.Product.WebApi.Infrastructure;
 using Company.Product.WebApi.Infrastructure.Http;
 using Company.Product.WebApi.Middleware;
 using Company.Product.WebApi.Observability.Health;
@@ -11,6 +14,7 @@ using Company.Product.WebApi.Security;
 using Company.Product.WebApi.Swagger;
 using Company.Product.WebApi.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Serilog;
 using Serilog.Enrichers.Span;
@@ -59,28 +63,37 @@ builder.Services.AddTransient<CorrelationIdHandler>();
 // Attach to outgoing HttpClients:
 // builder.Services.AddHttpClient("ExternalClient").AddHttpMessageHandler<CorrelationIdHandler>();
 
+builder.Services.AddBuildingBlocks();
 builder.Services.AddIdentityApplication();
 builder.Services.AddIdentityInfrastructure(builder.Configuration);
 
-// JWT Bearer authentication — registered here because JwtBearer is a WebApi NuGet dependency.
-// Key/Issuer/Audience are validated by DataAnnotations + ValidateOnStart inside AddIdentityInfrastructure;
-// the app will refuse to start if the Jwt section is missing or Key is shorter than 32 chars.
-var jwtOptions = builder.Configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
-    ?? throw new InvalidOperationException("Missing Jwt configuration section.");
+// Optional Redis L2 for HybridCache — activated when "Cache:Redis" is a non-empty connection string
+if (builder.Configuration["Cache:Redis"] is string redis && !string.IsNullOrWhiteSpace(redis))
+    builder.Services.AddStackExchangeRedisCache(o => o.Configuration = redis);
+builder.Services.AddScoped<ICurrentUser, CurrentUser>();
 
+// JWT Bearer authentication — registered here because JwtBearer is a WebApi NuGet dependency.
+// JwtOptions are validated by DataAnnotations + ValidateOnStart inside AddIdentityInfrastructure.
+// We configure via IOptions<JwtOptions> (not an eager builder.Configuration read) so that
+// test fixtures can override the Jwt section via ConfigureAppConfiguration and have those
+// values reflected here without a restart.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+    .AddJwtBearer();
+
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IOptions<JwtOptions>>((bearerOpts, jwtOpts) =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
+        var j = jwtOpts.Value;
+        bearerOpts.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtOptions.Issuer,
-            ValidAudience = jwtOptions.Audience,
+            ValidIssuer = j.Issuer,
+            ValidAudience = j.Audience,
             IssuerSigningKey = new SymmetricSecurityKey(
-                                           Encoding.UTF8.GetBytes(jwtOptions.Key)),
+                Encoding.UTF8.GetBytes(j.Key)),
             ClockSkew = TimeSpan.Zero,
         };
     });

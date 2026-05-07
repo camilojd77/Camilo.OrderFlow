@@ -1,9 +1,14 @@
-﻿using Company.Product.Modules.Identity.Infrastructure.Auth;
+using Company.Product.BuildingBlocks.SharedKernel.Persistence;
+using Company.Product.Modules.Identity.Application.Abstractions;
+using Company.Product.Modules.Identity.Infrastructure.Auth;
 using Company.Product.Modules.Identity.Infrastructure.Authorization;
+using Company.Product.Modules.Identity.Infrastructure.Persistence;
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Context;
+using Company.Product.Modules.Identity.Infrastructure.Persistence.Repositories;
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Seed;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,9 +42,21 @@ public static class ServiceCollectionExtensions
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
+        services.AddOptions<LockoutOptions>().BindConfiguration(LockoutOptions.SectionName);
+        services.AddOptions<RefreshTokenOptions>().BindConfiguration(RefreshTokenOptions.SectionName);
+
+        // Permissions cache — L1 in-process (always) + L2 Redis (when Cache:Redis is set)
+        var ttl = configuration.GetValue<int?>("Permissions:CacheTtlMinutes") ?? 10;
+        var localTtl = configuration.GetValue<int?>("Permissions:LocalCacheTtlMinutes") ?? 5;
+        services.AddHybridCache();
+        services.AddSingleton(new HybridCacheEntryOptions
+        {
+            Expiration = TimeSpan.FromMinutes(ttl),
+            LocalCacheExpiration = TimeSpan.FromMinutes(localTtl)
+        });
+
         // Authorization
         services.AddAuthorization();
-        services.AddMemoryCache();
         services.AddScoped<IPermissionService, PermissionService>();
         services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
         services.AddScoped<IAuthorizationHandler, PermissionAuthorizationHandler>();
@@ -48,7 +65,18 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IJwtTokenService, JwtTokenService>();
         services.AddScoped<IAuthService, AuthService>();
 
-        // Aquí después registramos repositorios (IUserRepository, etc.)
+        // Password hasher
+        services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
+
+        // Execution context
+        services.AddScoped<IExecutionContext, IdentityExecutionContext>();
+
+        // Repositories
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
         return services;
     }
 }

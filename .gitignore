@@ -7,6 +7,9 @@ publish/
 *.user
 *.suo
 .vs/
+.vscode/
+.claude/
+.github/
 
 ## ── .NET / NuGet ─────────────────────────────────────────────────────────────
 *.nupkg

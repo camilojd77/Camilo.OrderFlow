@@ -97,3 +97,278 @@ public class UsersController : ControllerBase { ... }
 
 Todas las versiones de NuGet están en `Directory.Packages.props` en la raíz.  
 **Nunca** agregar `Version="..."` en un `.csproj`. Siempre actualizar el `.props`.
+
+---
+
+## Patrón completo de módulo
+
+### Registración DI
+
+Cada módulo expone dos extension methods en `DependencyInjection/ServiceCollectionExtensions.cs`:
+
+```csharp
+// Application (handlers, validators, mappers — sin infraestructura)
+builder.Services.AddOrdersApplication();
+
+// Infrastructure (DbContext, repos, servicios externos, opciones)
+builder.Services.AddOrdersInfrastructure(builder.Configuration);
+```
+
+Ambos se registran en `Program.cs`, en ese orden. El módulo no toca nada más en `Program.cs`.
+
+---
+
+### Cómo añadir una entidad
+
+1. Crear en `*.Domain/Entities/MyEntity.cs` — sin dependencias de EF ni de Application.
+2. Crear la configuración EF en `*.Infrastructure/Persistence/Configurations/MyEntityConfiguration.cs`.
+3. Registrar en `DbContext` con `modelBuilder.ApplyConfiguration(new MyEntityConfiguration())`.
+4. Agregar `public DbSet<MyEntity> MyEntities => Set<MyEntity>();` al `DbContext`.
+5. Generar migración: `dotnet ef migrations add AddMyEntity --project <Infrastructure> --startup-project <WebApi>`.
+6. Crear interfaz del repo en `*.Application/Abstractions/IMyEntityRepository.cs`.
+7. Crear implementación en `*.Infrastructure/Persistence/Repositories/MyEntityRepository.cs`.
+8. Registrar en `AddXxxInfrastructure`: `services.AddScoped<IMyEntityRepository, MyEntityRepository>()`.
+
+> Nunca inyectar `DbContext` directamente en handlers. Siempre a través del repositorio.
+
+---
+
+### Cómo añadir un Command
+
+Orden obligatorio: Domain → Application → Infrastructure → WebApi → Tests.
+
+```
+Commands/
+  MyAction/
+    MyActionCommand.cs          // record que implementa IRequest<TResponse>
+    MyActionCommandValidator.cs // AbstractValidator<MyActionCommand> con FluentValidation
+    MyActionCommandHandler.cs   // IRequestHandler<MyActionCommand, TResponse>
+```
+
+**Command:**
+```csharp
+public sealed record MyActionCommand(Guid Id, string Name) : IRequest<MyEntityDto>;
+```
+
+**Validator** (ValidationPipelineBehavior lo ejecuta automáticamente):
+```csharp
+public sealed class MyActionCommandValidator : AbstractValidator<MyActionCommand>
+{
+    public MyActionCommandValidator()
+    {
+        RuleFor(x => x.Name).NotEmpty().MaximumLength(100);
+    }
+}
+```
+
+**Handler:**
+```csharp
+public sealed class MyActionCommandHandler : IRequestHandler<MyActionCommand, MyEntityDto>
+{
+    private readonly IMyEntityRepository _repo;
+    private readonly IExecutionContext _executionContext;
+
+    public MyActionCommandHandler(IMyEntityRepository repo, IExecutionContext executionContext)
+    {
+        _repo = repo;
+        _executionContext = executionContext;
+    }
+
+    public async Task<MyEntityDto> Handle(MyActionCommand request, CancellationToken ct)
+    {
+        var entity = await _repo.GetByIdAsync(request.Id, ct)
+            ?? throw new NotFoundException($"Entity {request.Id} not found.");
+
+        entity.DoSomething(request.Name);
+        await _executionContext.CommitAsync(ct);  // siempre al final del handler
+
+        return entity.ToDto();
+    }
+}
+```
+
+> El handler llama `CommitAsync`. Los repos **nunca** llaman `SaveChangesAsync`.
+
+---
+
+### Cómo añadir un Query paginado
+
+```csharp
+// Query hereda PagedRequest para obtener SafePage, SafePageSize y Skip ya calculados
+public sealed record ListMyEntitiesQuery(int Page, int PageSize, string? Search)
+    : PagedRequest(Page, PageSize), IRequest<PagedResult<MyEntityDto>>;
+```
+
+**Handler:**
+```csharp
+public async Task<PagedResult<MyEntityDto>> Handle(ListMyEntitiesQuery request, CancellationToken ct)
+{
+    var items = await _repo.GetPagedAsync(request.Search, request.Skip, request.SafePageSize, ct);
+    var total = await _repo.CountAsync(request.Search, ct);
+
+    return new PagedResult<MyEntityDto>(
+        items.Select(e => e.ToDto()).ToList(),
+        total,
+        request.SafePage,
+        request.SafePageSize);
+}
+```
+
+`PagedRequest` garantiza que `Page ≥ 1` y `PageSize ∈ [1, 100]` antes de llegar al repositorio.
+
+---
+
+### Cómo añadir un endpoint
+
+```csharp
+[ApiController]
+[Route("api/my-entities")]
+[ApiVersion("1.0")]
+public sealed class MyEntitiesController : ControllerBase
+{
+    private readonly ISender _sender;
+    public MyEntitiesController(ISender sender) => _sender = sender;
+
+    [HttpGet]
+    [AuthorizePermission("myentities.read")]
+    [ProducesResponseType(typeof(PagedResult<MyEntityDto>), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20,
+        [FromQuery] string? search = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = await _sender.Send(new ListMyEntitiesQuery(page, pageSize, search), cancellationToken);
+        return Ok(result);
+    }
+}
+```
+
+Reglas:
+- `[AuthorizePermission("resource.action")]`, nunca `[Authorize(Roles="...")]`.
+- Todo permiso nuevo debe estar en el seed (`IdentityDataSeeder`) y asignado al rol Admin.
+- `[ProducesResponseType]` para cada código HTTP posible (200, 201, 400, 401, 403, 404, 409).
+
+---
+
+### Cómo invalidar caché de permisos
+
+El sistema cachea los permisos efectivos de cada usuario (`perms:user:{userId}`) con tags por rol (`role:{roleId}`).
+
+Cuándo invalidar:
+
+| Acción | Método |
+|---|---|
+| Se cambian roles de un usuario | `await _permissionService.InvalidateUserAsync(userId, ct)` |
+| Se cambian permisos de un rol | `await _permissionService.InvalidateRoleAsync(roleId, ct)` |
+| Se elimina un rol | `await _permissionService.InvalidateRoleAsync(roleId, ct)` |
+
+Patrón en un handler:
+```csharp
+await _executionContext.CommitAsync(ct);            // primero persistir
+await _permissionService.InvalidateRoleAsync(roleId, ct);  // luego invalidar
+```
+
+> En producción multi-instancia se requiere Redis configurado (`Cache:Redis` en appsettings).  
+> Sin Redis, solo se invalida la caché L1 local de la instancia que recibe la petición.
+
+---
+
+### Repos vs DbContext directo
+
+**Siempre usar el repositorio.** Nunca inyectar `DbContext` en un handler o controller.
+
+| ✅ Correcto | ❌ Incorrecto |
+|---|---|
+| `IMyEntityRepository` en el handler | `MyDbContext` en el handler |
+| `_repo.GetByIdAsync(id, ct)` | `_context.MyEntities.FirstOrDefaultAsync(...)` |
+
+Los repos usan `AsNoTracking()` en queries de solo lectura. En operaciones de escritura, el handler llama `_executionContext.CommitAsync(ct)` al final.
+
+---
+
+### Cómo escribir un test de handler (unit test)
+
+Usar NSubstitute para repos, Shouldly para asserts:
+
+```csharp
+public sealed class MyActionCommandHandlerTests
+{
+    private readonly IMyEntityRepository _repo = Substitute.For<IMyEntityRepository>();
+    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+
+    private MyActionCommandHandler CreateHandler() => new(_repo, _ctx);
+
+    [Fact]
+    public async Task Handle_ValidRequest_ReturnsDto()
+    {
+        var entity = new MyEntity(Guid.NewGuid(), "Original");
+        _repo.GetByIdAsync(entity.Id, Arg.Any<CancellationToken>()).Returns(entity);
+        _ctx.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
+
+        var result = await CreateHandler().Handle(
+            new MyActionCommand(entity.Id, "New Name"),
+            CancellationToken.None);
+
+        result.Name.ShouldBe("New Name");
+        await _ctx.Received(1).CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_NotFound_ThrowsNotFoundException()
+    {
+        _repo.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((MyEntity?)null);
+
+        await Should.ThrowAsync<NotFoundException>(() =>
+            CreateHandler().Handle(
+                new MyActionCommand(Guid.NewGuid(), "X"),
+                CancellationToken.None));
+    }
+}
+```
+
+---
+
+### Cómo escribir un test de integración
+
+Los tests de integración usan `WebApiFactory` (SQLite in-memory, toda la pipeline ASP.NET Core):
+
+```csharp
+public sealed class MyEntitiesTests : IClassFixture<WebApiFactory>
+{
+    private readonly HttpClient _client;
+
+    public MyEntitiesTests(WebApiFactory factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task GetAll_AsAdmin_Returns200()
+    {
+        var token = await LoginAsAdminAsync();
+        var request = new HttpRequestMessage(HttpMethod.Get, "/api/my-entities");
+        request.Headers.Authorization = new("Bearer", token);
+
+        var response = await _client.SendAsync(request);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.OK);
+    }
+
+    private async Task<string> LoginAsAdminAsync()
+    {
+        var response = await _client.PostAsJsonAsync("/api/auth/login",
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+        response.EnsureSuccessStatusCode();
+        var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+        return body.GetProperty("accessToken").GetString()!;
+    }
+}
+```
+
+Convenciones:
+- Un caso feliz + al menos un caso de error por endpoint.
+- Datos únicos por test (`Guid.NewGuid().ToString("N")[..8]`) para evitar colisiones entre tests que comparten la misma instancia de BD.
+- No testear reglas de negocio en integration tests — para eso están los unit tests de handlers.
