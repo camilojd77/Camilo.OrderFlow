@@ -34,10 +34,18 @@ Revisar antes de cada deploy a Staging o Production.
 - [ ] Timeouts y circuit breaker de HttpClients revisados para el entorno
 - [ ] `Kestrel:Limits:MaxRequestBodySizeBytes` ajustado al máximo payload esperado
 
+## Identidad y caché
+
+- [ ] Existe al menos un usuario con rol **Admin** activo y contraseña fuerte
+- [ ] Los permisos semilla (`users.read/write`, `roles.read/write`, `permissions.read/write`) están en la BBDD
+- [ ] Si hay más de una réplica del servicio, `Cache:Redis` apunta a una instancia Redis compartida (sin Redis, `InvalidateRoleAsync` solo invalida la L1 local de la réplica que recibe la petición)
+- [ ] `Lockout:MaxAttempts` y `Lockout:DurationMinutes` ajustados a la política de seguridad del cliente
+- [ ] `Permissions:CacheTtlMinutes` revisado (default 10 min); reducir si los cambios de permisos deben propagarse más rápido
+
 ## Tests
 
-- [ ] `dotnet test` pasa en verde (incluye Architecture Tests y Unit Tests)
-- [ ] Integration tests pasan contra la conexión del entorno de staging
+- [ ] `dotnet test --filter "Category!=RealDb"` pasa en verde (unit + arch + integración SQLite)
+- [ ] `dotnet test --filter "Category=RealDb"` pasa en el entorno de staging (requiere Docker o SQL Server accesible)
 
 ## Post-deploy
 

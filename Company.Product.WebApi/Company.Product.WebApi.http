@@ -1,6 +1,254 @@
-@Company.Product.WebApi_HostAddress = http://localhost:5070
+@host = http://localhost:5070
 
-GET {{Company.Product.WebApi_HostAddress}}/weatherforecast/
+# ── Variables ────────────────────────────────────────────────────────────────
+# Run "Login" first, then copy the accessToken value here.
+@token = REPLACE_WITH_ACCESS_TOKEN
+
+# Replace with real IDs after creating resources.
+@userId       = 00000000-0000-0000-0000-000000000001
+@roleId       = 00000000-0000-0000-0000-000000000002
+@permissionId = 00000000-0000-0000-0000-000000000003
+
+
+###
+# ── Info ─────────────────────────────────────────────────────────────────────
+
+# @name GetInfo
+GET {{host}}/_info
+Accept: application/json
+
+
+###
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
+# @name Register
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "userName": "newuser",
+  "password": "Pass123!",
+  "firstName": "New",
+  "lastName": "User"
+}
+
+###
+
+# @name Login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "usernameOrEmail": "admin@company.com",
+  "password": "Admin123!"
+}
+
+###
+
+# @name Refresh
+# Requires the refresh_token HttpOnly cookie set by Login.
+POST {{host}}/api/auth/refresh
+
+###
+
+# @name Logout
+# Revokes the refresh_token cookie. Requires a valid access token.
+POST {{host}}/api/auth/logout
+Authorization: Bearer {{token}}
+
+###
+
+# @name ChangePassword
+POST {{host}}/api/auth/change-password
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "currentPassword": "Admin123!",
+  "newPassword": "NewPass456!"
+}
+
+
+###
+# ── Users ─────────────────────────────────────────────────────────────────────
+
+# @name ListUsers
+GET {{host}}/api/users?page=1&pageSize=20
+Authorization: Bearer {{token}}
 Accept: application/json
 
 ###
+
+# @name ListUsers_Search
+GET {{host}}/api/users?page=1&pageSize=20&search=admin
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name GetUserById
+GET {{host}}/api/users/{{userId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name CreateUser
+POST {{host}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "jane.doe@example.com",
+  "userName": "janedoe",
+  "password": "Pass123!",
+  "firstName": "Jane",
+  "lastName": "Doe"
+}
+
+###
+
+# @name UpdateUserProfile
+PUT {{host}}/api/users/{{userId}}/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstName": "Jane",
+  "lastName": "Doe",
+  "phoneNumber": "+573001234567",
+  "avatarUrl": null
+}
+
+###
+
+# @name DeactivateUser
+POST {{host}}/api/users/{{userId}}/deactivate
+Authorization: Bearer {{token}}
+
+###
+
+# @name ActivateUser
+POST {{host}}/api/users/{{userId}}/activate
+Authorization: Bearer {{token}}
+
+###
+
+# @name AssignRolesToUser
+PUT {{host}}/api/users/{{userId}}/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roleIds": ["{{roleId}}"]
+}
+
+###
+
+# @name GetMe
+GET {{host}}/api/users/me
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name GetMyPermissions
+GET {{host}}/api/users/me/permissions
+Authorization: Bearer {{token}}
+Accept: application/json
+
+
+###
+# ── Roles ─────────────────────────────────────────────────────────────────────
+
+# @name ListRoles
+GET {{host}}/api/roles
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name GetRoleById
+GET {{host}}/api/roles/{{roleId}}
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name CreateRole
+POST {{host}}/api/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Auditor",
+  "description": "Read-only access to all resources"
+}
+
+###
+
+# @name UpdateRole
+PUT {{host}}/api/roles/{{roleId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Auditor",
+  "description": "Read-only access to all resources (updated)"
+}
+
+###
+
+# @name DeleteRole
+DELETE {{host}}/api/roles/{{roleId}}
+Authorization: Bearer {{token}}
+
+###
+
+# @name AssignPermissionsToRole
+PUT {{host}}/api/roles/{{roleId}}/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "permissionIds": ["{{permissionId}}"]
+}
+
+
+###
+# ── Permissions ───────────────────────────────────────────────────────────────
+
+# @name ListPermissions
+GET {{host}}/api/permissions
+Authorization: Bearer {{token}}
+Accept: application/json
+
+###
+
+# @name CreatePermission
+POST {{host}}/api/permissions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "reports.read",
+  "name": "Ver reportes"
+}
+
+###
+
+# @name UpdatePermission
+PUT {{host}}/api/permissions/{{permissionId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Ver reportes (actualizado)"
+}
+
+###
+
+# @name DeletePermission
+DELETE {{host}}/api/permissions/{{permissionId}}
+Authorization: Bearer {{token}}

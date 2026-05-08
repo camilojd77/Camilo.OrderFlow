@@ -124,7 +124,7 @@ WebApi → Infrastructure → Application → Domain
    ```
 3. **No escribir SQL ni queries de EF en Application.** Application define la intención (Command/Query); Infrastructure resuelve el "cómo".
 4. **No poner `Version="..."` en archivos `.csproj`.** Toda versión de NuGet va en `Directory.Packages.props` (gestión central).
-5. **No exponer entidades de Domain en respuestas HTTP.** Se mapean con DTOs / AutoMapper.
+5. **No exponer entidades de Domain en respuestas HTTP.** Se mapean con DTOs vía Mapperly (source generator) o métodos de extensión manuales.
 6. **Toda escritura de password debe pasar por BCrypt** (o el hasher que se centralice en Infrastructure).
 7. **Toda autorización por endpoint usa `[AuthorizePermission("...")]`**, no `[Authorize(Roles = "...")]`. Los permisos viven en BBDD; los roles solo agrupan permisos.
 8. **El `IdentityDbContext` es interno al módulo Identity.** Cada módulo nuevo tendrá su propio `DbContext` con su propio schema.
@@ -182,7 +182,7 @@ WebApi → Infrastructure → Application → Domain
 - `Directory.Packages.props` centraliza versiones de NuGet (no hay drift entre proyectos).
 - `appsettings.Development.json.example` documenta los secretos que cada dev debe configurar localmente.
 - Swagger con soporte de bearer token, listo para probar endpoints autenticados.
-- Comandos documentados en `docs/README.md` para arranque local.
+- Comandos documentados en `README.md` (raíz) para arranque local en 5 pasos.
 
 ---
 
@@ -219,5 +219,5 @@ Esto último es la pieza clave: **diseñar como si ya fueran servicios separados
 - [`docs/Standards.md`](Standards.md) — convenciones detalladas, cómo agregar permisos, HttpClients, etc.
 - [`docs/Observability.md`](Observability.md) — Grafana, queries útiles de Prometheus/Loki/Tempo.
 - [`docs/ReleaseChecklist.md`](ReleaseChecklist.md) — qué validar antes de cada deploy.
-- [`docs/02-Instrucciones-IA.md`](02-Instrucciones-IA.md) — contexto para agentes de IA que trabajen sobre este repo.
-- [`docs/03-Plan-Implementacion.md`](03-Plan-Implementacion.md) — paso a paso de lo que falta para completar la plantilla.
+- [`docs/02-Instrucciones-IA.md`](02-Instrucciones-IA.md) — convenciones para agentes de IA que trabajen sobre este repo.
+- [`docs/05-Plan-Definitivo.md`](05-Plan-Definitivo.md) — decisiones de diseño tomadas durante la construcción de la plantilla (evidencia de qué se construyó y por qué).

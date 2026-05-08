@@ -34,7 +34,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
 
         if (!_passwordHasher.Verify(request.CurrentPassword, user.PasswordHash))
             throw new ValidationException(new Dictionary<string, string[]>
-                { ["CurrentPassword"] = ["Current password is incorrect."] });
+            { ["CurrentPassword"] = ["Current password is incorrect."] });
 
         user.UpdatePasswordHash(_passwordHasher.Hash(request.NewPassword));
         _userRepository.Update(user);

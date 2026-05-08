@@ -19,11 +19,11 @@ public sealed record UserProfile
     {
         if (string.IsNullOrWhiteSpace(firstName))
             throw new ValidationException(new Dictionary<string, string[]>
-                { [nameof(FirstName)] = ["First name is required."] });
+            { [nameof(FirstName)] = ["First name is required."] });
 
         if (string.IsNullOrWhiteSpace(lastName))
             throw new ValidationException(new Dictionary<string, string[]>
-                { [nameof(LastName)] = ["Last name is required."] });
+            { [nameof(LastName)] = ["Last name is required."] });
 
         FirstName = firstName.Trim();
         LastName = lastName.Trim();

@@ -10,7 +10,7 @@ public static class ApplicationBuilderExtensions
         CancellationToken cancellationToken = default)
     {
         using var scope = services.CreateScope();
-        var seeder      = scope.ServiceProvider.GetRequiredService<IdentityDataSeeder>();
+        var seeder = scope.ServiceProvider.GetRequiredService<IdentityDataSeeder>();
         await seeder.SeedAsync(cancellationToken);
     }
 }

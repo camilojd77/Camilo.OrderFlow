@@ -9,11 +9,11 @@ namespace Company.Product.Modules.Identity.Infrastructure.Persistence.Seed;
 
 public sealed class IdentityDataSeeder
 {
-    private static readonly Guid UsersReadPermissionId        = new("a1b2c3d4-e001-0000-0000-000000000001");
-    private static readonly Guid UsersWritePermissionId       = new("a1b2c3d4-e001-0000-0000-000000000002");
-    private static readonly Guid RolesReadPermissionId        = new("a1b2c3d4-e001-0000-0000-000000000003");
-    private static readonly Guid RolesWritePermissionId       = new("a1b2c3d4-e001-0000-0000-000000000004");
-    private static readonly Guid PermissionsReadPermissionId  = new("a1b2c3d4-e001-0000-0000-000000000005");
+    private static readonly Guid UsersReadPermissionId = new("a1b2c3d4-e001-0000-0000-000000000001");
+    private static readonly Guid UsersWritePermissionId = new("a1b2c3d4-e001-0000-0000-000000000002");
+    private static readonly Guid RolesReadPermissionId = new("a1b2c3d4-e001-0000-0000-000000000003");
+    private static readonly Guid RolesWritePermissionId = new("a1b2c3d4-e001-0000-0000-000000000004");
+    private static readonly Guid PermissionsReadPermissionId = new("a1b2c3d4-e001-0000-0000-000000000005");
     private static readonly Guid PermissionsWritePermissionId = new("a1b2c3d4-e001-0000-0000-000000000006");
     private static readonly Guid AdminRoleId = new("b2c3d4e5-e002-0000-0000-000000000001");
     private static readonly Guid AdminUserId = new("c3d4e5f6-e003-0000-0000-000000000001");

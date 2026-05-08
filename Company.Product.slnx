@@ -17,6 +17,7 @@
   </Folder>
   <Folder Name="/tests/Integration/">
     <Project Path="tests/Company.Product.WebApi.IntegrationTests/Company.Product.WebApi.IntegrationTests.csproj" />
+    <Project Path="tests/Company.Product.WebApi.IntegrationTests.RealDb/Company.Product.WebApi.IntegrationTests.RealDb.csproj" />
   </Folder>
   <Folder Name="/tests/Unit/">
     <Project Path="tests/Company.Product.Identity.UnitTests/Company.Product.Identity.UnitTests.csproj" />

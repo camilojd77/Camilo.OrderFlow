@@ -100,7 +100,6 @@ Company.Product.Modules.Identity.Application.Features.Users.Commands.CreateUser
 | Repositorio (impl) | `<Entity>Repository.cs` | `UserRepository.cs` |
 | EF Configuration | `<Entity>Configuration.cs` | `UserConfiguration.cs` |
 | Migración | autogenerado por EF | `20260304152336_InitialIdentity.cs` |
-| AutoMapper Profile (opcional) | `<Module>MappingProfile.cs` | `IdentityMappingProfile.cs` |
 | Mapper de Mapperly | `<Entity>Mapper.cs` (partial) | `UserMapper.cs` |
 | Extensión DI | `ServiceCollectionExtensions.cs` (o particionado por tema con `.Cors.cs`, `.Resilience.cs`) | |
 
@@ -155,7 +154,7 @@ Cuando te pidan **agregar una funcionalidad nueva**, sigue este orden estricto:
 1. **Domain primero**
    - Entidad / VO con encapsulamiento (`private set`, factory).
    - Excepciones de dominio si el escenario lo amerita.
-   - Tests de dominio (Arrange/Act/Assert con xUnit + FluentAssertions).
+   - Tests de dominio (Arrange/Act/Assert con xUnit + Shouldly).
 
 2. **Application después**
    - Definir el **contrato** (interfaz de repositorio o servicio que necesite el caso de uso) en `Application/Abstractions`.

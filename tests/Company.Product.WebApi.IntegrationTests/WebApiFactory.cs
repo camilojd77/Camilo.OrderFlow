@@ -37,12 +37,12 @@ public sealed class WebApiFactory : WebApplicationFactory<Program>
                 // Connection strings must be present (HealthChecks.AddSqlServer reads them),
                 // but won't be exercised for /health/live tests.
                 ["ConnectionStrings:DefaultConnection"] = "Server=(localdb)\\mssqllocaldb;Database=IntegrationTestDb;Trusted_Connection=true",
-                ["ConnectionStrings:Db"]               = "Server=(localdb)\\mssqllocaldb;Database=IntegrationTestDb;Trusted_Connection=true",
+                ["ConnectionStrings:Db"] = "Server=(localdb)\\mssqllocaldb;Database=IntegrationTestDb;Trusted_Connection=true",
 
                 // Minimal valid JWT section so JwtOptions passes ValidateOnStart
-                ["Jwt:Issuer"]         = "IntegrationTestIssuer",
-                ["Jwt:Audience"]       = "IntegrationTestAudience",
-                ["Jwt:Key"]            = "IntegrationTest_SuperSecretKey_AtLeast32Chars!",
+                ["Jwt:Issuer"] = "IntegrationTestIssuer",
+                ["Jwt:Audience"] = "IntegrationTestAudience",
+                ["Jwt:Key"] = "IntegrationTest_SuperSecretKey_AtLeast32Chars!",
                 ["Jwt:ExpiresMinutes"] = "60",
 
                 // Disable OTel exporter to avoid connection errors to a non-existent collector
@@ -50,7 +50,7 @@ public sealed class WebApiFactory : WebApplicationFactory<Program>
 
                 // Relax rate limits so tests don't throttle themselves
                 ["RateLimiting:Default:PermitLimit"] = "10000",
-                ["RateLimiting:Auth:PermitLimit"]    = "10000",
+                ["RateLimiting:Auth:PermitLimit"] = "10000",
             });
         });
 

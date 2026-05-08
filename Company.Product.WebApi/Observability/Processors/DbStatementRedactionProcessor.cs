@@ -41,6 +41,6 @@ internal sealed class DbStatementRedactionProcessor : BaseProcessor<Activity>
             }
         }
 
-        base.OnEnd(activity);
+        base.OnEnd(activity!);
     }
 }

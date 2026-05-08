@@ -1,0 +1,44 @@
+using Testcontainers.MsSql;
+using Xunit;
+
+namespace Company.Product.WebApi.IntegrationTests.RealDb;
+
+/// <summary>
+/// Boots a real SQL Server 2022 container once per collection, then builds a
+/// <see cref="RealDbWebApiFactory"/> bound to it. Tests share the same container
+/// AND the same host so the fixed startup cost (container pull + migration apply)
+/// is paid once per test run, not once per class.
+///
+/// Each test is responsible for its own data isolation by suffixing inputs with
+/// a fresh GUID.
+/// </summary>
+public sealed class SqlServerFixture : IAsyncLifetime
+{
+    private readonly MsSqlContainer _container = new MsSqlBuilder()
+        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
+        .Build();
+
+    public RealDbWebApiFactory Factory { get; private set; } = default!;
+
+    public async Task InitializeAsync()
+    {
+        await _container.StartAsync();
+        Factory = new RealDbWebApiFactory(_container.GetConnectionString());
+
+        // Force the host to build now so migrations run before any test does.
+        _ = Factory.Server;
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (Factory is not null)
+            await Factory.DisposeAsync();
+        await _container.DisposeAsync();
+    }
+}
+
+[CollectionDefinition(nameof(SqlServerCollection))]
+public sealed class SqlServerCollection : ICollectionFixture<SqlServerFixture>
+{
+    // Marker type — xUnit uses this to share the fixture across the collection.
+}

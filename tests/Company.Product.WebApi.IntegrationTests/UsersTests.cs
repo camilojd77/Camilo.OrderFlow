@@ -131,6 +131,20 @@ public sealed class UsersTests : IClassFixture<WebApiFactory>
         body.GetProperty("profile").GetProperty("firstName").GetString().ShouldBe("Updated");
     }
 
+    [Fact]
+    public async Task UpdateProfile_UnknownId_Returns404()
+    {
+        var token = await LoginAsAdminAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/api/users/{Guid.NewGuid()}/profile");
+        req.Headers.Authorization = new("Bearer", token);
+        req.Content = JsonContent.Create(new { firstName = "X", lastName = "Y", phoneNumber = (string?)null, avatarUrl = (string?)null });
+
+        var response = await _client.SendAsync(req);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
     // ── POST /api/users/{id}/deactivate & activate ───────────────────────
 
     [Fact]
@@ -150,6 +164,32 @@ public sealed class UsersTests : IClassFixture<WebApiFactory>
         activateResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
 
+    [Fact]
+    public async Task Deactivate_UnknownId_Returns404()
+    {
+        var token = await LoginAsAdminAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/users/{Guid.NewGuid()}/deactivate");
+        req.Headers.Authorization = new("Bearer", token);
+
+        var response = await _client.SendAsync(req);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task Activate_UnknownId_Returns404()
+    {
+        var token = await LoginAsAdminAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Post, $"/api/users/{Guid.NewGuid()}/activate");
+        req.Headers.Authorization = new("Bearer", token);
+
+        var response = await _client.SendAsync(req);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
+    }
+
     // ── PUT /api/users/{id}/roles ────────────────────────────────────────
 
     [Fact]
@@ -166,6 +206,20 @@ public sealed class UsersTests : IClassFixture<WebApiFactory>
         var response = await _client.SendAsync(req);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
+    }
+
+    [Fact]
+    public async Task AssignRoles_UnknownUserId_Returns404()
+    {
+        var token = await LoginAsAdminAsync();
+
+        var req = new HttpRequestMessage(HttpMethod.Put, $"/api/users/{Guid.NewGuid()}/roles");
+        req.Headers.Authorization = new("Bearer", token);
+        req.Content = JsonContent.Create(new { roleIds = Array.Empty<Guid>() });
+
+        var response = await _client.SendAsync(req);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
 
     // ── GET /api/users/me ────────────────────────────────────────────────
@@ -204,6 +258,13 @@ public sealed class UsersTests : IClassFixture<WebApiFactory>
         var body = await ParseJsonAsync(response);
         body.ValueKind.ShouldBe(JsonValueKind.Array);
         body.GetArrayLength().ShouldBeGreaterThanOrEqualTo(6);
+    }
+
+    [Fact]
+    public async Task GetMyPermissions_NoToken_Returns401()
+    {
+        var response = await _client.GetAsync("/api/users/me/permissions");
+        response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────
