@@ -1,0 +1,118 @@
+# Levanta la aplicación completa (SQL Server + migraciones + API) con un solo comando.
+# Pensado para demos, QA y para validar la imagen; NO es un despliegue de producción.
+#
+#   docker compose -f deploy/app/docker-compose.yml up --build     # levantar
+#   docker compose -f deploy/app/docker-compose.yml down           # parar (datos persisten)
+#   docker compose -f deploy/app/docker-compose.yml down -v        # parar y borrar datos
+#
+# Una vez arriba:
+#   Swagger   → http://localhost:8080/swagger
+#   Info      → http://localhost:8080/_info
+#   Health    → http://localhost:8080/health/ready
+#   Admin     → admin@company.com / Admin123!
+#
+# Orden de arranque: sqlserver (healthy) → migrator (aplica migraciones y termina) → api.
+#
+# Puertos distintos a los del entorno local (8080 en vez de 5070, 1434 en vez de 1433)
+# para poder correr esto y `dotnet run` a la vez sin colisionar.
+
+name: company-product-app
+
+networks:
+  app:
+    name: company-product-app
+  # Descomenta esta red (y la del servicio `api`) para alcanzar al OTel Collector
+  # del stack de observabilidad, que la crea al levantarse.
+  # observability:
+  #   external: true
+
+volumes:
+  sqlserver-data:
+
+services:
+
+  # ─────────────────────────────────────────────────────────────────
+  # SQL Server 2022 — base de datos de la aplicación
+  # ─────────────────────────────────────────────────────────────────
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: company-product-app-sqlserver
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "Password123!"
+      MSSQL_PID: "Developer"
+    ports:
+      - "1434:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - app
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'Password123!' -Q 'SELECT 1' -No -C || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─────────────────────────────────────────────────────────────────
+  # migrator — aplica las migraciones EF y termina (exit 0)
+  # ─────────────────────────────────────────────────────────────────
+  migrator:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: migrator
+    container_name: company-product-app-migrator
+    environment:
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      # dotnet ef construye el host del WebApi para localizar el DbContext; la clave debe
+      # existir y tener 32+ caracteres aunque aquí no se emita ningún token.
+      Jwt__Key: "DOCKER_COMPOSE_ONLY_KEY_CHANGE_ME_32+CHARS"
+    networks:
+      - app
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    restart: "no"
+
+  # ─────────────────────────────────────────────────────────────────
+  # api — la aplicación
+  # ─────────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: ../..
+      dockerfile: Dockerfile
+      target: final
+      args:
+        COMMIT_SHA: "${COMMIT_SHA:-local}"
+        BUILD_DATE: "${BUILD_DATE:-unknown}"
+    container_name: company-product-app-api
+    environment:
+      # Development para que este compose sea utilizable de punta a punta: habilita Swagger
+      # y hace que el seed cree el admin con contraseña real. Fuera de demos usa Production
+      # (Swagger apagado; el admin se siembra con un hash placeholder inutilizable a
+      # proposito, y la contrasena real se fija en el primer deploy).
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_HTTP_PORTS: "8080"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      Jwt__Key: "DOCKER_COMPOSE_ONLY_KEY_CHANGE_ME_32+CHARS"
+      Jwt__Issuer: "Company.Product"
+      Jwt__Audience: "Company.Product.WebApi"
+      Seed__Enabled: "true"
+      # OpenTelemetry apagado por defecto. Para enviar al stack de observabilidad:
+      #   1. ./dev/observability.ps1 up
+      #   2. descomenta estas dos lineas y descomenta el bloque `networks` de abajo
+      # OpenTelemetry__Enabled: "true"
+      # OpenTelemetry__OtlpEndpoint: "http://otel-collector:4317"
+    ports:
+      - "8080:8080"
+    networks:
+      - app
+      # Descomenta para alcanzar al OTel Collector del stack de observabilidad
+      # (requiere que ./dev/observability.ps1 up este corriendo).
+      # - observability
+    depends_on:
+      migrator:
+        condition: service_completed_successfully

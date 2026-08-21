@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 
 namespace Company.Product.Modules.Identity.Application.Commands.ChangePassword;
@@ -10,13 +9,13 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly ICurrentUser _currentUser;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
 
     public ChangePasswordCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         ICurrentUser currentUser,
-        IExecutionContext executionContext)
+        IIdentityExecutionContext executionContext)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;

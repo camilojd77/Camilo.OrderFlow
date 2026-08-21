@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Permissions.DeletePermission;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -13,7 +12,7 @@ namespace Company.Product.Identity.UnitTests.Application.Permissions;
 public sealed class DeletePermissionCommandHandlerTests
 {
     private readonly IPermissionRepository _repo = Substitute.For<IPermissionRepository>();
-    private readonly IExecutionContext _executionContext = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
 
     private DeletePermissionCommandHandler CreateHandler() => new(_repo, _executionContext);
 

@@ -1,4 +1,3 @@
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Domain.Entities;
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Context;
@@ -15,7 +14,7 @@ public sealed class AuthService : IAuthService
     private readonly IJwtTokenService _jwtTokenService;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IRefreshTokenRepository _refreshTokenRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly LockoutOptions _lockoutOptions;
     private readonly RefreshTokenOptions _refreshTokenOptions;
 
@@ -24,7 +23,7 @@ public sealed class AuthService : IAuthService
         IJwtTokenService jwtTokenService,
         IPasswordHasher passwordHasher,
         IRefreshTokenRepository refreshTokenRepository,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         IOptions<LockoutOptions> lockoutOptions,
         IOptions<RefreshTokenOptions> refreshTokenOptions)
     {

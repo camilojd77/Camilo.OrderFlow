@@ -1,4 +1,4 @@
-﻿# Documento 1 — Arquitectura de la solución
+# Documento 1 — Arquitectura de la solución
 
 > **Audiencia:** desarrolladores que van a usar `Company.Product` como plantilla para iniciar un nuevo backend dentro de la organización.
 > **Objetivo:** entender la arquitectura, qué se debe respetar al extenderla y qué ventajas ofrece.
@@ -38,11 +38,12 @@ src/
         └── Company.Product.Modules.Identity.Infrastructure/ ← EF Core, JWT, repos
 tests/
 ├── Company.Product.ArchitectureTests/                    ← Clean Architecture no violable
-├── Company.Product.Identity.UnitTests/                   ← tests de dominio
-└── Company.Product.WebApi.IntegrationTests/              ← health, endpoints, etc.
+├── Company.Product.Identity.UnitTests/                   ← tests de dominio y handlers
+├── Company.Product.WebApi.IntegrationTests/              ← endpoints con SQLite in-memory
+└── Company.Product.WebApi.IntegrationTests.RealDb/       ← E2E con SQL Server real (Testcontainers)
 ```
 
-Cada módulo tiene **4 proyectos**: `Domain`, `Application`, `Infrastructure` y comparte el mismo `WebApi` host. Para crear otro módulo (por ejemplo, `Catalog`), se replica el mismo patrón:
+Cada módulo tiene **3 proyectos** propios — `Domain`, `Application` e `Infrastructure` — y comparte el `WebApi` host con los demás. Para crear otro módulo (por ejemplo, `Catalog`), se replica el mismo patrón:
 
 ```
 Company.Product.Modules.Catalog.Domain
@@ -129,7 +130,8 @@ WebApi → Infrastructure → Application → Domain
 7. **Toda autorización por endpoint usa `[AuthorizePermission("...")]`**, no `[Authorize(Roles = "...")]`. Los permisos viven en BBDD; los roles solo agrupan permisos.
 8. **El `IdentityDbContext` es interno al módulo Identity.** Cada módulo nuevo tendrá su propio `DbContext` con su propio schema.
 9. **Cada migración nueva se genera contra el `DbContext` del módulo correspondiente**, no contra un contexto global.
-10. **Excepciones de negocio heredan de `DomainException`** (o sus hijas: `NotFoundException`, `ConflictException`, `ValidationException`, `ForbiddenException`). El `GlobalExceptionHandler` ya las traduce a `ProblemDetails` con el status correcto.
+10. **Cada módulo registra su propio `I<Modulo>ExecutionContext : IExecutionContext`**, nunca la interfaz genérica de SharedKernel. Registrar `IExecutionContext` desnudo hace que el último módulo cargado gane y que los handlers de los demás dejen de persistir **sin lanzar ningún error**. El test `ModuleRegistrationTests` lo impide.
+11. **Excepciones de negocio heredan de `DomainException`** (o sus hijas: `NotFoundException`, `ConflictException`, `ValidationException`, `ForbiddenException`). El `GlobalExceptionHandler` ya las traduce a `ProblemDetails` con el status correcto.
 
 ---
 
@@ -137,7 +139,7 @@ WebApi → Infrastructure → Application → Domain
 
 | Tema | Detalle | Dónde mirar |
 |---|---|---|
-| **Auth** | JWT Bearer + permisos en cache (**HybridCache**, TTL configurable) | `Modules.Identity.Infrastructure/Auth` y `/Authorization` |
+| **Auth** | JWT Bearer + permisos en cache (**HybridCache**, TTL configurable); códigos en `IdentityPermissions` | `Modules.Identity.Infrastructure/Auth` y `/Authorization` |
 | **Errores HTTP** | `ProblemDetails` con `traceId` + `correlationId` | `WebApi/Errors/GlobalExceptionHandler.cs` |
 | **Correlation** | Header `X-Correlation-Id`, propagado a logs y a outgoing HttpClients | `WebApi/Middleware/CorrelationIdMiddleware.cs` |
 | **Versionado** | Header `api-version`, default `1.0` | `WebApi/Versioning/ApiVersioningExtensions.cs` |
@@ -216,6 +218,8 @@ Esto último es la pieza clave: **diseñar como si ya fueran servicios separados
 
 ## 10. Lectura complementaria
 
+- [`docs/03-Guia-Nuevo-Equipo.md`](03-Guia-Nuevo-Equipo.md) — puesta en marcha en un equipo nuevo.
+- [`docs/04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md) — adaptar la plantilla a un producto y repositorio nuevos.
 - [`docs/Standards.md`](Standards.md) — convenciones detalladas, cómo agregar permisos, HttpClients, etc.
 - [`docs/Observability.md`](Observability.md) — Grafana, queries útiles de Prometheus/Loki/Tempo.
 - [`docs/ReleaseChecklist.md`](ReleaseChecklist.md) — qué validar antes de cada deploy.

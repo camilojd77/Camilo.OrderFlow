@@ -1,4 +1,4 @@
-﻿# Documento 2 — Instrucciones para agentes de IA
+# Documento 2 — Instrucciones para agentes de IA
 
 > **Audiencia:** modelos de IA (Claude, Copilot, Cursor, etc.) que generan o modifican código en este repositorio.
 > **Objetivo:** establecer reglas no-negociables de arquitectura, nomenclatura y orden de implementación para que cualquier output sea consistente con la plantilla.
@@ -50,10 +50,11 @@ WebApi → Infrastructure → Application → Domain
 | Quieres añadir… | Va en… |
 |---|---|
 | Una entidad o value object | `Modules.<X>.Domain/Entities` |
-| Una excepción de negocio | `Modules.<X>.Domain/Exceptions` (hereda de `DomainException`) |
-| Un caso de uso (Command/Query) | `Modules.<X>.Application/Features/<Feature>` |
+| Una excepción de negocio | Reutiliza las de `BuildingBlocks.SharedKernel/Exceptions` (`NotFoundException`, `ConflictException`, `ForbiddenException`, `ValidationException`). Solo si ninguna encaja, crea una en `Modules.<X>.Domain/Exceptions` heredando de `DomainException` |
+| Un caso de uso (Command) | `Modules.<X>.Application/Commands/<Caso>/` |
+| Un caso de uso (Query) | `Modules.<X>.Application/Queries/<Recurso>/<Caso>/` |
 | Un DTO de respuesta | `Modules.<X>.Application/Dtos` |
-| Un validator de FluentValidation | Junto al Command/Query (mismo archivo o subcarpeta `Validators/`) |
+| Un validator de FluentValidation | En la misma carpeta que su Command/Query, como `<Caso>CommandValidator.cs` |
 | Un mapper de Mapperly | `Modules.<X>.Application/Mapping/<Entity>Mapper.cs (partial)` |
 | Un repositorio (interfaz) | `Modules.<X>.Application/Abstractions` |
 | Un repositorio (impl) | `Modules.<X>.Infrastructure/Persistence/Repositories` |
@@ -82,7 +83,8 @@ Company.Product.Modules.<Module>.<Layer>        ← p.ej. Modules.Identity.Domai
 Coinciden 1:1 con la ruta de carpetas dentro del proyecto:
 
 ```
-Company.Product.Modules.Identity.Application.Features.Users.Commands.CreateUser
+Company.Product.Modules.Identity.Application.Commands.Users.CreateUser
+Company.Product.Modules.Identity.Application.Queries.Users.GetUserById
 ```
 
 ### 3.3 Archivos
@@ -106,8 +108,8 @@ Company.Product.Modules.Identity.Application.Features.Users.Commands.CreateUser
 ### 3.4 Permisos
 
 - Formato: `<recurso>.<accion>` en minúsculas. Ejemplos: `users.read`, `users.write`, `roles.read`, `roles.write`, `orders.cancel`.
-- **Constantes** centralizadas en cada módulo: `Modules.<X>.Infrastructure/Authorization/<X>Permissions.cs`.
-- Insertar el permiso nuevo en el seed (`IdentityDataSeeder.cs` o el seed propio del módulo) para que aparezca en BBDD.
+- **Constantes** centralizadas en cada módulo: `Modules.<X>.Infrastructure/Authorization/<X>Permissions.cs` (en Identity: `IdentityPermissions.cs`). **Nunca uses el literal en el atributo**: `[AuthorizePermission(IdentityPermissions.UsersRead)]`.
+- Al agregar una constante, añádela también a la lista `All` y siémbrala en `IdentityDataSeeder`; el seeder lanza al arrancar si una constante declarada no está sembrada.
 
 ### 3.5 Endpoints HTTP
 
@@ -139,6 +141,7 @@ Company.Product.Modules.Identity.Application.Features.Users.Commands.CreateUser
 | **Excepciones de dominio → ProblemDetails** | `GlobalExceptionHandler` mapea las excepciones de `SharedKernel.Exceptions` | Lanza `NotFoundException`, `ConflictException`, `ForbiddenException`, `ValidationException`. NO inventes nuevos handlers. |
 | **JWT** | `JwtTokenService` + `AuthService.LoginAsync` | Para endpoints que devuelven tokens, usa `IAuthService` desde el controller. |
 | **Autorización por permiso** | `[AuthorizePermission("...")]` + `PermissionPolicyProvider` | Decora el endpoint o método. Cachea automáticamente con `HybridCache` (TTL configurable). |
+| **Commit transaccional** | `IIdentityExecutionContext` (una interfaz por módulo) | Inyéctala en el handler y llama `CommitAsync(ct)` al final. Los repos nunca llaman `SaveChangesAsync`. |
 | **Correlation ID** | `CorrelationIdMiddleware` + `CorrelationIdHandler` | Para outgoing HttpClients: `.AddHttpMessageHandler<CorrelationIdHandler>()`. |
 | **Resiliencia HTTP** | `AddResilientHttpClients` | Añade nueva config en `appsettings:Resilience:<Cliente>` y registra siguiendo el patrón de `ErpClient`. |
 | **Rate limiting** | Política `default` (todos los endpoints) y `auth` (login) | `[EnableRateLimiting("auth")]` para endpoints sensibles. |
@@ -261,6 +264,7 @@ Antes de:
 - ❌ No inyectar `DbContext` en controllers.
 - ❌ No exponer entidades en respuestas HTTP.
 - ❌ No registrar servicios desde `Program.cs` que pertenezcan a un módulo.
+- ❌ No registrar ni inyectar `IExecutionContext` directamente: cada módulo usa su propia `I<Modulo>ExecutionContext`. Registrar la genérica rompe el commit de los otros módulos en silencio.
 - ❌ No usar `Identity` de ASP.NET Core (`Microsoft.AspNetCore.Identity`). Esta plantilla tiene su **propio** sistema de identidad — usa `Modules.Identity` y sus servicios.
 - ❌ No reemplazar el sistema de permisos por `[Authorize(Roles="...")]`.
 - ❌ No silenciar excepciones para "limpiar" logs.
@@ -277,10 +281,11 @@ Antes de:
 4. Crear `<Module>DbContext` propio en `Infrastructure/Persistence/Context`, con schema propio (`HasDefaultSchema("<module>")`).
 5. Configurar entidades con `IEntityTypeConfiguration<T>`.
 6. Generar primera migración: `dotnet ef migrations add Initial<Module> --project Company.Product.Modules.<Module>.Infrastructure --startup-project Company.Product.WebApi --context <Module>DbContext`.
-7. Crear `Add<Module>Application` y `Add<Module>Infrastructure(IConfiguration)` extensions.
-8. Registrarlos en `Program.cs`.
-9. (Si aplica) seeder, permisos, controllers, integration tests.
-10. Verificar que los Architecture Tests siguen pasando.
+7. Crear `I<Module>ExecutionContext : IExecutionContext` en `Application/Abstractions` y su implementación en `Infrastructure/Persistence`.
+8. Crear `Add<Module>Application` y `Add<Module>Infrastructure(IConfiguration)` extensions, registrando `I<Module>ExecutionContext` (nunca `IExecutionContext`).
+9. Registrarlos en `Program.cs`.
+10. (Si aplica) seeder, permisos, controllers, integration tests.
+11. Verificar que los Architecture Tests siguen pasando: descubren el módulo nuevo automáticamente por convención de nombre.
 
 ---
 
@@ -297,7 +302,7 @@ Antes de:
 
 > Este repo es una plantilla backend en .NET 10 con Clean Architecture + Modular Monolith. Reglas no-negociables:
 > 1. Dependencias solo hacia adentro (`WebApi → Infrastructure → Application → Domain`).
-> 2. Cada módulo es independiente, con su `DbContext` y schema propios.
+> 2. Cada módulo es independiente, con su `DbContext`, su schema y su `I<Modulo>ExecutionContext` propios.
 > 3. Versiones de NuGet **solo** en `Directory.Packages.props`.
 > 4. Autorización por permiso (`[AuthorizePermission("...")]`), no por rol hardcoded.
 > 5. CQRS con dispatcher propio (`ISender`), validación con FluentValidation, mapping con **Mapperly** o manual. Tests con **Shouldly**.

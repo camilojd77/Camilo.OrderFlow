@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Dtos;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -13,13 +12,13 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly UserMapper _userMapper;
 
     public CreateUserCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         UserMapper userMapper)
     {
         _userRepository = userRepository;

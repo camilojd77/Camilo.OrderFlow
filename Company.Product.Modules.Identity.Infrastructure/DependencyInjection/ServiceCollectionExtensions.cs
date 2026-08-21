@@ -1,4 +1,3 @@
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Infrastructure.Auth;
 using Company.Product.Modules.Identity.Infrastructure.Authorization;
@@ -68,8 +67,9 @@ public static class ServiceCollectionExtensions
         // Password hasher
         services.AddScoped<IPasswordHasher, BcryptPasswordHasher>();
 
-        // Execution context
-        services.AddScoped<IExecutionContext, IdentityExecutionContext>();
+        // Execution context — se registra la interfaz PROPIA del modulo, nunca la
+        // generica IExecutionContext de SharedKernel (ver IIdentityExecutionContext).
+        services.AddScoped<IIdentityExecutionContext, IdentityExecutionContext>();
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();

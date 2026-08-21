@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Roles.DeleteRole;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -13,7 +12,7 @@ namespace Company.Product.Identity.UnitTests.Application.Roles;
 public sealed class DeleteRoleCommandHandlerTests
 {
     private readonly IRoleRepository _roleRepository = Substitute.For<IRoleRepository>();
-    private readonly IExecutionContext _executionContext = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
     private readonly IPermissionService _permissionService = Substitute.For<IPermissionService>();
 
     private DeleteRoleCommandHandler CreateHandler() => new(_roleRepository, _executionContext, _permissionService);

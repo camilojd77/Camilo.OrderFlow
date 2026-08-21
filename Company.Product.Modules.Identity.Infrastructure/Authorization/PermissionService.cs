@@ -1,3 +1,4 @@
+using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;

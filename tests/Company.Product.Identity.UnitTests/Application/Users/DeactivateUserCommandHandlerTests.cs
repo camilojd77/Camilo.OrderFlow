@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Users.DeactivateUser;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -13,7 +12,7 @@ namespace Company.Product.Identity.UnitTests.Application.Users;
 public sealed class DeactivateUserCommandHandlerTests
 {
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
-    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
 
     private DeactivateUserCommandHandler CreateHandler() => new(_repo, _ctx);
 

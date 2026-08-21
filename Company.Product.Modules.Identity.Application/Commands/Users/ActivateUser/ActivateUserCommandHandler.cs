@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 
 namespace Company.Product.Modules.Identity.Application.Commands.Users.ActivateUser;
@@ -8,9 +7,9 @@ namespace Company.Product.Modules.Identity.Application.Commands.Users.ActivateUs
 public sealed class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, Unit>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
 
-    public ActivateUserCommandHandler(IUserRepository userRepository, IExecutionContext executionContext)
+    public ActivateUserCommandHandler(IUserRepository userRepository, IIdentityExecutionContext executionContext)
     {
         _userRepository = userRepository;
         _executionContext = executionContext;

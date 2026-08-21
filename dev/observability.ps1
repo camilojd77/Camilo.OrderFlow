@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Manages the local observability stack (OTel Collector + Tempo + Prometheus + Grafana).
 .DESCRIPTION

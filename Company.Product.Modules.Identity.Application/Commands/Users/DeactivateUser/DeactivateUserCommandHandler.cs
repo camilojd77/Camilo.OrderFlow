@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 
 namespace Company.Product.Modules.Identity.Application.Commands.Users.DeactivateUser;
@@ -8,9 +7,9 @@ namespace Company.Product.Modules.Identity.Application.Commands.Users.Deactivate
 public sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, Unit>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
 
-    public DeactivateUserCommandHandler(IUserRepository userRepository, IExecutionContext executionContext)
+    public DeactivateUserCommandHandler(IUserRepository userRepository, IIdentityExecutionContext executionContext)
     {
         _userRepository = userRepository;
         _executionContext = executionContext;

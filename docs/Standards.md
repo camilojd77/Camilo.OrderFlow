@@ -25,7 +25,7 @@ WebApi → Infrastructure → Application → Domain
 
 ## Cómo agregar un nuevo módulo
 
-1. Crear cuatro proyectos siguiendo el patrón `Company.Product.Modules.<Nombre>.<Capa>`.
+1. Crear **tres** proyectos siguiendo el patrón `Company.Product.Modules.<Nombre>.<Capa>`: `Domain`, `Application` e `Infrastructure` (el host `WebApi` se comparte).
 2. Agregar referencias solo en la dirección permitida (tabla anterior).
 3. Exponer la DI mediante extension methods en `DependencyInjection/ServiceCollectionExtensions.cs`.
 4. Registrar en `Program.cs`:
@@ -42,7 +42,7 @@ WebApi → Infrastructure → Application → Domain
 | ¿Qué? | ¿Dónde? |
 |---|---|
 | Entidad de negocio | `*.Domain/Entities/` |
-| Validación de inputs | `*.Application/Validators/` (FluentValidation) |
+| Validación de inputs | Junto a su Command/Query, en `*.Application/Commands/<Caso>/` (FluentValidation) |
 | Lógica de negocio | `*.Domain` o `*.Application` (handler/service) |
 | Llamada a BBDD | `*.Infrastructure/Persistence/` |
 | Llamada a API externa | `*.Infrastructure/Http/` |
@@ -70,13 +70,22 @@ WebApi → Infrastructure → Application → Domain
 
 ## Cómo agregar un permiso
 
-1. Crear la constante en `*.Infrastructure/Authorization/Permissions.cs` (o similar).
-2. Decorar el endpoint:
+1. Añadir la constante en `*.Infrastructure/Authorization/<Modulo>Permissions.cs`
+   (en Identity: `IdentityPermissions.cs`), con el formato `<recurso>.<accion>` en minúsculas,
+   y agregarla también a la lista `All`:
    ```csharp
-   [AuthorizePermission("orders.read")]
+   public const string OrdersRead = "orders.read";
+   ```
+2. Sembrarlo en el seeder del módulo, para que exista en BBDD y el rol Admin lo tenga.
+   `IdentityDataSeeder` falla al arrancar si una constante declarada no está en el seed.
+3. Decorar el endpoint — siempre con la constante, nunca con el literal:
+   ```csharp
+   [AuthorizePermission(IdentityPermissions.OrdersRead)]
    public IActionResult Get() { ... }
    ```
-3. Insertar el permiso en el seed de BBDD si aplica.
+
+> Un literal mal escrito compila igual y produce un 403 imposible de diagnosticar. La constante
+> convierte ese error en un fallo de compilación.
 
 ---
 
@@ -166,9 +175,9 @@ public sealed class MyActionCommandValidator : AbstractValidator<MyActionCommand
 public sealed class MyActionCommandHandler : IRequestHandler<MyActionCommand, MyEntityDto>
 {
     private readonly IMyEntityRepository _repo;
-    private readonly IExecutionContext _executionContext;
+    private readonly IMyModuleExecutionContext _executionContext;
 
-    public MyActionCommandHandler(IMyEntityRepository repo, IExecutionContext executionContext)
+    public MyActionCommandHandler(IMyEntityRepository repo, IMyModuleExecutionContext executionContext)
     {
         _repo = repo;
         _executionContext = executionContext;
@@ -276,6 +285,35 @@ await _permissionService.InvalidateRoleAsync(roleId, ct);  // luego invalidar
 
 ---
 
+### El punto de commit de cada módulo
+
+`IExecutionContext` (en `BuildingBlocks.SharedKernel`) es **global**: si dos módulos registraran esa
+misma interfaz, la última registración ganaría y los handlers del otro módulo dejarían de persistir
+**sin lanzar ningún error**.
+
+Por eso cada módulo declara la suya y registra esa:
+
+```csharp
+// Application/Abstractions/IOrdersExecutionContext.cs
+public interface IOrdersExecutionContext : IExecutionContext;
+
+// Infrastructure/Persistence/OrdersExecutionContext.cs
+internal sealed class OrdersExecutionContext : IOrdersExecutionContext
+{
+    private readonly OrdersDbContext _dbContext;
+    public OrdersExecutionContext(OrdersDbContext dbContext) => _dbContext = dbContext;
+    public Task<int> CommitAsync(CancellationToken ct = default) => _dbContext.SaveChangesAsync(ct);
+}
+
+// Infrastructure/DependencyInjection/ServiceCollectionExtensions.cs
+services.AddScoped<IOrdersExecutionContext, OrdersExecutionContext>();
+```
+
+Los handlers del módulo inyectan `IOrdersExecutionContext`. El test `ModuleRegistrationTests`
+falla si algún módulo registra `IExecutionContext` directamente.
+
+---
+
 ### Repos vs DbContext directo
 
 **Siempre usar el repositorio.** Nunca inyectar `DbContext` en un handler o controller.
@@ -297,7 +335,7 @@ Usar NSubstitute para repos, Shouldly para asserts:
 public sealed class MyActionCommandHandlerTests
 {
     private readonly IMyEntityRepository _repo = Substitute.For<IMyEntityRepository>();
-    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+    private readonly IMyModuleExecutionContext _ctx = Substitute.For<IMyModuleExecutionContext>();
 
     private MyActionCommandHandler CreateHandler() => new(_repo, _ctx);
 

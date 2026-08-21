@@ -25,7 +25,7 @@ public sealed class UsersController : ControllerBase
     public UsersController(ISender sender) => _sender = sender;
 
     [HttpGet]
-    [AuthorizePermission("users.read")]
+    [AuthorizePermission(IdentityPermissions.UsersRead)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -40,7 +40,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [AuthorizePermission("users.read")]
+    [AuthorizePermission(IdentityPermissions.UsersRead)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -52,7 +52,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [AuthorizePermission("users.write")]
+    [AuthorizePermission(IdentityPermissions.UsersWrite)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -85,7 +85,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/deactivate")]
-    [AuthorizePermission("users.write")]
+    [AuthorizePermission(IdentityPermissions.UsersWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -98,7 +98,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPost("{id:guid}/activate")]
-    [AuthorizePermission("users.write")]
+    [AuthorizePermission(IdentityPermissions.UsersWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -110,7 +110,7 @@ public sealed class UsersController : ControllerBase
     }
 
     [HttpPut("{id:guid}/roles")]
-    [AuthorizePermission("users.write")]
+    [AuthorizePermission(IdentityPermissions.UsersWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

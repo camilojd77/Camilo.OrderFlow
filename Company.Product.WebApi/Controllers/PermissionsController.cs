@@ -19,7 +19,7 @@ public sealed class PermissionsController : ControllerBase
     public PermissionsController(ISender sender) => _sender = sender;
 
     [HttpGet]
-    [AuthorizePermission("permissions.read")]
+    [AuthorizePermission(IdentityPermissions.PermissionsRead)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -30,7 +30,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpPost]
-    [AuthorizePermission("permissions.write")]
+    [AuthorizePermission(IdentityPermissions.PermissionsWrite)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -45,7 +45,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [AuthorizePermission("permissions.write")]
+    [AuthorizePermission(IdentityPermissions.PermissionsWrite)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -61,7 +61,7 @@ public sealed class PermissionsController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [AuthorizePermission("permissions.write")]
+    [AuthorizePermission(IdentityPermissions.PermissionsWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]

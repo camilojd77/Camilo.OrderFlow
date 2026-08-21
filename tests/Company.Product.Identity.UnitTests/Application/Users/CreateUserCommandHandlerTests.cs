@@ -1,5 +1,4 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Users.CreateUser;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -14,7 +13,7 @@ public sealed class CreateUserCommandHandlerTests
 {
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
     private readonly IPasswordHasher _hasher = Substitute.For<IPasswordHasher>();
-    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
     private readonly UserMapper _mapper = new();
 
     private CreateUserCommandHandler CreateHandler() => new(_repo, _hasher, _ctx, _mapper);

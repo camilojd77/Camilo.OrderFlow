@@ -14,9 +14,10 @@ namespace Company.Product.WebApi.IntegrationTests.RealDb;
 /// </summary>
 public sealed class SqlServerFixture : IAsyncLifetime
 {
-    private readonly MsSqlContainer _container = new MsSqlBuilder()
-        .WithImage("mcr.microsoft.com/mssql/server:2022-latest")
-        .Build();
+    // Testcontainers 4.14+ exige la imagen en el constructor; el ctor sin parametros
+    // y WithImage(...) quedaron obsoletos.
+    private readonly MsSqlContainer _container =
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
 
     public RealDbWebApiFactory Factory { get; private set; } = default!;
 

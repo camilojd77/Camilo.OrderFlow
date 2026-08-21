@@ -1,0 +1,45 @@
+# Todo lo que no necesita el build de la imagen. Mantenerlo alineado con .gitignore:
+# cuanto menos entra al contexto, más rápido es `docker build` y menos capas se invalidan.
+
+# ── Salidas de compilación ───────────────────────────────────────────────────
+**/bin/
+**/obj/
+**/publish/
+**/logs/
+artifacts/
+
+# ── Git e IDE ────────────────────────────────────────────────────────────────
+.git/
+.gitignore
+.gitattributes
+.github/
+.vs/
+.vscode/
+.idea/
+.claude/
+**/*.user
+**/*.suo
+
+# ── Secretos y overrides locales (NUNCA deben entrar a la imagen) ────────────
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.Production.json
+**/appsettings.Staging.json
+**/secrets.json
+.env
+.env.*
+
+# ── Tests: la imagen solo publica el WebApi ──────────────────────────────────
+tests/
+TestResults/
+test-results/
+coverage/
+coveragereport/
+
+# ── Documentación y utilidades de desarrollo ─────────────────────────────────
+docs/
+dev/
+deploy/
+README.md
+Dockerfile
+.dockerignore

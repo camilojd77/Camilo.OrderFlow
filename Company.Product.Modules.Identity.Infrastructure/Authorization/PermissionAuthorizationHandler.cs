@@ -1,3 +1,4 @@
+using Company.Product.Modules.Identity.Application.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;

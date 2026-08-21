@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Dtos;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -10,12 +9,12 @@ namespace Company.Product.Modules.Identity.Application.Commands.Roles.UpdateRole
 public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, RoleDto>
 {
     private readonly IRoleRepository _roleRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly RoleMapper _roleMapper;
 
     public UpdateRoleCommandHandler(
         IRoleRepository roleRepository,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         RoleMapper roleMapper)
     {
         _roleRepository = roleRepository;

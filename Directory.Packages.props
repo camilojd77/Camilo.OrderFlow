@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <!--
+      Transitive pinning: permite fijar la version de un paquete que llega de forma
+      transitiva sin anadir un PackageReference en el .csproj. Se usa unicamente para
+      cerrar avisos NU1903 cuyo paquete padre todavia no publica una version corregida
+      (ver la seccion "Transitive pins" al final de este archivo).
+    -->
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <!-- ── Application ──────────────────────────────────────────────────────── -->
@@ -41,7 +48,7 @@
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi"                        Version="10.0.3" />
     <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite"                Version="10.0.3" />
     <PackageVersion Include="Microsoft.Extensions.Http.Resilience"                Version="10.3.0" />
-    <PackageVersion Include="Swashbuckle.AspNetCore"                              Version="10.1.4" />
+    <PackageVersion Include="Swashbuckle.AspNetCore"                              Version="10.2.3" />
   </ItemGroup>
 
   <!-- ── Observability ────────────────────────────────────────────────────── -->
@@ -67,10 +74,25 @@
     <PackageVersion Include="Shouldly"                                            Version="4.2.1" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk"                              Version="18.3.0" />
     <PackageVersion Include="NetArchTest.Rules"                                   Version="1.3.2" />
-    <PackageVersion Include="Testcontainers.MsSql"                                Version="4.7.0" />
+    <PackageVersion Include="Testcontainers.MsSql"                                Version="4.14.0" />
     <PackageVersion Include="xunit"                                               Version="2.9.2" />
     <PackageVersion Include="xunit.abstractions"                                  Version="2.0.3" />
     <PackageVersion Include="xunit.runner.visualstudio"                           Version="3.1.5" />
+  </ItemGroup>
+
+  <!--
+    ── Transitive pins (solo por seguridad) ────────────────────────────────────
+    Cada entrada aqui existe para cerrar un aviso de vulnerabilidad de un paquete
+    que NO referenciamos directamente. Revisar en cada actualizacion de los paquetes
+    padre y ELIMINAR la entrada en cuanto el padre arrastre ya una version corregida.
+
+    · SQLitePCLRaw.lib.e_sqlite3
+        Llega por: Microsoft.EntityFrameworkCore.Sqlite 10.0.3 (tests de integracion).
+        Motivo:    GHSA-2m69-gcr7-jv3q (severidad alta) afecta a 2.1.11.
+        Revisar:   cuando EF Core publique una version que ya referencie >= 2.1.13.
+  -->
+  <ItemGroup Label="Transitive pins">
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3"                          Version="2.1.13" />
   </ItemGroup>
 
 </Project>

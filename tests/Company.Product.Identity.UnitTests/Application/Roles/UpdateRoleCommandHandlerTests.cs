@@ -1,5 +1,4 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Roles.UpdateRole;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -13,7 +12,7 @@ namespace Company.Product.Identity.UnitTests.Application.Roles;
 public sealed class UpdateRoleCommandHandlerTests
 {
     private readonly IRoleRepository _roleRepository = Substitute.For<IRoleRepository>();
-    private readonly IExecutionContext _executionContext = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
     private readonly RoleMapper _roleMapper = new();
 
     private UpdateRoleCommandHandler CreateHandler() =>

@@ -21,7 +21,9 @@ Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modu
 | Health checks | `/health/live` y `/health/ready` (SQL Server) |
 | Seguridad | Security headers, CORS, HTTPS, lockout de cuentas |
 | Tests | Unit tests (Shouldly + NSubstitute), Integration tests (SQLite), Architecture tests, RealDb (Testcontainers) |
+| Contenedores | `Dockerfile` multi-stage (usuario no-root, healthcheck) + compose de app completa y de dependencias |
 | CI | GitHub Actions — restore → build → test → coverage |
+| Adaptación | `dev/rename.ps1` para renombrar la plantilla a un producto nuevo |
 
 ---
 
@@ -29,11 +31,16 @@ Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modu
 
 | Herramienta | Versión mínima | Notas |
 |---|---|---|
+| Git | 2.40 | `git --version` |
 | .NET SDK | 10.0 | `dotnet --version` |
-| Docker Desktop | 4.x | Para stack de observabilidad y tests RealDb |
+| `dotnet ef` | — | No viene con el SDK: `dotnet tool restore` (versión fijada en `.config/dotnet-tools.json`) |
+| Docker Desktop | 4.x (Compose v2) | `docker compose version`. Necesario para BBDD en contenedor, observabilidad y tests RealDb |
 | SQL Server | 2019+ | LocalDB, contenedor Docker o instancia local |
+| Certificado HTTPS dev | — | `dotnet dev-certs https --trust`, solo para el perfil `https` |
 
 > **Mapperly (source generator):** IntelliSense no reconoce los mappers generados hasta el primer `dotnet build`. Compila antes de consumir un mapper nuevo.
+
+> **¿Primera vez en este repositorio?** La guía detallada, con contenedores, verificaciones y tabla de troubleshooting, es [`docs/03-Guia-Nuevo-Equipo.md`](docs/03-Guia-Nuevo-Equipo.md). Lo de abajo es la versión corta.
 
 ---
 
@@ -76,6 +83,9 @@ Editar la copia y ajustar al menos:
 ### 4. Aplicar migraciones
 
 ```pwsh
+# dotnet ef no viene con el SDK; se instala desde el manifiesto del repo
+dotnet tool restore
+
 dotnet ef database update `
   --project Company.Product.Modules.Identity.Infrastructure `
   --startup-project Company.Product.WebApi
@@ -142,6 +152,8 @@ dotnet test tests/Company.Product.ArchitectureTests
 dotnet test --filter "Category!=RealDb" --collect:"XPlat Code Coverage"
 ```
 
+Referencia: **200 tests** en la suite rápida (121 unit + 20 arquitectura + 59 integración) y **6** en RealDb.
+
 **Cobertura de referencia (plantilla base):**
 - Unit tests (Domain): ~80% líneas
 - Integration tests (API): ~47% líneas
@@ -157,12 +169,15 @@ No hay umbral mínimo en la plantilla; el equipo consumidor decide su umbral.
 ```
 Company.Product/
 ├── .github/workflows/        ← CI (GitHub Actions)
+├── Dockerfile                ← imagen de la API (build → migrator → runtime)
 ├── deploy/
+│   ├── app/                  ← docker-compose de la app completa (BBDD + migraciones + API)
 │   ├── database/             ← docker-compose para SQL Server de desarrollo
 │   └── observability/        ← docker-compose: OTel Collector, Tempo, Loki, Prometheus, Grafana
 ├── dev/
-│   ├── database.ps1          ← wrapper: dev/database.ps1 up | down
-│   └── observability.ps1     ← wrapper: dev/observability.ps1 up | down
+│   ├── database.ps1          ← wrapper: dev/database.ps1 up | down | logs
+│   ├── observability.ps1     ← wrapper: dev/observability.ps1 up | down | logs | status | wipe
+│   └── rename.ps1            ← renombra la plantilla para un proyecto nuevo
 ├── docs/                     ← Documentación técnica (ver tabla abajo)
 ├── src/ (proyectos — en raíz por convención .slnx)
 │   ├── BuildingBlocks/
@@ -197,30 +212,37 @@ El revisor de TI marca estos criterios antes de aprobar la plantilla:
 
 - [ ] `git clone` + copiar `appsettings.Development.json.example` + `dotnet ef database update` + `dotnet run` arranca en < 5 minutos en máquina sin estado previo
 - [ ] Login admin (`admin@company.com` / `Admin123!`) devuelve `accessToken` + cookie `refresh_token`
-- [ ] `dotnet test --filter "Category!=RealDb"` → verde (197 tests)
+- [ ] `dotnet test --filter "Category!=RealDb"` → verde (200 tests)
 - [ ] `dotnet test --filter "Category=RealDb"` → verde con Docker corriendo (6 tests)
-- [ ] `dotnet build --warnaserror` → 0 warnings, 0 errores
+- [ ] `dotnet build /p:TreatWarningsAsErrors=true` → 0 warnings, 0 errores
 - [ ] `dotnet list package --vulnerable` → vacío
-- [ ] `dotnet list package --deprecated` → vacío (o documentado)
+- [ ] `dotnet list package --deprecated` → solo `xunit 2.9.2` (marcado *Legacy* por la llegada de xunit.v3; migrar es un cambio de suite completo y queda fuera del alcance de la plantilla)
 - [ ] Cada endpoint público tiene `[ProducesResponseType]` y autenticación correcta
 - [ ] Architecture Tests cubren todas las reglas de Clean Architecture y aislamiento entre módulos
 - [ ] `appsettings.Development.json.example` permite arrancar sin adivinar campos
 - [ ] No hay archivos de IDE (`*.user`, `.vs/`, etc.) ni `bin/`/`obj/` versionados
 - [ ] Las 4 migraciones EF aplican limpiamente sobre una BD vacía
-- [ ] Smoke E2E (Fase E del plan de hand-off) pasa
+- [ ] `docker compose -f deploy/app/docker-compose.yml up --build` levanta la app y el login del admin funciona
+- [ ] Smoke E2E (login → `/api/users/me` → `/api/users/me/permissions`) pasa
 
 ---
 
 ## Documentación de soporte
 
+Índice completo, por rol y en orden de lectura: [`docs/README.md`](docs/README.md).
+
 | Documento | Contenido |
 |---|---|
 | [`docs/01-Arquitectura.md`](docs/01-Arquitectura.md) | Visión estructural, reglas de dependencias, decisiones explícitas |
 | [`docs/02-Instrucciones-IA.md`](docs/02-Instrucciones-IA.md) | Convenciones para agentes IA que extiendan la plantilla |
+| [`docs/03-Guia-Nuevo-Equipo.md`](docs/03-Guia-Nuevo-Equipo.md) | Puesta en marcha paso a paso en un equipo nuevo, contenedores y troubleshooting |
+| [`docs/04-Guia-Renombrado-y-Repositorio.md`](docs/04-Guia-Renombrado-y-Repositorio.md) | Renombrar la plantilla y apuntar a un repositorio nuevo |
 | [`docs/Standards.md`](docs/Standards.md) | Patrones completos: módulo, entidad, command, query, endpoint, tests |
 | [`docs/Observability.md`](docs/Observability.md) | Cómo usar Grafana, Loki, Tempo, Prometheus |
+| [`docs/EntenderObservabilidad.md`](docs/EntenderObservabilidad.md) | Ruta de estudio de observabilidad moderna (formación) |
 | [`docs/ReleaseChecklist.md`](docs/ReleaseChecklist.md) | Checklist antes de cada deploy a Staging / Production |
-| [`docs/05-Plan-Definitivo.md`](docs/05-Plan-Definitivo.md) | Decisiones D1–D10 tomadas durante la construcción (evidencia) |
+| [`docs/05-Plan-Definitivo.md`](docs/05-Plan-Definitivo.md) | Decisiones D1–D10 tomadas durante la construcción (histórico) |
+| [`docs/archive/`](docs/archive/) | Planes ya ejecutados; no describen el estado actual |
 
 ---
 
@@ -236,16 +258,18 @@ Aparecen en la respuesta de `GET /_info`.
 
 ---
 
-## Renombrar la plantilla
+## Renombrar la plantilla para un proyecto nuevo
 
-Para adaptar a un proyecto concreto, reemplaza `Company.Product` por el nombre real en toda la solución:
+El token `Company.Product` aparece en ~230 archivos, además de nombres de contenedor, proyectos de
+compose y labels de Loki. Hay un script que lo hace:
 
-1. Renombrar `Company.Product.slnx` → `Acme.Inventory.slnx` (o el nombre elegido).
-2. Búsqueda global: `Company.Product` → `Acme.Inventory`, `company-product` → `acme-inventory`, `company_product` → `acme_inventory`.
-3. Renombrar directorios y archivos `.csproj`.
-4. Actualizar rutas en el archivo `.slnx`.
-5. Actualizar `Jwt:Issuer`, `Jwt:Audience`, `OpenTelemetry:ServiceName` y labels de Loki en `appsettings.json`.
-6. Verificar: `dotnet test --filter "Category!=RealDb"`.
+```pwsh
+.\dev\rename.ps1 -NewName "Acme.Inventory" -WhatIf   # simula
+.\dev\rename.ps1 -NewName "Acme.Inventory"           # aplica
+```
+
+El procedimiento completo — incluido qué queda a mano, qué hacer con las migraciones y cómo apuntar
+a otro repositorio — está en [`docs/04-Guia-Renombrado-y-Repositorio.md`](docs/04-Guia-Renombrado-y-Repositorio.md).
 
 ---
 

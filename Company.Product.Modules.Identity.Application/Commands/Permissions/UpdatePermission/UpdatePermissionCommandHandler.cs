@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Dtos;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -10,12 +9,12 @@ namespace Company.Product.Modules.Identity.Application.Commands.Permissions.Upda
 public sealed class UpdatePermissionCommandHandler : IRequestHandler<UpdatePermissionCommand, PermissionDto>
 {
     private readonly IPermissionRepository _permissionRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly PermissionMapper _permissionMapper;
 
     public UpdatePermissionCommandHandler(
         IPermissionRepository permissionRepository,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         PermissionMapper permissionMapper)
     {
         _permissionRepository = permissionRepository;

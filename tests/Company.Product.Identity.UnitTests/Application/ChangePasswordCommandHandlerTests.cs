@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.ChangePassword;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -15,7 +14,7 @@ public sealed class ChangePasswordCommandHandlerTests
     private readonly IUserRepository _userRepository = Substitute.For<IUserRepository>();
     private readonly IPasswordHasher _passwordHasher = Substitute.For<IPasswordHasher>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
-    private readonly IExecutionContext _executionContext = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
 
     private ChangePasswordCommandHandler CreateHandler() =>
         new(_userRepository, _passwordHasher, _currentUser, _executionContext);

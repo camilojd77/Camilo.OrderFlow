@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Dtos;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -13,14 +12,14 @@ public sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUser
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUser _currentUser;
     private readonly IPermissionService _permissionService;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly UserMapper _userMapper;
 
     public UpdateUserProfileCommandHandler(
         IUserRepository userRepository,
         ICurrentUser currentUser,
         IPermissionService permissionService,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         UserMapper userMapper)
     {
         _userRepository = userRepository;

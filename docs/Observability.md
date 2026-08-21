@@ -6,11 +6,26 @@ La plantilla exporta **trazas, métricas y logs** a un OTel Collector local, que
 
 ## Levantar el stack local
 
-```bash
-docker compose -f docker/observability/docker-compose.yml up -d
+```pwsh
+.\dev\observability.ps1 up       # camino recomendado
 ```
 
-> Puertos: Grafana `3000` · OTel Collector gRPC `4317` · HTTP `4318`
+O directamente con compose:
+
+```pwsh
+docker compose -f deploy/observability/docker-compose.observability.yml up -d
+```
+
+| Componente | Rol | URL / puerto |
+|---|---|---|
+| Grafana | Dashboards y Explore | `http://localhost:3000` |
+| OTel Collector | Recibe OTLP de la API | gRPC `4317` · HTTP `4318` |
+| Tempo | Almacena trazas | `http://localhost:3200` |
+| Loki | Almacena logs | `http://localhost:3100` |
+| Prometheus | Almacena métricas | `http://localhost:9090` |
+
+> Otros comandos del wrapper: `down`, `restart`, `logs`, `status`, `wipe` (este último borra los volúmenes).
+> Detalle de cada componente en [`../deploy/observability/README.md`](../deploy/observability/README.md).
 
 ---
 
@@ -42,10 +57,18 @@ docker compose -f docker/observability/docker-compose.yml up -d
 
 ## Ver logs en Grafana
 
+Los logs **no pasan por el OTel Collector**: Serilog los envía directamente a Loki con el sink
+`GrafanaLoki` configurado en `appsettings.Development.json`. Las etiquetas disponibles son las que
+declara ese sink — `app` y `env` — no `service_name`.
+
 1. **Explore** → datasource **Loki**.
-2. Query básica: `{service_name="Company.Product.WebApi"}`.
-3. Filtrar errores: `{service_name="Company.Product.WebApi"} |= "Error"`.
-4. Correlacionar con traza: `{service_name="Company.Product.WebApi"} | json | traceId="<id>"`.
+2. Query básica: `{app="company-product-webapi"}`.
+3. Filtrar errores: `{app="company-product-webapi"} |= "Error"`.
+4. Correlacionar con traza: `{app="company-product-webapi"} | json | traceId="<id>"`.
+5. Filtrar por entorno: `{app="company-product-webapi", env="dev"}`.
+
+> Si renombraste la plantilla, la etiqueta `app` cambió con ella: revisa el bloque `Serilog:WriteTo`
+> de tu `appsettings.Development.json`.
 
 ---
 

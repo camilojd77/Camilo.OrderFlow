@@ -1,5 +1,4 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Users.UpdateUserProfile;
 using Company.Product.Modules.Identity.Application.Mapping;
@@ -15,7 +14,7 @@ public sealed class UpdateUserProfileCommandHandlerTests
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IPermissionService _permissionService = Substitute.For<IPermissionService>();
-    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
     private readonly UserMapper _mapper = new();
 
     private UpdateUserProfileCommandHandler CreateHandler()

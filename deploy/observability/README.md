@@ -6,8 +6,9 @@ Provides a zero-infrastructure-cost observability environment for local developm
 |---|---|---|
 | **OTel Collector** | Receives OTLP from the API | grpc `localhost:4317` · http `localhost:4318` |
 | **Grafana Tempo** | Distributed trace storage | `http://localhost:3200` |
+| **Grafana Loki** | Log storage (Serilog writes here directly) | `http://localhost:3100` |
 | **Prometheus** | Metrics storage | `http://localhost:9090` |
-| **Grafana** | Dashboards (Tempo + Prometheus) | `http://localhost:3000` |
+| **Grafana** | Dashboards (Tempo + Loki + Prometheus) | `http://localhost:3000` |
 
 ---
 
@@ -68,6 +69,15 @@ It additionally sets `EnableConsoleExporter=true` so spans are printed to the te
 3. Query `dotnet_gc_collections_total` (runtime GC metrics).
 4. Check `otel_collector_*` metrics to confirm the collector pipeline is healthy.
 
+## Verify logs end-to-end
+
+1. Open **Grafana** → **Explore** → select **Loki** datasource.
+2. Query `{app="company-product-webapi"}` — Serilog pushes here via the `GrafanaLoki` sink
+   configured in `appsettings.Development.json` (see the `.example` file).
+3. Correlate with a trace: `{app="company-product-webapi"} | json | traceId="<id>"`.
+4. From a Tempo span, the **Logs for this span** link jumps straight to the matching logs
+   thanks to the `derivedFields` in the provisioned datasources.
+
 ## Verify outbound HttpClient propagation
 
 Inspect any outbound request made by the API:
@@ -115,6 +125,7 @@ Named Docker volumes keep data between `down`/`up` cycles:
 | Volume | Contains |
 |---|---|
 | `tempo-data` | Trace blocks + WAL |
+| `loki-data` | Log chunks + index |
 | `prometheus-data` | TSDB metrics |
 | `grafana-data` | Dashboards, user config |
 

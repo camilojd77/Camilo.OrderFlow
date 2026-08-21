@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Domain.Entities;
 
@@ -10,13 +9,13 @@ public sealed class AssignPermissionsToRoleCommandHandler : IRequestHandler<Assi
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IPermissionRepository _permissionRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly IPermissionService _permissionService;
 
     public AssignPermissionsToRoleCommandHandler(
         IRoleRepository roleRepository,
         IPermissionRepository permissionRepository,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         IPermissionService permissionService)
     {
         _roleRepository = roleRepository;

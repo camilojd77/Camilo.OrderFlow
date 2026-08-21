@@ -1,6 +1,7 @@
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Domain.Entities;
 using Company.Product.Modules.Identity.Domain.ValueObjects;
+using Company.Product.Modules.Identity.Infrastructure.Authorization;
 using Company.Product.Modules.Identity.Infrastructure.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
@@ -46,13 +47,20 @@ public sealed class IdentityDataSeeder
     {
         var definitions = new (Guid Id, string Code, string Name)[]
         {
-            (UsersReadPermissionId,        "users.read",        "Read users"),
-            (UsersWritePermissionId,       "users.write",       "Write users"),
-            (RolesReadPermissionId,        "roles.read",        "Read roles"),
-            (RolesWritePermissionId,       "roles.write",       "Write roles"),
-            (PermissionsReadPermissionId,  "permissions.read",  "Read permissions"),
-            (PermissionsWritePermissionId, "permissions.write", "Write permissions"),
+            (UsersReadPermissionId,        IdentityPermissions.UsersRead,        "Read users"),
+            (UsersWritePermissionId,       IdentityPermissions.UsersWrite,       "Write users"),
+            (RolesReadPermissionId,        IdentityPermissions.RolesRead,        "Read roles"),
+            (RolesWritePermissionId,       IdentityPermissions.RolesWrite,       "Write roles"),
+            (PermissionsReadPermissionId,  IdentityPermissions.PermissionsRead,  "Read permissions"),
+            (PermissionsWritePermissionId, IdentityPermissions.PermissionsWrite, "Write permissions"),
         };
+
+        // Red de seguridad: si se agrega una constante a IdentityPermissions y se olvida
+        // sembrarla, el permiso no existiria en BBDD y el endpoint devolveria 403 sin pista.
+        var missing = IdentityPermissions.All.Except(definitions.Select(d => d.Code)).ToArray();
+        if (missing.Length > 0)
+            throw new InvalidOperationException(
+                $"Permisos declarados en IdentityPermissions pero ausentes del seed: {string.Join(", ", missing)}.");
 
         var codes = definitions.Select(d => d.Code).ToArray();
         var existing = await _context.Permissions

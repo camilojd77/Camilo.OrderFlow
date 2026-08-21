@@ -34,9 +34,17 @@ Revisar antes de cada deploy a Staging o Production.
 - [ ] Timeouts y circuit breaker de HttpClients revisados para el entorno
 - [ ] `Kestrel:Limits:MaxRequestBodySizeBytes` ajustado al máximo payload esperado
 
+## Artefacto / contenedor
+
+- [ ] La imagen se construyó con `COMMIT_SHA` y `BUILD_DATE` (`docker build --build-arg COMMIT_SHA=$(git rev-parse --short HEAD) ...`)
+- [ ] La imagen corre como usuario sin privilegios (así viene el `Dockerfile`; verificar si se personalizó)
+- [ ] Las migraciones se aplican en el despliegue **antes** de arrancar la API (etapa `migrator` del `Dockerfile` o paso equivalente del pipeline)
+- [ ] `HEALTHCHECK` / probes del orquestador apuntan a `/health/live` (liveness) y `/health/ready` (readiness), no al mismo
+
 ## Identidad y caché
 
 - [ ] Existe al menos un usuario con rol **Admin** activo y contraseña fuerte
+- [ ] **Primer deploy:** fuera de `Development` el seeder crea el admin con un hash placeholder inutilizable a propósito. Hay que fijarle una contraseña real antes de entregar el entorno; si no, nadie puede autenticarse
 - [ ] Los permisos semilla (`users.read/write`, `roles.read/write`, `permissions.read/write`) están en la BBDD
 - [ ] Si hay más de una réplica del servicio, `Cache:Redis` apunta a una instancia Redis compartida (sin Redis, `InvalidateRoleAsync` solo invalida la L1 local de la réplica que recibe la petición)
 - [ ] `Lockout:MaxAttempts` y `Lockout:DurationMinutes` ajustados a la política de seguridad del cliente

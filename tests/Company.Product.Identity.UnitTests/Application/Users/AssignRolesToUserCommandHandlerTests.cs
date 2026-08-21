@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Users.AssignRolesToUser;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -15,7 +14,7 @@ public sealed class AssignRolesToUserCommandHandlerTests
     private readonly IUserRepository _userRepo = Substitute.For<IUserRepository>();
     private readonly IRoleRepository _roleRepo = Substitute.For<IRoleRepository>();
     private readonly IPermissionService _permissionService = Substitute.For<IPermissionService>();
-    private readonly IExecutionContext _ctx = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
 
     private AssignRolesToUserCommandHandler CreateHandler()
         => new(_userRepo, _roleRepo, _permissionService, _ctx);

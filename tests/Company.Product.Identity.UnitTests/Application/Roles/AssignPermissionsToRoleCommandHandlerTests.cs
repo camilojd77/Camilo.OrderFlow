@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 using Company.Product.Modules.Identity.Application.Commands.Roles.AssignPermissions;
 using Company.Product.Modules.Identity.Domain.Entities;
@@ -14,7 +13,7 @@ public sealed class AssignPermissionsToRoleCommandHandlerTests
 {
     private readonly IRoleRepository _roleRepository = Substitute.For<IRoleRepository>();
     private readonly IPermissionRepository _permissionRepository = Substitute.For<IPermissionRepository>();
-    private readonly IExecutionContext _executionContext = Substitute.For<IExecutionContext>();
+    private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
     private readonly IPermissionService _permissionService = Substitute.For<IPermissionService>();
 
     private AssignPermissionsToRoleCommandHandler CreateHandler() =>

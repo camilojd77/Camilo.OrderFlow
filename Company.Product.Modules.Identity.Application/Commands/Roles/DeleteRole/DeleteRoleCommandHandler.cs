@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 
 namespace Company.Product.Modules.Identity.Application.Commands.Roles.DeleteRole;
@@ -8,12 +7,12 @@ namespace Company.Product.Modules.Identity.Application.Commands.Roles.DeleteRole
 public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Unit>
 {
     private readonly IRoleRepository _roleRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
     private readonly IPermissionService _permissionService;
 
     public DeleteRoleCommandHandler(
         IRoleRepository roleRepository,
-        IExecutionContext executionContext,
+        IIdentityExecutionContext executionContext,
         IPermissionService permissionService)
     {
         _roleRepository = roleRepository;

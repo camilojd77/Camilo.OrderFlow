@@ -21,7 +21,7 @@ public sealed class RolesController : ControllerBase
     public RolesController(ISender sender) => _sender = sender;
 
     [HttpGet]
-    [AuthorizePermission("roles.read")]
+    [AuthorizePermission(IdentityPermissions.RolesRead)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -32,7 +32,7 @@ public sealed class RolesController : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
-    [AuthorizePermission("roles.read")]
+    [AuthorizePermission(IdentityPermissions.RolesRead)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -44,7 +44,7 @@ public sealed class RolesController : ControllerBase
     }
 
     [HttpPost]
-    [AuthorizePermission("roles.write")]
+    [AuthorizePermission(IdentityPermissions.RolesWrite)]
     [ProducesResponseType(StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -59,7 +59,7 @@ public sealed class RolesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    [AuthorizePermission("roles.write")]
+    [AuthorizePermission(IdentityPermissions.RolesWrite)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -76,7 +76,7 @@ public sealed class RolesController : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    [AuthorizePermission("roles.write")]
+    [AuthorizePermission(IdentityPermissions.RolesWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -89,7 +89,7 @@ public sealed class RolesController : ControllerBase
     }
 
     [HttpPut("{id:guid}/permissions")]
-    [AuthorizePermission("roles.write")]
+    [AuthorizePermission(IdentityPermissions.RolesWrite)]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]

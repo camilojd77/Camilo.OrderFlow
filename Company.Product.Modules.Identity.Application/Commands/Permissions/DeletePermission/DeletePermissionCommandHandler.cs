@@ -1,6 +1,5 @@
 using Company.Product.BuildingBlocks.SharedKernel.Exceptions;
 using Company.Product.BuildingBlocks.SharedKernel.Messaging;
-using Company.Product.BuildingBlocks.SharedKernel.Persistence;
 using Company.Product.Modules.Identity.Application.Abstractions;
 
 namespace Company.Product.Modules.Identity.Application.Commands.Permissions.DeletePermission;
@@ -8,11 +7,11 @@ namespace Company.Product.Modules.Identity.Application.Commands.Permissions.Dele
 public sealed class DeletePermissionCommandHandler : IRequestHandler<DeletePermissionCommand, Unit>
 {
     private readonly IPermissionRepository _permissionRepository;
-    private readonly IExecutionContext _executionContext;
+    private readonly IIdentityExecutionContext _executionContext;
 
     public DeletePermissionCommandHandler(
         IPermissionRepository permissionRepository,
-        IExecutionContext executionContext)
+        IIdentityExecutionContext executionContext)
     {
         _permissionRepository = permissionRepository;
         _executionContext = executionContext;
