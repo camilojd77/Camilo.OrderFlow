@@ -26,6 +26,38 @@
 
 ---
 
+## 0 bis. Adenda — cierre de los dos puntos que quedaron abiertos (2026-08-20)
+
+El plan original cerró con dos cabos sueltos. Ambos están resueltos:
+
+### `.editorconfig` (quedaba a decisión del usuario)
+
+Creado en la raíz. Describe el estilo que **ya tenía** el código (usings con `System` al final,
+namespaces con ámbito de archivo, campos `_camelCase`, llaves en línea nueva). Todas las reglas
+son `suggestion`: ninguna puede romper el CI, que compila con warnings como errores. Las
+migraciones EF quedan marcadas como código generado y exentas de análisis.
+
+### xunit 2.9.2 → xunit.v3 4.0.0
+
+El paquete `xunit` estaba marcado *Legacy* en NuGet. Migrado, con más alcance del previsto:
+
+| Cambio | Detalle |
+|---|---|
+| Paquetes | `xunit` → `xunit.v3` 4.0.0; eliminado `xunit.abstractions` (0 usos); `xunit.runner.visualstudio` 3.1.5 → 4.0.0 |
+| Proyectos de test | Los 4 pasan a `<OutputType>Exe</OutputType>`: en v3 cada suite es un ejecutable autocontenido |
+| `IAsyncLifetime` | `SqlServerFixture` pasa a `ValueTask` + `IAsyncDisposable` (único archivo afectado, como estaba previsto) |
+| **Runner** | xunit.v3 corre sobre **Microsoft Testing Platform**. El SDK de .NET 10 ya no soporta el puente VSTest, así que se añadió `global.json` con `"test": { "runner": "Microsoft.Testing.Platform" }`. Sin él, `dotnet test` falla en seco |
+| **Cobertura y TRX** | `coverlet.collector` es un data collector de VSTest y no funciona bajo MTP. Sustituido por `Microsoft.Testing.Extensions.CodeCoverage` 18.10.0 y `Microsoft.Testing.Extensions.TrxReport` 2.3.3 |
+| **CI** | `--logger trx` y `--collect:"XPlat Code Coverage"` sustituidos por `--report-trx --coverage --coverage-output-format cobertura` tras `--`. Sin filtro: el runner de GitHub trae Docker y corre también la suite RealDb |
+| **Filtros** | `--filter "Category!=RealDb"` → `-- --filter-not-trait "Category=RealDb" --ignore-exit-code 8`. El flag extra hace falta porque, al filtrar, un proyecto se queda sin tests y MTP lo trata como fallo (código 8) |
+| **`xUnit1051`** | Analizador nuevo de v3: exige `TestContext.Current.CancellationToken` en toda llamada que acepte un token. 100 llamadas HTTP actualizadas en los tests de integración. Se corrigieron en vez de suprimir la regla, porque el CI compila con warnings como errores y estos tests son el ejemplo que copiarán los proyectos derivados |
+
+**Verificación:** `dotnet build -c Release /p:TreatWarningsAsErrors=true` con 0 warnings;
+`dotnet test` con **206/206** en verde; cobertura estable (79.8% unit, 46.6% integración);
+`dotnet list package --vulnerable` y `--deprecated` **ambos vacíos**; `docker build` correcto.
+
+---
+
 ## 0. Resumen ejecutivo
 
 La plantilla está **sólida a nivel de código y arquitectura**. Lo verificado con evidencia:

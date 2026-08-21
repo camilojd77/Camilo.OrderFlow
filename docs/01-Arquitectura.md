@@ -149,7 +149,7 @@ WebApi → Infrastructure → Application → Domain
 | **Health checks** | `/health/live`, `/health/ready` (incluye SQL Server) | `WebApi/Observability/Health` |
 | **Observabilidad** | OpenTelemetry → OTel Collector → Tempo + Loki + Prometheus + Grafana | `WebApi/Observability/OpenTelemetry` y `deploy/observability` |
 | **Logs** | Serilog estructurado con `traceId`, `spanId`, `correlationId` | `Program.cs` (sección `UseSerilog`) |
-| **Tests** | xUnit + **Shouldly**; arquitectura con `NetArchTest` | `tests/` |
+| **Tests** | **xunit.v3** sobre Microsoft Testing Platform + **Shouldly**; arquitectura con `NetArchTest` | `tests/` y `global.json` |
 | **CI** | GitHub Actions: restore → build → test → coverage | `.github/workflows/ci.yml` |
 
 ---

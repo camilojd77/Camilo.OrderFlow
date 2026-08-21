@@ -52,8 +52,8 @@ Revisar antes de cada deploy a Staging o Production.
 
 ## Tests
 
-- [ ] `dotnet test --filter "Category!=RealDb"` pasa en verde (unit + arch + integración SQLite)
-- [ ] `dotnet test --filter "Category=RealDb"` pasa en el entorno de staging (requiere Docker o SQL Server accesible)
+- [ ] `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` pasa en verde (unit + arch + integración SQLite)
+- [ ] `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` pasa en el entorno de staging (requiere Docker o SQL Server accesible)
 
 ## Post-deploy
 

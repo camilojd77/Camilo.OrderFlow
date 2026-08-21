@@ -33,7 +33,7 @@ public sealed class IdentitySmokeTests
     [Fact]
     public async Task Health_AfterMigrationsApplied_Returns200()
     {
-        var response = await _client.GetAsync("/health/live");
+        var response = await _client.GetAsync("/health/live", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -44,7 +44,7 @@ public sealed class IdentitySmokeTests
     public async Task Login_AsSeededAdmin_Returns200WithAccessToken()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -55,7 +55,7 @@ public sealed class IdentitySmokeTests
     public async Task Login_WrongPassword_Returns401()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "WrongPass1!" });
+            new { usernameOrEmail = "admin@company.com", password = "WrongPass1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
@@ -72,14 +72,14 @@ public sealed class IdentitySmokeTests
         create.Headers.Authorization = new("Bearer", token);
         create.Content = JsonContent.Create(new { name, description = "smoke" });
 
-        var createResp = await _client.SendAsync(create);
+        var createResp = await _client.SendAsync(create, TestContext.Current.CancellationToken);
         createResp.StatusCode.ShouldBe(HttpStatusCode.Created);
         var created = await ParseJsonAsync(createResp);
         var id = created.GetProperty("id").GetGuid();
 
         var get = new HttpRequestMessage(HttpMethod.Get, $"/api/roles/{id}");
         get.Headers.Authorization = new("Bearer", token);
-        var getResp = await _client.SendAsync(get);
+        var getResp = await _client.SendAsync(get, TestContext.Current.CancellationToken);
 
         getResp.StatusCode.ShouldBe(HttpStatusCode.OK);
         var fetched = await ParseJsonAsync(getResp);
@@ -96,7 +96,7 @@ public sealed class IdentitySmokeTests
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { code = "users.read", name = "duplicate" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -120,14 +120,14 @@ public sealed class IdentitySmokeTests
             lastName = "Db"
         });
 
-        var createResp = await _client.SendAsync(create);
+        var createResp = await _client.SendAsync(create, TestContext.Current.CancellationToken);
         createResp.StatusCode.ShouldBe(HttpStatusCode.Created);
         var created = await ParseJsonAsync(createResp);
         var id = created.GetProperty("id").GetGuid();
 
         var get = new HttpRequestMessage(HttpMethod.Get, $"/api/users/{id}");
         get.Headers.Authorization = new("Bearer", token);
-        var getResp = await _client.SendAsync(get);
+        var getResp = await _client.SendAsync(get, TestContext.Current.CancellationToken);
 
         getResp.StatusCode.ShouldBe(HttpStatusCode.OK);
         var fetched = await ParseJsonAsync(getResp);
@@ -140,7 +140,7 @@ public sealed class IdentitySmokeTests
     private async Task<string> LoginAsAdminAsync()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" }, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("accessToken").GetString()!;
@@ -148,7 +148,7 @@ public sealed class IdentitySmokeTests
 
     private static async Task<JsonElement> ParseJsonAsync(HttpResponseMessage response)
     {
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         return JsonDocument.Parse(json).RootElement;
     }
 }

@@ -19,11 +19,11 @@ public sealed class InfoTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetInfo_Returns200WithExpectedShape()
     {
-        var response = await _client.GetAsync("/_info");
+        var response = await _client.GetAsync("/_info", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         var body = JsonDocument.Parse(json).RootElement;
 
         body.GetProperty("serviceName").GetString().ShouldNotBeNullOrWhiteSpace();

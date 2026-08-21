@@ -244,17 +244,26 @@ También puedes usar `Company.Product.WebApi/Company.Product.WebApi.http` (Visua
 ## 8. Paso 6 — Tests
 
 ```pwsh
-# Suite rápida: unit + arquitectura + integración con SQLite. No necesita Docker.
-dotnet test --filter "Category!=RealDb"
+# Todo de una vez (necesita Docker por la suite RealDb)
+dotnet test
 
-# Suite contra SQL Server real (Testcontainers). Necesita Docker corriendo.
-dotnet test --filter "Category=RealDb"
+# Suite rápida: unit + arquitectura + integración con SQLite. No necesita Docker.
+dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8
+
+# Solo la suite contra SQL Server real (Testcontainers). Necesita Docker corriendo.
+dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8
 
 # Con cobertura
-dotnet test --filter "Category!=RealDb" --collect:"XPlat Code Coverage"
+dotnet test -- --coverage --coverage-output-format cobertura
 ```
 
-Referencia de lo que debes ver: **200 tests verdes** en la suite rápida (121 unit + 20 arquitectura + 59 integración) y **6** en la RealDb.
+> **Sobre la sintaxis:** xunit.v3 corre sobre Microsoft Testing Platform (el runner está
+> declarado en `global.json`). Lo que va después de `--` son argumentos de la app de test, no
+> del SDK. `--ignore-exit-code 8` es necesario porque, al filtrar, algún proyecto se queda sin
+> tests que ejecutar y el runner lo trataría como fallo. Sin filtro (`dotnet test` a secas) corre
+> todo y no hace falta.
+
+Referencia de lo que debes ver: **206 tests verdes** en total — 200 en la suite rápida (121 unit + 20 arquitectura + 59 integración) y 6 en la RealDb.
 
 La suite RealDb levanta su propio contenedor de SQL Server en un puerto aleatorio, así que **no** choca con el de `dev/database.ps1`.
 
@@ -312,6 +321,9 @@ docker build -t company-product-api .
 | Swagger no abre en `https://localhost:7297` | Falta el certificado de desarrollo | `dotnet dev-certs https --trust` |
 | Errores rojos en mappers recién creados | Mapperly aún no ha generado el código | `dotnet build` |
 | Los tests `RealDb` fallan al arrancar el contenedor | Docker apagado | Arranca Docker Desktop y reintenta |
+| `Testing with VSTest target is no longer supported by Microsoft.Testing.Platform` | Falta el `global.json` que declara el runner, o ejecutas `dotnet test` fuera del repositorio | Ejecuta desde la raíz del repo; `global.json` debe declarar `"test": { "runner": "Microsoft.Testing.Platform" }` |
+| `dotnet test` con filtro termina en código 8 aunque todo esté verde | Un proyecto se quedó sin tests tras filtrar y el runner lo trata como fallo | Añade `--ignore-exit-code 8` (ver § 8) |
+| `warning xUnit1051` al escribir un test nuevo | Falta pasar el token de cancelación del test | Usa `TestContext.Current.CancellationToken` en toda llamada que acepte `CancellationToken` |
 | `warning NU1903: ... vulnerabilidad conocida` | Un paquete quedó desactualizado | `dotnet list package --vulnerable --include-transitive` y sube el paquete padre en `Directory.Packages.props` |
 | No llegan trazas a Grafana | OTel apagado o endpoint equivocado | `OpenTelemetry:Enabled: true` y `OtlpEndpoint: http://localhost:4317`, con el stack levantado |
 
@@ -328,8 +340,8 @@ docker build -t company-product-api .
 - [ ] `dotnet run --project Company.Product.WebApi` arranca sin errores
 - [ ] Swagger abre y el login del admin devuelve `accessToken`
 - [ ] `GET /api/users/me/permissions` devuelve los 6 permisos
-- [ ] `dotnet test --filter "Category!=RealDb"` → 200 verdes
-- [ ] (Opcional) `dotnet test --filter "Category=RealDb"` → 6 verdes con Docker arriba
+- [ ] `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` → 200 verdes
+- [ ] (Opcional) `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` → 6 verdes con Docker arriba
 
 ---
 

@@ -21,7 +21,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetHealthLive_Returns200()
     {
-        var response = await _client.GetAsync("/health/live");
+        var response = await _client.GetAsync("/health/live", TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -29,8 +29,8 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetHealthLive_ResponseBody_ContainsHealthyStatus()
     {
-        var response = await _client.GetAsync("/health/live");
-        var body = await response.Content.ReadAsStringAsync();
+        var response = await _client.GetAsync("/health/live", TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
 
         body.ShouldContain("Healthy");
     }
@@ -38,7 +38,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetHealthLive_ResponseContainsSecurityHeaders()
     {
-        var response = await _client.GetAsync("/health/live");
+        var response = await _client.GetAsync("/health/live", TestContext.Current.CancellationToken);
 
         response.Headers.Contains("X-Content-Type-Options").ShouldBeTrue();
         response.Headers.GetValues("X-Content-Type-Options").ShouldContain("nosniff");
@@ -49,7 +49,7 @@ public sealed class HealthCheckTests : IClassFixture<WebApiFactory>
     {
         // /health/ready may return 503 if SQL Server is unavailable in the test environment;
         // what matters is that the endpoint exists and returns a well-formed response.
-        var response = await _client.GetAsync("/health/ready");
+        var response = await _client.GetAsync("/health/ready", TestContext.Current.CancellationToken);
 
         new[] { HttpStatusCode.OK, HttpStatusCode.ServiceUnavailable }
             .ShouldContain(response.StatusCode);

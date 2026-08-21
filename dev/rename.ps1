@@ -169,5 +169,5 @@ Write-Host "    4. Repositorio remoto (docs/04-Guia-Renombrado-y-Repositorio.md,
 Write-Host ""
 Write-Host "  Verificacion:" -ForegroundColor Cyan
 Write-Host "    git grep -l `"$OldDotted`" | Measure-Object -Line   # debe dar 0" -ForegroundColor DarkGray
-Write-Host "    dotnet restore; dotnet build; dotnet test --filter `"Category!=RealDb`"" -ForegroundColor DarkGray
+Write-Host "    dotnet restore; dotnet build; dotnet test" -ForegroundColor DarkGray
 Write-Host ""

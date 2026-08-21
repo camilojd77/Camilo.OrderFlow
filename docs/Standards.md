@@ -390,7 +390,7 @@ public sealed class MyEntitiesTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/my-entities");
         request.Headers.Authorization = new("Bearer", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
     }
@@ -398,13 +398,19 @@ public sealed class MyEntitiesTests : IClassFixture<WebApiFactory>
     private async Task<string> LoginAsAdminAsync()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" },
+            TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        var body = JsonDocument.Parse(await response.Content.ReadAsStringAsync()).RootElement;
+        var body = JsonDocument.Parse(
+            await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken)).RootElement;
         return body.GetProperty("accessToken").GetString()!;
     }
 }
 ```
+
+> **`TestContext.Current.CancellationToken`:** en xunit.v3 todo método que acepte un
+> `CancellationToken` debe recibir el del test, para que la ejecución responda a cancelaciones y
+> timeouts. El analizador `xUnit1051` lo exige, y el CI compila con warnings como errores.
 
 Convenciones:
 - Un caso feliz + al menos un caso de error por endpoint.

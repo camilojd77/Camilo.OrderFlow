@@ -36,14 +36,20 @@ jobs:
           --configuration ${{ env.BUILD_CONFIGURATION }}
           /p:TreatWarningsAsErrors=true
 
+      # xunit.v3 corre sobre Microsoft Testing Platform (el runner esta declarado en
+      # global.json). Los argumentos despues de `--` van a la app de test, no al SDK:
+      # reemplazan a --logger trx y a --collect:"XPlat Code Coverage" de VSTest.
+      # Sin filtro: el runner de GitHub trae Docker, asi que tambien corre la suite RealDb.
       - name: Test
         run: >
           dotnet test
           --no-build
           --configuration ${{ env.BUILD_CONFIGURATION }}
-          --logger "trx;LogFileName=results.trx"
-          --collect:"XPlat Code Coverage"
           --results-directory ./test-results
+          --
+          --report-trx
+          --coverage
+          --coverage-output-format cobertura
 
       - name: Publish test results
         uses: dorny/test-reporter@v1
@@ -59,7 +65,7 @@ jobs:
         if: always()
         with:
           name: coverage-report
-          path: test-results/**/coverage.cobertura.xml
+          path: test-results/**/*.cobertura.xml
           retention-days: 7
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -80,7 +86,7 @@ jobs:
 #     displayName: Restore
 #   - script: dotnet build --no-restore -c $(buildConfiguration) /p:TreatWarningsAsErrors=true
 #     displayName: Build
-#   - script: dotnet test --no-build -c $(buildConfiguration) --collect:"XPlat Code Coverage" --results-directory $(Agent.TempDirectory)/TestResults
+#   - script: dotnet test --no-build -c $(buildConfiguration) --results-directory $(Agent.TempDirectory)/TestResults -- --report-trx --coverage --coverage-output-format cobertura
 #     displayName: Test
 #   - task: PublishTestResults@2
 #     inputs:
@@ -88,5 +94,5 @@ jobs:
 #       testResultsFiles: '**/*.trx'
 #   - task: PublishCodeCoverageResults@2
 #     inputs:
-#       summaryFileLocation: '$(Agent.TempDirectory)/TestResults/**/coverage.cobertura.xml'
+#       summaryFileLocation: '$(Agent.TempDirectory)/TestResults/**/*.cobertura.xml'
 # ──────────────────────────────────────────────────────────────────────────────

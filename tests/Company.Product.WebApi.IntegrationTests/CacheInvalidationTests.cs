@@ -32,7 +32,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var assignRoleResp = await _client.SendAsync(AuthorizedPut(
             $"/api/users/{userId}/roles",
             new { roleIds = new[] { roleId } },
-            adminToken));
+            adminToken), TestContext.Current.CancellationToken);
         assignRoleResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // Login as the new user — first call primes the permission cache
@@ -45,7 +45,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var assignPermResp = await _client.SendAsync(AuthorizedPut(
             $"/api/roles/{roleId}/permissions",
             new { permissionIds = new[] { permId } },
-            adminToken));
+            adminToken), TestContext.Current.CancellationToken);
         assignPermResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // Same user token — permissions should now include the new code
@@ -69,13 +69,13 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var assignPermResp = await _client.SendAsync(AuthorizedPut(
             $"/api/roles/{roleId}/permissions",
             new { permissionIds = new[] { permId } },
-            adminToken));
+            adminToken), TestContext.Current.CancellationToken);
         assignPermResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         var assignRoleResp = await _client.SendAsync(AuthorizedPut(
             $"/api/users/{userId}/roles",
             new { roleIds = new[] { roleId } },
-            adminToken));
+            adminToken), TestContext.Current.CancellationToken);
         assignRoleResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // Prime the cache
@@ -87,13 +87,13 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var removeRoleResp = await _client.SendAsync(AuthorizedPut(
             $"/api/users/{userId}/roles",
             new { roleIds = Array.Empty<Guid>() },
-            adminToken));
+            adminToken), TestContext.Current.CancellationToken);
         removeRoleResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // Delete the role — must invalidate cache for that role
         var deleteRoleResp = new HttpRequestMessage(HttpMethod.Delete, $"/api/roles/{roleId}");
         deleteRoleResp.Headers.Authorization = new("Bearer", adminToken);
-        var deleteResp = await _client.SendAsync(deleteRoleResp);
+        var deleteResp = await _client.SendAsync(deleteRoleResp, TestContext.Current.CancellationToken);
         deleteResp.StatusCode.ShouldBe(HttpStatusCode.NoContent);
 
         // User no longer has the role: permissions should not include the old code
@@ -109,7 +109,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
     private async Task<string> LoginAsync(string usernameOrEmail, string password)
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail, password });
+            new { usernameOrEmail, password }, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("accessToken").GetString()!;
@@ -119,7 +119,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
     {
         var request = new HttpRequestMessage(HttpMethod.Get, "/api/users/me/permissions");
         request.Headers.Authorization = new("Bearer", token);
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.EnumerateArray().Select(e => e.GetString()!).ToList();
@@ -130,7 +130,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/permissions");
         req.Headers.Authorization = new("Bearer", token);
         req.Content = JsonContent.Create(new { code, name, description = (string?)null });
-        var resp = await _client.SendAsync(req);
+        var resp = await _client.SendAsync(req, TestContext.Current.CancellationToken);
         resp.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(resp);
         return body.GetProperty("id").GetGuid();
@@ -141,7 +141,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/roles");
         req.Headers.Authorization = new("Bearer", token);
         req.Content = JsonContent.Create(new { name, description = (string?)null });
-        var resp = await _client.SendAsync(req);
+        var resp = await _client.SendAsync(req, TestContext.Current.CancellationToken);
         resp.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(resp);
         return body.GetProperty("id").GetGuid();
@@ -152,7 +152,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
         var req = new HttpRequestMessage(HttpMethod.Post, "/api/users");
         req.Headers.Authorization = new("Bearer", token);
         req.Content = JsonContent.Create(new { email, userName, password, firstName = "Cache", lastName = "Test" });
-        var resp = await _client.SendAsync(req);
+        var resp = await _client.SendAsync(req, TestContext.Current.CancellationToken);
         resp.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(resp);
         return body.GetProperty("id").GetGuid();
@@ -168,7 +168,7 @@ public sealed class CacheInvalidationTests : IClassFixture<WebApiFactory>
 
     private static async Task<JsonElement> ParseJsonAsync(HttpResponseMessage response)
     {
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         return JsonDocument.Parse(json).RootElement;
     }
 }

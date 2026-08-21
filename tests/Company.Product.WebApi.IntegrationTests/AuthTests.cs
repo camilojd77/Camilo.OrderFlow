@@ -22,7 +22,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     {
         var email = $"user-{Guid.NewGuid():N}@test.com";
         var response = await _client.PostAsJsonAsync("/api/auth/register",
-            new { email, userName = "testuser1", password = "Password1!" });
+            new { email, userName = "testuser1", password = "Password1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
     }
@@ -32,10 +32,10 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     {
         var email = $"dup-{Guid.NewGuid():N}@test.com";
         await _client.PostAsJsonAsync("/api/auth/register",
-            new { email, userName = "dup1", password = "Password1!" });
+            new { email, userName = "dup1", password = "Password1!" }, TestContext.Current.CancellationToken);
 
         var response = await _client.PostAsJsonAsync("/api/auth/register",
-            new { email, userName = "dup2", password = "Password1!" });
+            new { email, userName = "dup2", password = "Password1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -44,7 +44,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     public async Task Register_InvalidPassword_Returns422()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/register",
-            new { email = "bad@test.com", userName = "baduser", password = "weak" });
+            new { email = "bad@test.com", userName = "baduser", password = "weak" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -58,7 +58,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         await RegisterUser(email, "Password1!");
 
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = email, password = "Password1!" });
+            new { usernameOrEmail = email, password = "Password1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
 
@@ -74,7 +74,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         await RegisterUser(email, "Password1!");
 
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = email, password = "WrongPass1!" });
+            new { usernameOrEmail = email, password = "WrongPass1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
@@ -86,7 +86,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         await RegisterUser(email, "Password1!");
 
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = email, password = "Password1!" });
+            new { usernameOrEmail = email, password = "Password1!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         ExtractRefreshToken(response).ShouldNotBeNullOrWhiteSpace();
@@ -102,7 +102,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/auth/refresh");
         request.Headers.Add("Cookie", $"refresh_token={refreshToken}");
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJson(response);
@@ -112,7 +112,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task Refresh_NoCookie_Returns401()
     {
-        var response = await _client.PostAsync("/api/auth/refresh", null);
+        var response = await _client.PostAsync("/api/auth/refresh", null, TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -127,7 +127,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", accessToken);
         request.Headers.Add("Cookie", $"refresh_token={refreshToken}");
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -135,7 +135,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task Logout_NotAuthenticated_Returns401()
     {
-        var response = await _client.PostAsync("/api/auth/logout", null);
+        var response = await _client.PostAsync("/api/auth/logout", null, TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -150,7 +150,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", accessToken);
         request.Content = JsonContent.Create(new { currentPassword = "Password1!", newPassword = "Password2!" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -164,7 +164,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", accessToken);
         request.Content = JsonContent.Create(new { currentPassword = "WrongPass1!", newPassword = "Password2!" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -173,7 +173,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     public async Task ChangePassword_NotAuthenticated_Returns401()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/change-password",
-            new { currentPassword = "Password1!", newPassword = "Password2!" });
+            new { currentPassword = "Password1!", newPassword = "Password2!" }, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
@@ -189,12 +189,12 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         for (var i = 0; i < 5; i++)
         {
             await _client.PostAsJsonAsync("/api/auth/login",
-                new { usernameOrEmail = email, password = "WrongPass1!" });
+                new { usernameOrEmail = email, password = "WrongPass1!" }, TestContext.Current.CancellationToken);
         }
 
         // After 5 failed attempts the account is locked — correct password still returns 401
         var locked = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = email, password = "Password1!" });
+            new { usernameOrEmail = email, password = "Password1!" }, TestContext.Current.CancellationToken);
 
         locked.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
@@ -205,7 +205,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     {
         var uniqueUserName = $"{userName}-{Guid.NewGuid():N}";
         var response = await _client.PostAsJsonAsync("/api/auth/register",
-            new { email, userName = uniqueUserName, password });
+            new { email, userName = uniqueUserName, password }, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
     }
 
@@ -215,7 +215,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
         await RegisterUser(email, "Password1!");
 
         var loginResponse = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = email, password = "Password1!" });
+            new { usernameOrEmail = email, password = "Password1!" }, TestContext.Current.CancellationToken);
 
         loginResponse.EnsureSuccessStatusCode();
 
@@ -228,7 +228,7 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
 
     private static async Task<JsonElement> ParseJson(HttpResponseMessage response)
     {
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         return JsonDocument.Parse(json).RootElement;
     }
 

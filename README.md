@@ -20,7 +20,7 @@ Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modu
 | API versioning | Por header `api-version`, versión por defecto `1.0` |
 | Health checks | `/health/live` y `/health/ready` (SQL Server) |
 | Seguridad | Security headers, CORS, HTTPS, lockout de cuentas |
-| Tests | Unit tests (Shouldly + NSubstitute), Integration tests (SQLite), Architecture tests, RealDb (Testcontainers) |
+| Tests | xunit.v3 sobre Microsoft Testing Platform: unit (Shouldly + NSubstitute), integración (SQLite), arquitectura (NetArchTest), RealDb (Testcontainers) |
 | Contenedores | `Dockerfile` multi-stage (usuario no-root, healthcheck) + compose de app completa y de dependencias |
 | CI | GitHub Actions — restore → build → test → coverage |
 | Adaptación | `dev/rename.ps1` para renombrar la plantilla a un producto nuevo |
@@ -139,20 +139,29 @@ Company.Product.WebApi/Company.Product.WebApi.http
 ## Tests
 
 ```pwsh
-# Suite rápida (unit + architecture + integración SQLite) — no requiere Docker
-dotnet test --filter "Category!=RealDb"
+# Todo (unit + architecture + integración + RealDb) — requiere Docker
+dotnet test
 
-# Suite completa con SQL Server real vía Testcontainers — requiere Docker
-dotnet test --filter "Category=RealDb"
+# Suite rápida (unit + architecture + integración SQLite) — no requiere Docker
+dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8
+
+# Solo la suite contra SQL Server real vía Testcontainers — requiere Docker
+dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8
 
 # Solo architecture tests
 dotnet test tests/Company.Product.ArchitectureTests
 
-# Con coverage
-dotnet test --filter "Category!=RealDb" --collect:"XPlat Code Coverage"
+# Con coverage (cobertura) y reporte TRX
+dotnet test -- --coverage --coverage-output-format cobertura --report-trx
 ```
 
-Referencia: **200 tests** en la suite rápida (121 unit + 20 arquitectura + 59 integración) y **6** en RealDb.
+> **Sobre la sintaxis:** xunit.v3 corre sobre Microsoft Testing Platform (el runner está
+> declarado en `global.json`). Lo que va después de `--` son argumentos de la app de test, no
+> del SDK. `--ignore-exit-code 8` es necesario porque, al filtrar, algún proyecto se queda sin
+> tests que ejecutar y el runner lo trataría como fallo. Sin filtro (`dotnet test` a secas) corre
+> todo y no hace falta.
+
+Referencia: **206 tests** — 200 en la suite rápida (121 unit + 20 arquitectura + 59 integración) y 6 en RealDb.
 
 **Cobertura de referencia (plantilla base):**
 - Unit tests (Domain): ~80% líneas
@@ -212,11 +221,10 @@ El revisor de TI marca estos criterios antes de aprobar la plantilla:
 
 - [ ] `git clone` + copiar `appsettings.Development.json.example` + `dotnet ef database update` + `dotnet run` arranca en < 5 minutos en máquina sin estado previo
 - [ ] Login admin (`admin@company.com` / `Admin123!`) devuelve `accessToken` + cookie `refresh_token`
-- [ ] `dotnet test --filter "Category!=RealDb"` → verde (200 tests)
-- [ ] `dotnet test --filter "Category=RealDb"` → verde con Docker corriendo (6 tests)
+- [ ] `dotnet test` → verde (206 tests: 200 + 6 RealDb, con Docker corriendo)
 - [ ] `dotnet build /p:TreatWarningsAsErrors=true` → 0 warnings, 0 errores
 - [ ] `dotnet list package --vulnerable` → vacío
-- [ ] `dotnet list package --deprecated` → solo `xunit 2.9.2` (marcado *Legacy* por la llegada de xunit.v3; migrar es un cambio de suite completo y queda fuera del alcance de la plantilla)
+- [ ] `dotnet list package --deprecated` → vacío
 - [ ] Cada endpoint público tiene `[ProducesResponseType]` y autenticación correcta
 - [ ] Architecture Tests cubren todas las reglas de Clean Architecture y aislamiento entre módulos
 - [ ] `appsettings.Development.json.example` permite arrancar sin adivinar campos

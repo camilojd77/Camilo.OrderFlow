@@ -23,7 +23,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         var token = await LoginAsAdminAsync();
         var request = AuthorizedGet("/api/permissions", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -34,7 +34,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetAll_NoToken_Returns401()
     {
-        var response = await _client.GetAsync("/api/permissions");
+        var response = await _client.GetAsync("/api/permissions", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -50,7 +50,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { code, name = "Test permission" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         var body = await ParseJsonAsync(response);
@@ -66,7 +66,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { code = "users.read", name = "Duplicate" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -80,7 +80,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { code = "INVALID_FORMAT", name = "Bad code" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.BadRequest);
     }
@@ -97,7 +97,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name = "Updated name" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -113,7 +113,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name = "X" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -129,7 +129,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/permissions/{permId}");
         request.Headers.Authorization = new("Bearer", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -144,7 +144,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/permissions/{usersReadId}");
         request.Headers.Authorization = new("Bearer", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -154,7 +154,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
     private async Task<string> LoginAsAdminAsync()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" }, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("accessToken").GetString()!;
@@ -165,7 +165,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/permissions");
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { code, name });
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("id").GetGuid();
@@ -174,7 +174,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
     private async Task<Guid> GetPermissionIdByCodeAsync(string token, string code)
     {
         var request = AuthorizedGet("/api/permissions", token);
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var list = await ParseJsonAsync(response);
         foreach (var p in list.EnumerateArray())
@@ -194,7 +194,7 @@ public sealed class PermissionsTests : IClassFixture<WebApiFactory>
 
     private static async Task<JsonElement> ParseJsonAsync(HttpResponseMessage response)
     {
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         return JsonDocument.Parse(json).RootElement;
     }
 }

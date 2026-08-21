@@ -176,8 +176,7 @@ git grep -l "CompanyProduct"      # sin resultados
 # 2. Compila y pasa la suite
 dotnet restore
 dotnet build /p:TreatWarningsAsErrors=true
-dotnet test --filter "Category!=RealDb"        # 200 verdes
-dotnet test --filter "Category=RealDb"         # 6 verdes, con Docker arriba
+dotnet test                                    # 206 verdes (200 + 6 RealDb), con Docker arriba
 
 # 3. Arranca y prueba
 dotnet run --project Acme.Inventory.WebApi
@@ -187,7 +186,7 @@ Checklist final:
 
 - [ ] Los tres `git grep` no devuelven nada
 - [ ] `dotnet build /p:TreatWarningsAsErrors=true` sin warnings ni errores
-- [ ] Suite rápida en verde (200) y RealDb en verde (6)
+- [ ] `dotnet test` en verde (206: 200 de la suite rápida + 6 de RealDb)
 - [ ] La API arranca y Swagger abre
 - [ ] Login del admin devuelve `accessToken` y `GET /api/users/me/permissions` devuelve los 6 permisos
 - [ ] `.\dev\database.ps1 up` levanta el contenedor con el nombre nuevo

@@ -21,7 +21,9 @@ public sealed class SqlServerFixture : IAsyncLifetime
 
     public RealDbWebApiFactory Factory { get; private set; } = default!;
 
-    public async Task InitializeAsync()
+    // xunit.v3: IAsyncLifetime.InitializeAsync devuelve ValueTask y el cierre llega
+    // por IAsyncDisposable, no por un DisposeAsync propio de la interfaz.
+    public async ValueTask InitializeAsync()
     {
         await _container.StartAsync();
         Factory = new RealDbWebApiFactory(_container.GetConnectionString());
@@ -30,7 +32,7 @@ public sealed class SqlServerFixture : IAsyncLifetime
         _ = Factory.Server;
     }
 
-    public async Task DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (Factory is not null)
             await Factory.DisposeAsync();

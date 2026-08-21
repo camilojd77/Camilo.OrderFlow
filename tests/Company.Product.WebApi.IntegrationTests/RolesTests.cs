@@ -23,7 +23,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var token = await LoginAsAdminAsync();
         var request = AuthorizedGet("/api/roles", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -33,7 +33,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
     [Fact]
     public async Task GetAll_NoToken_Returns401()
     {
-        var response = await _client.GetAsync("/api/roles");
+        var response = await _client.GetAsync("/api/roles", TestContext.Current.CancellationToken);
         response.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
     }
 
@@ -46,7 +46,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var adminRoleId = await GetAdminRoleIdAsync(token);
 
         var request = AuthorizedGet($"/api/roles/{adminRoleId}", token);
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -59,7 +59,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var token = await LoginAsAdminAsync();
         var request = AuthorizedGet($"/api/roles/{Guid.NewGuid()}", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -76,7 +76,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name, description = "Test role" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Created);
         response.Headers.Location.ShouldNotBeNull();
@@ -92,7 +92,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name = "Admin", description = (string?)null });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -110,7 +110,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name = newName, description = "Updated" });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.OK);
         var body = await ParseJsonAsync(response);
@@ -126,7 +126,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name = "X", description = (string?)null });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -142,7 +142,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/roles/{roleId}");
         request.Headers.Authorization = new("Bearer", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -156,7 +156,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/api/roles/{adminRoleId}");
         request.Headers.Authorization = new("Bearer", token);
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
     }
@@ -173,7 +173,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { permissionIds = Array.Empty<Guid>() });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NoContent);
     }
@@ -187,7 +187,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { permissionIds = Array.Empty<Guid>() });
 
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
 
         response.StatusCode.ShouldBe(HttpStatusCode.NotFound);
     }
@@ -197,7 +197,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
     private async Task<string> LoginAsAdminAsync()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/login",
-            new { usernameOrEmail = "admin@company.com", password = "Admin123!" });
+            new { usernameOrEmail = "admin@company.com", password = "Admin123!" }, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("accessToken").GetString()!;
@@ -206,7 +206,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
     private async Task<Guid> GetAdminRoleIdAsync(string token)
     {
         var request = AuthorizedGet("/api/roles", token);
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var roles = await ParseJsonAsync(response);
         foreach (var role in roles.EnumerateArray())
@@ -222,7 +222,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
         var request = new HttpRequestMessage(HttpMethod.Post, "/api/roles");
         request.Headers.Authorization = new("Bearer", token);
         request.Content = JsonContent.Create(new { name, description = (string?)null });
-        var response = await _client.SendAsync(request);
+        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
         var body = await ParseJsonAsync(response);
         return body.GetProperty("id").GetGuid();
@@ -237,7 +237,7 @@ public sealed class RolesTests : IClassFixture<WebApiFactory>
 
     private static async Task<JsonElement> ParseJsonAsync(HttpResponseMessage response)
     {
-        var json = await response.Content.ReadAsStringAsync();
+        var json = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         return JsonDocument.Parse(json).RootElement;
     }
 }

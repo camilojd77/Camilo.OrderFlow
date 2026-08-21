@@ -220,10 +220,18 @@ Cuando te pidan **agregar una funcionalidad nueva**, sigue este orden estricto:
 Antes de marcar una funcionalidad como completa, deben pasar:
 
 ```bash
-dotnet test tests/Company.Product.ArchitectureTests   # arquitectura
-dotnet test tests/Company.Product.Identity.UnitTests  # dominio + handlers
-dotnet test tests/Company.Product.WebApi.IntegrationTests  # endpoints
+dotnet test                                                # todo (incluye RealDb, requiere Docker)
+dotnet test tests/Company.Product.ArchitectureTests         # arquitectura
+dotnet test tests/Company.Product.Identity.UnitTests        # dominio + handlers
+dotnet test tests/Company.Product.WebApi.IntegrationTests   # endpoints
 ```
+
+Los tests corren con **xunit.v3** sobre Microsoft Testing Platform (runner declarado en `global.json`).
+Dos consecuencias al escribir tests nuevos:
+
+- Todo método que acepte `CancellationToken` recibe `TestContext.Current.CancellationToken`
+  (lo exige el analizador `xUnit1051`, y el CI compila con warnings como errores).
+- `IAsyncLifetime` devuelve `ValueTask`, y el cierre llega por `IAsyncDisposable`.
 
 Estructura de un test (Arrange/Act/Assert):
 
