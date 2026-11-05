@@ -26,6 +26,8 @@ paths:
 - No debilites security headers, CORS (`*` con credenciales), `ClockSkew`, ni la validación de opciones.
 - Una dependencia crítica nueva (base de datos, servicio externo) lleva su health check en
   `Observability/Health/HealthChecksExtensions.cs`, con etiqueta `ready`; `live` no comprueba dependencias.
+- En el host solo van clientes HTTP transversales; el de un único módulo va en su `Infrastructure/Http/`
+  ([ADR-0022](../../docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md)).
 - `HttpClient` saliente: con `Microsoft.Extensions.Http.Resilience` siguiendo el patrón `ErpClient` y, si aplica,
   `CorrelationIdHandler`. Ojo: los reintentos solo para operaciones idempotentes.
 

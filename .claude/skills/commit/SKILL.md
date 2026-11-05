@@ -20,5 +20,9 @@ disable-model-invocation: true
    nunca dentro del repo) y ejecuta `git commit -F <archivo>`. Nunca `-m` con here-string de PowerShell 5.1.
 5. Nunca `--no-verify`, `-n`, `--amend` sobre commits ya publicados, ni `git push`: el push lo hace la persona.
 6. Muestra `git log --oneline -1` y el hash.
+7. **Si con este commit la rama corta queda terminada y estable** (verificación en verde, nada pendiente): intégrala
+   en `develop` con `git switch develop` y `git merge --no-ff <rama>`. Comprueba `git status` limpio y borra la rama
+   con `git branch -d <rama>`. No toques `main` salvo que la persona lo pida
+   ([ADR-0021](../../../docs/adr/0021-main-principal-y-develop-de-desarrollo.md)).
 
 La identidad de autor es la de `git config` (local del repo). Si no hay, pregunta; no la inventes.

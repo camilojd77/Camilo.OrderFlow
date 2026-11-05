@@ -62,6 +62,9 @@ WebApi ──► Modules.<M>.Infrastructure ──► Modules.<M>.Application �
    (`ModuleCatalog.cs`), así que un módulo nuevo queda cubierto en cuanto el host lo referencia.
 3. `ModuleRegistrationTests.cs`: nadie registra `IExecutionContext` a secas; cada módulo registra el suyo. El registro
    de cada módulo nuevo se añade **a mano** en este test.
+4. `SystemClockUsageTests.cs`: ningún archivo de producción añade lecturas de `DateTime.UtcNow`/`Now`
+   ([ADR-0017](adr/0017-timeprovider-en-codigo-nuevo.md)). Escanea el código fuente; las lecturas existentes están
+   listadas con su número y la lista solo puede bajar.
 
 Una violación rompe `dotnet test`, no `dotnet build`.
 
@@ -86,7 +89,8 @@ lo consume directamente. Para que otro módulo use Identity hará falta la **fac
    `I<Modulo>ExecutionContext.CommitAsync(ct)` ([ADR-0005](adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md)).
 4. **Mapeo**: mapper Mapperly en `Application/Mapping` → DTO de `Application/Dtos`.
 5. **Infraestructura**: repositorio en `Infrastructure/Persistence/Repositories` (no llama a `SaveChanges`),
-   configuración EF en `Persistence/Configurations`, registro en `Add<Modulo>Infrastructure`.
+   configuración EF en `Persistence/Configurations`, clientes HTTP propios del módulo en `Infrastructure/Http`
+   ([ADR-0022](adr/0022-clientes-http-de-modulo-en-infrastructure.md)), registro en `Add<Modulo>Infrastructure`.
 6. **Endpoint**: el host llama a `ISender.Send(...)`. Hoy son controladores; los endpoints nuevos son Minimal APIs
    ([ADR-0019](adr/0019-endpoints-nuevos-minimal-apis.md)).
 
@@ -158,7 +162,8 @@ seed, configuración y documentación. Nunca se empieza por el endpoint.
   runtime, usuario sin privilegios, puerto 8080, `HEALTHCHECK` a `/health/live`; `COMMIT_SHA` y `BUILD_DATE` llegan a
   `/_info`).
 - `deploy/app/docker-compose.yml`: SQL Server + migrator + API para demos y QA. **No** es un despliegue de producción.
-- No hay pipeline de despliegue; el CI (`.github/workflows/ci.yml`) compila y prueba en push/PR a `main` y `develop`.
+- No hay pipeline de despliegue; el CI (`.github/workflows/ci.yml`) compila y prueba en push y PR a `main` (rama
+  principal) y `develop` (rama de desarrollo) ([ADR-0021](adr/0021-main-principal-y-develop-de-desarrollo.md)).
 
 ## 11. Ruta a microservicios (pendiente)
 

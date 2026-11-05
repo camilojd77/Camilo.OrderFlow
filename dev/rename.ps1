@@ -10,7 +10,7 @@
         company-product   -> acme-inventory     (contenedores, compose, labels de Loki)
         CompanyProduct    -> AcmeInventory      (nombre de la base de datos)
 
-    Lo que este script NO hace, a propósito (ver docs/04-Guia-Renombrado-y-Repositorio.md):
+    Lo que este script NO hace, a propósito (ver docs/archive/04-Guia-Renombrado-y-Repositorio.md):
       · No toca .git ni configura el repositorio remoto.
       · No cambia el email del admin semilla ni los puertos.
       · No borra bin/ ni obj/ (hazlo antes, con el IDE cerrado).

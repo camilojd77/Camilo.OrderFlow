@@ -32,7 +32,6 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
   código.
 - La revocación de permisos entre varias réplicas no está medida ([ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md));
   desactivar un usuario no invalida sus access tokens vigentes.
-- `deployment.environment` vale `production` en `appsettings.json` aunque el código use `dev` por defecto.
 - El SDK no está fijado en `global.json` ([ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
 
 **Aplazado a propósito**
@@ -228,7 +227,10 @@ Las versiones exactas de paquetes están en `Directory.Packages.props` (fuente �
 
 ## Contribuir
 
-- Rama base `develop`; `main` solo recibe merges desde `develop`. Ramas `feat/`, `fix/`, `docs/`, `chore/`… en inglés.
+- `main` es la rama principal (por defecto) y solo avanza con merges desde `develop`; `develop` es la rama de
+  desarrollo ([ADR-0021](docs/adr/0021-main-principal-y-develop-de-desarrollo.md)). Cada cambio va en una rama corta
+  `feat/`, `fix/`, `docs/`, `chore/`… en inglés, creada desde `develop`, y vuelve a `develop` con un merge cuando está
+  terminado y verificado.
 - Commits en inglés con Conventional Commits (`type(scope): subject`), sin `--no-verify`. Documentación en español.
 - Antes de commitear: compilar con avisos como errores, formato y tests (lo hace la skill `verificar-cambio`).
 - Una decisión de arquitectura nueva o cambiada lleva su ADR en el mismo PR.
