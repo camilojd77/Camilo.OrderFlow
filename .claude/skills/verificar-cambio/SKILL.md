@@ -12,8 +12,8 @@ no `/p:`.
 1. **Qué cambió.** `git status --short` y `git diff --stat`. Identifica los proyectos tocados.
 2. **Formato.** `dotnet format Camilo.OrderFlow.slnx --verify-no-changes`. Si falla, `dotnet format` sobre los
    archivos tocados y revisa que no toque nada más (ni `Migrations/`).
-3. **Build como el CI.** `dotnet build Camilo.OrderFlow.slnx -c Release -p:TreatWarningsAsErrors=true`.
-   Debe dar **0 avisos y 0 errores**. Un aviso no se silencia (`NoWarn`, `#pragma`): se corrige.
+3. **Build como el CI.** `dotnet build Camilo.OrderFlow.slnx -c Release` (`TreatWarningsAsErrors` ya está activo en
+   `Directory.Build.props`). Debe dar **0 avisos y 0 errores**. Un aviso no se silencia (`NoWarn`, `#pragma`): se corrige.
 4. **Tests.**
    - Siempre: `dotnet test --no-build -c Release -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8`
      (unitarios, arquitectura e integración SQLite).

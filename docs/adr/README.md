@@ -27,7 +27,7 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0011](0011-migraciones-fuera-del-arranque.md) | Aplicar migraciones fuera del arranque | Aceptada | 2026-11-05 |
 | [0012](0012-versiones-centralizadas-y-pines-transitivos.md) | Versiones centralizadas (CPM) y pines transitivos solo por seguridad | Aceptada | 2026-11-05 |
 | [0013](0013-configuracion-sin-secretos-y-opciones-validadas.md) | Configuración sin secretos en el repo y opciones validadas al arrancar | Aceptada | 2026-11-05 |
-| [0014](0014-estilo-editorconfig-y-cero-avisos-en-ci.md) | Estilo por `.editorconfig` en `suggestion` y cero avisos en CI | Aceptada | 2026-11-05 |
+| [0014](0014-estilo-editorconfig-y-cero-avisos-en-ci.md) | Estilo por `.editorconfig` en `suggestion` y cero avisos en CI | Reemplazada por [0023](0023-avisos-como-errores-en-local-y-ci.md) | 2026-11-05 |
 | [0015](0015-telemetria-otel-y-serilog-loki.md) | Trazas y métricas por OpenTelemetry/OTLP; logs por Serilog a Loki | Aceptada | 2026-11-05 |
 | [0016](0016-estrategia-de-pruebas.md) | Pruebas con xUnit v3 sobre MTP, Shouldly, NSubstitute, SQLite y Testcontainers | Aceptada | 2026-11-05 |
 | [0017](0017-timeprovider-en-codigo-nuevo.md) | `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto | Aceptada | 2026-11-05 |
@@ -36,3 +36,4 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0020](0020-constructores-primarios-en-codigo-nuevo.md) | Constructores primarios en código nuevo | Aceptada | 2026-11-05 |
 | [0021](0021-main-principal-y-develop-de-desarrollo.md) | `main` como rama principal y `develop` como rama de desarrollo | Aceptada | 2026-11-05 |
 | [0022](0022-clientes-http-de-modulo-en-infrastructure.md) | Los clientes HTTP de un módulo viven en su Infrastructure, detrás de un puerto | Aceptada | 2026-11-05 |
+| [0023](0023-avisos-como-errores-en-local-y-ci.md) | Avisos como errores en local y en CI; estilo por `.editorconfig` en `suggestion` | Aceptada | 2026-11-05 |

@@ -1,6 +1,6 @@
 # ADR-0014 — Estilo por `.editorconfig` en `suggestion` y cero avisos en CI
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0023](0023-avisos-como-errores-en-local-y-ci.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** el equipo quiera que alguna regla de estilo rompa el build, o activar `TreatWarningsAsErrors`
   también en local.

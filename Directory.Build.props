@@ -7,11 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
 
     <!--
-      TreatWarningsAsErrors: false locally for developer ergonomics.
-      Enable in CI by passing: /p:TreatWarningsAsErrors=true
-      Example (GitHub Actions): dotnet build -c Release /p:TreatWarningsAsErrors=true
+      Warnings are errors everywhere, locally and in CI (docs/adr/0023-avisos-como-errores-en-local-y-ci.md).
+      Fix the code; do not add NoWarn, #pragma warning disable or [SuppressMessage].
     -->
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Reproducible / deterministic builds -->
     <Deterministic>true</Deterministic>
