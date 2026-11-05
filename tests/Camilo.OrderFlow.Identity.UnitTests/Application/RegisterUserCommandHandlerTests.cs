@@ -52,6 +52,21 @@ public sealed class RegisterUserCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_DuplicateUserName_ThrowsConflictException()
+    {
+        _userRepository.EmailExistsAsync(Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(false);
+        _userRepository.UserNameExistsAsync("alice", Arg.Any<CancellationToken>()).Returns(true);
+
+        var command = new RegisterUserCommand("alice@example.com", "alice", "Password1!");
+
+        await Should.ThrowAsync<ConflictException>(() =>
+            CreateHandler().Handle(command, TestContext.Current.CancellationToken));
+
+        _userRepository.DidNotReceive().Add(Arg.Any<User>());
+        await _executionContext.DidNotReceive().CommitAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_InvalidCommand_ValidationBehaviorThrowsValidationException()
     {
         // Validation is handled by ValidationPipelineBehavior, not the handler itself.

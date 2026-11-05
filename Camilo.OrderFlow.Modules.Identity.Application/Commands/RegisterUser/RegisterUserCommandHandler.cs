@@ -31,6 +31,9 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         if (await _userRepository.EmailExistsAsync(request.Email, ct))
             throw new ConflictException("The email is already registered.");
 
+        if (await _userRepository.UserNameExistsAsync(request.UserName, ct))
+            throw new ConflictException("The username is already taken.");
+
         var user = new User(Guid.NewGuid(), request.Email, request.UserName, _passwordHasher.Hash(request.Password));
         _userRepository.Add(user);
         await _executionContext.CommitAsync(ct);
