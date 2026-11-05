@@ -1,0 +1,968 @@
+{
+  "uid": "camilo-order-flow-api",
+  "title": "Camilo.OrderFlow — API",
+  "description": "Tráfico, errores, latencia, runtime y logs de Camilo.OrderFlow.WebApi. Provisionado desde deploy/observability/grafana/dashboards: los cambios se hacen en el repo.",
+  "tags": [
+    "camilo-order-flow",
+    "api"
+  ],
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 2,
+  "editable": false,
+  "graphTooltip": 1,
+  "refresh": "30s",
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "templating": {
+    "list": []
+  },
+  "annotations": {
+    "list": []
+  },
+  "links": [],
+  "panels": [
+    {
+      "type": "stat",
+      "id": 1,
+      "title": "Peticiones/s",
+      "description": "Todas las rutas.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 2,
+      "title": "Errores 5xx",
+      "description": "Porcentaje de respuestas 5xx.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "(sum(rate(http_server_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\",http_response_status_code=~\"5..\"}[$__rate_interval])) or vector(0)) / sum(rate(http_server_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 3,
+      "title": "Latencia p95",
+      "description": "Duración de petición, percentil 95.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval])))"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "id": 4,
+      "title": "Peticiones en curso",
+      "description": "Peticiones HTTP activas.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "background",
+        "graphMode": "area",
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(http_server_active_requests{exported_job=\"Camilo.OrderFlow.WebApi\"})"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 5,
+      "title": "HTTP",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 6,
+      "title": "Peticiones/s por ruta",
+      "description": "http_route es la plantilla de la ruta (sin IDs); «(sin ruta)» agrupa redirecciones, 404 y peticiones rechazadas antes del enrutado.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(sum by (http_route) (rate(http_server_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval])), \"http_route\", \"(sin ruta)\", \"http_route\", \"\")",
+          "legendFormat": "{{http_route}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 7,
+      "title": "Respuestas por código",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 5
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "{{http_response_status_code}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 8,
+      "title": "Latencia por percentil",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(http_server_request_duration_seconds_bucket{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval])))",
+          "legendFormat": "p50"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "B",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval])))",
+          "legendFormat": "p95"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "C",
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval])))",
+          "legendFormat": "p99"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 9,
+      "title": "Latencia p95 por ruta",
+      "description": "http_route es la plantilla de la ruta (sin IDs); «(sin ruta)» agrupa redirecciones, 404 y peticiones rechazadas antes del enrutado.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 13
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "label_replace(histogram_quantile(0.95, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))), \"http_route\", \"(sin ruta)\", \"http_route\", \"\")",
+          "legendFormat": "{{http_route}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 10,
+      "title": "Rate limiting",
+      "description": "Peticiones por política y resultado (acquired / rejected…).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (aspnetcore_rate_limiting_policy, aspnetcore_rate_limiting_result) (rate(aspnetcore_rate_limiting_requests_total{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "{{aspnetcore_rate_limiting_policy}} {{aspnetcore_rate_limiting_result}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 11,
+      "title": "Llamadas HTTP salientes",
+      "description": "HttpClient: peticiones/s por código.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 21
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (http_response_status_code) (rate(http_client_request_duration_seconds_count{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "{{http_response_status_code}}"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 12,
+      "title": "Runtime .NET",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 29
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 13,
+      "title": "Memoria (working set)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 30
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "bytes",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "dotnet_process_memory_working_set_bytes{exported_job=\"Camilo.OrderFlow.WebApi\"}",
+          "legendFormat": "{{exported_instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 14,
+      "title": "Recolecciones de GC/s",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 30
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (gc_heap_generation) (rate(dotnet_gc_collections_total{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "{{gc_heap_generation}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 15,
+      "title": "Excepciones/s por tipo",
+      "description": "Incluye excepciones capturadas.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 30
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum by (error_type) (rate(dotnet_exceptions_total{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "{{error_type}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 16,
+      "title": "Cola del thread pool",
+      "description": "Elementos en cola (valor actual).",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 38
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "dotnet_thread_pool_queue_length_total{exported_job=\"Camilo.OrderFlow.WebApi\"}",
+          "legendFormat": "{{exported_instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 17,
+      "title": "Hilos del thread pool",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 38
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "dotnet_thread_pool_thread_count_total{exported_job=\"Camilo.OrderFlow.WebApi\"}",
+          "legendFormat": "{{exported_instance}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "id": 18,
+      "title": "CPU",
+      "description": "Segundos de CPU por segundo.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 38
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "refId": "A",
+          "expr": "sum(rate(dotnet_process_cpu_time_seconds_total{exported_job=\"Camilo.OrderFlow.WebApi\"}[$__rate_interval]))",
+          "legendFormat": "cpu"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "id": 19,
+      "title": "Logs",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      }
+    },
+    {
+      "type": "logs",
+      "id": 20,
+      "title": "Avisos y errores",
+      "description": "Serilog → Loki. Cada línea enlaza su traza por traceId.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 47
+      },
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "sortOrder": "Descending",
+        "enableLogDetails": true,
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "refId": "A",
+          "expr": "{app=\"camilo-order-flow-webapi\"} | json | level=~\"warning|error|fatal\""
+        }
+      ]
+    }
+  ]
+}

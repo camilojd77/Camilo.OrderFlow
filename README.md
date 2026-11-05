@@ -35,7 +35,7 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 
 **Aplazado a propósito**
 
-- Dashboards y alertas como código.
+- Alertas de Grafana (el dashboard de la API ya está como código; las alertas, cuando haya un canal de notificación).
 - Criterios de extracción a microservicios ([`docs/architecture.md`](docs/architecture.md) §11).
 
 ---

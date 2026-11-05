@@ -16,8 +16,9 @@ paths:
 - **Sin datos personales ni secretos** en atributos, etiquetas ni logs.
 - El texto SQL no sale en los spans salvo `DbTracingCaptureStatements=true`; no lo actives fuera de local.
 - Atributos de recurso desde `OpenTelemetryOptions` (`service.name`, `service.version`, `deployment.environment`).
-- `deploy/observability/`: es solo para desarrollo local (Grafana con anónimo Admin). Lo que cambies en Grafana se
-  exporta a `grafana/provisioning/`. Mantén coherentes la etiqueta `app` de Loki, la consulta `tracesToLogsV2` y el
+- `deploy/observability/`: es solo para desarrollo local (Grafana anónimo de solo lectura; `admin` para editar).
+  Datasources en `grafana/provisioning/` y dashboards en `grafana/dashboards/` (provisionados, no editables desde la UI):
+  se cambian en el repo y sus consultas se comprueban contra datos reales. `rate()` siempre con `$__rate_interval`. Mantén coherentes la etiqueta `app` de Loki, la consulta `tracesToLogsV2` y el
   `derivedFields` de `traceId`.
 - Nunca `.\dev\observability.ps1 wipe` ni `docker compose … down -v` sin que te lo pidan: borra los datos.
 

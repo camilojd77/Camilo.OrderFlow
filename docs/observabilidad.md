@@ -73,8 +73,8 @@ Muestreo: `ParentBased(TraceIdRatio(OpenTelemetry:SampleRatio))`, 1.0 por defect
 6. **Propagación de contexto** en toda llamada saliente: `HttpClient` del contenedor de DI (instrumentado) y, si el
    destino lo usa, `CorrelationIdHandler`.
 7. **Un flujo de negocio nuevo dice qué lo observa** (span, métrica o log) en su PR.
-8. **Configuración del stack como código**: lo que se cambie en Grafana (datasources, y en el futuro dashboards o
-   alertas) se exporta a `deploy/observability/`; nada creado solo a mano.
+8. **Configuración del stack como código**: datasources y dashboards se provisionan desde `deploy/observability/grafana/`
+   y se cambian en el repo (§7); nada creado solo a mano.
 
 ## 5. Stack local
 
@@ -84,7 +84,7 @@ Muestreo: `ParentBased(TraceIdRatio(OpenTelemetry:SampleRatio))`, 1.0 por defect
 
 | Componente | URL / puerto |
 |---|---|
-| Grafana | http://localhost:3000 (acceso anónimo como Admin: solo para desarrollo local) |
+| Grafana | http://localhost:3000. Sin login, solo lectura (Viewer); para editar, usuario `admin` con la contraseña de `GRAFANA_ADMIN_PASSWORD` (por defecto la de fábrica de Grafana; solo se aplica al crear el volumen `grafana-data`) |
 | OTel Collector | OTLP gRPC 4317 · HTTP 4318 · métricas propias 8888 · exportador 8889 |
 | Tempo | http://localhost:3200 |
 | Loki | http://localhost:3100 |
@@ -109,16 +109,26 @@ Retención local: Tempo 1 h de bloques; Loki rechaza líneas de más de 7 días;
 | Peticiones por segundo | `rate(http_server_request_duration_seconds_count[1m])` |
 | Latencia p99 | `histogram_quantile(0.99, rate(http_server_request_duration_seconds_bucket[5m]))` |
 | Errores 5xx | `rate(http_server_request_duration_seconds_count{http_response_status_code=~"5.."}[1m])` |
-| Logs de error | `{app="camilo-order-flow-webapi"} \|= "Error"` |
+| Logs de aviso y error | `{app="camilo-order-flow-webapi"} \| json \| level=~"warning\|error\|fatal"` |
 
 En Prometheus las métricas de la API llevan `exported_job="Camilo.OrderFlow.WebApi"` (las reetiqueta el exportador del
-Collector). En Loki las etiquetas son las que declara el sink (`app`, `env`), no `service_name`.
+Collector), con `http_route`, `http_request_method` y `http_response_status_code`. La API exporta métricas cada 60 s
+(valor por defecto de OpenTelemetry): hay una muestra por minuto, así que `rate()` necesita ventanas de 2 min o más; el
+datasource declara `timeInterval: 60s` para que `$__rate_interval` valga 4 min. En Loki las etiquetas son las que declara
+el sink (`app`, `env`); el nivel está en el campo JSON `level` (`info`, `warning`, `error`…).
 
 ## 7. Dashboards y alertas
 
-**No hay** dashboards ni reglas de alerta como código; solo los datasources
-(`deploy/observability/grafana/provisioning/datasources/datasources.yml`). Añadirlos es una propuesta abierta; si se
-hace, se provisionan desde `deploy/observability/grafana/provisioning/`.
+| Dashboard | Archivo | Qué muestra |
+|---|---|---|
+| **Camilo.OrderFlow — API** (carpeta `Camilo.OrderFlow`) | `deploy/observability/grafana/dashboards/camilo-order-flow-api.json` | Peticiones/s, % de 5xx, latencia p50/p95/p99 (total y por ruta), respuestas por código, rate limiting, llamadas salientes, memoria, GC, excepciones, thread pool, CPU y logs de aviso y error |
+
+- Se provisionan desde `deploy/observability/grafana/provisioning/dashboards/dashboards.yml`; Grafana relee la carpeta
+  cada 30 s y **no** permite guardarlos desde la UI.
+- Para cambiar uno: edita el JSON (o diséñalo en la UI como `admin`, «Export → Save to file» y sustituye el archivo),
+  comprueba sus consultas contra datos reales y commitea. Un panel nuevo usa `$__rate_interval` en `rate()`.
+- Un dashboard nuevo es un archivo JSON más en `grafana/dashboards/` con un `uid` estable.
+- **No hay reglas de alerta** todavía: se añadirán cuando haya un canal de notificación.
 
 ## 8. Runbooks breves
 

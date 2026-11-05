@@ -6,6 +6,17 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Grafana: dashboard como código y acceso de solo lectura
+
+- **Qué:** dashboard «Camilo.OrderFlow — API» provisionado desde `deploy/observability/grafana/dashboards/` (20 paneles:
+  tráfico, 5xx, latencias, códigos, rate limiting, salientes, runtime y logs de aviso/error), no editable desde la UI.
+  Grafana local pasa de Admin anónimo a **Viewer anónimo**; editar requiere `admin` (`GRAFANA_ADMIN_PASSWORD`). El
+  datasource de Prometheus declara `timeInterval: 60s`, la resolución real de las métricas (exportación OTLP cada 60 s):
+  con 15 s, los `rate()` salían vacíos.
+- **Provisional:** sin reglas de alerta (decisión: hasta tener canal de notificación).
+- **Cifras:** 19/19 consultas del dashboard devuelven datos con tráfico real; anónimo recibe 403 al crear dashboards;
+  revisado visualmente en el navegador.
+
 ## 2026-11-05 — Hooks de git
 
 - **Qué:** `.githooks/` con `commit-msg` (Conventional Commits, asunto ≤ 72, sin atribución ni mención a modelos o

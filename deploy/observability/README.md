@@ -8,7 +8,7 @@ Entorno de desarrollo para **Camilo.OrderFlow**. Configuración disponible no si
 | Tempo | Almacena trazas | http://localhost:3200 |
 | Loki | Recibe logs directamente de Serilog si el sink está configurado | http://localhost:3100 |
 | Prometheus | Consulta métricas del Collector | http://localhost:9090 |
-| Grafana | Consulta Tempo, Loki y Prometheus | http://localhost:3000 |
+| Grafana | Consulta Tempo, Loki y Prometheus; dashboard «Camilo.OrderFlow — API» provisionado | http://localhost:3000 (sin login: solo lectura; `admin` para editar) |
 
 ## Arranque
 
@@ -48,7 +48,7 @@ Recorrido real: API/OpenTelemetry → Collector → Tempo (trazas) y exportador 
 | tempo-data | Bloques de trazas y WAL |
 | loki-data | Logs e índices |
 | prometheus-data | Métricas TSDB |
-| grafana-data | Dashboards y configuración |
+| grafana-data | Base de datos de Grafana (usuarios, preferencias). Los dashboards vienen de `grafana/dashboards/` |
 
 El proyecto Compose es camilo-order-flow-observability: cambia el prefijo de esos volúmenes frente al proyecto de plantilla. Los volúmenes anteriores permanecen conservados; no se migran automáticamente. down/up conserva datos. No usar wipe ni down -v para validar esta fase.
 
