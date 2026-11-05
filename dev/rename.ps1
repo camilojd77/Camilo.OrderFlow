@@ -63,7 +63,8 @@ $TextExtensions = @(
     '.yml', '.yaml', '.ps1', '.sh', '.md', '.http', '.editorconfig', '.xml'
 )
 $ExtensionlessNames = @('Dockerfile', '.dockerignore', '.gitignore', '.gitattributes')
-$ExcludedDirs = @('.git', '.vs', '.vscode', '.idea', '.claude', 'bin', 'obj', 'node_modules', 'TestResults', 'test-results')
+$ExcludedDirs = @('.git', '.vs', '.vscode', '.idea', '.claude', 'bin', 'obj', 'node_modules', 'TestResults', 'test-results', 'docs-develop', '.agents', '.codex', '.aws')
+$SensitiveNames = @('appsettings.Development.json', 'appsettings.Local.json', 'appsettings.Production.json', 'appsettings.Staging.json', 'secrets.json')
 
 # El propio script se excluye: contiene los tokens de busqueda y reescribirlos lo
 # dejaria inservible para una segunda pasada.
@@ -73,6 +74,11 @@ function Test-Excluded {
     param([string] $FullPath)
     if ($SelfPath -and $FullPath -eq $SelfPath) { return $true }
     $relative = $FullPath.Substring($Root.Length).TrimStart('\', '/')
+    # Keep local secrets and deployment data outside all rename passes.
+    $leaf = Split-Path $FullPath -Leaf
+    if ($SensitiveNames -contains $leaf) { return $true }
+    if (($leaf -eq '.env' -or $leaf -like '.env.*') -and $leaf -notlike '*.example') { return $true }
+    if ($relative -match '^deploy[\\/](?:.*[\\/])?(data|volumes|sqlserver-data|grafana-data|loki-data|tempo-data|prometheus-data)([\\/]|$)') { return $true }
     foreach ($segment in ($relative -split '[\\/]')) {
         if ($ExcludedDirs -contains $segment) { return $true }
     }
@@ -162,12 +168,10 @@ if ($WhatIfPreference) {
 }
 
 Write-Host "  Renombrado aplicado. Pendiente a mano:" -ForegroundColor Green
-Write-Host "    1. Renombrar la carpeta raiz del repositorio ($([System.IO.Path]::GetFileName($Root)))." -ForegroundColor White
-Write-Host "    2. Email del admin semilla en IdentityDataSeeder.cs (admin@company.com)." -ForegroundColor White
-Write-Host "    3. Puertos, si vas a convivir con otros proyectos derivados." -ForegroundColor White
-Write-Host "    4. Repositorio remoto (docs/04-Guia-Renombrado-y-Repositorio.md, seccion 5)." -ForegroundColor White
+Write-Host "    Review local product settings selectively; preserve credentials." -ForegroundColor White
+Write-Host "    Preserve root, Git history, remotes, demo email and ports unless explicitly authorized." -ForegroundColor White
 Write-Host ""
 Write-Host "  Verificacion:" -ForegroundColor Cyan
-Write-Host "    git grep -l `"$OldDotted`" | Measure-Object -Line   # debe dar 0" -ForegroundColor DarkGray
-Write-Host "    dotnet restore; dotnet build; dotnet test" -ForegroundColor DarkGray
+Write-Host "    Inspect active references, including hidden and untracked files; inventory historical/source exceptions." -ForegroundColor DarkGray
+Write-Host "    dotnet restore; dotnet build; dotnet test -- --filter-not-trait Category=RealDb --ignore-exit-code 8" -ForegroundColor DarkGray
 Write-Host ""

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" />
+    <PackageReference Include="Riok.Mapperly">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>compile; runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Camilo.OrderFlow.BuildingBlocks.SharedKernel\Camilo.OrderFlow.BuildingBlocks.SharedKernel.csproj" />
+    <ProjectReference Include="..\Camilo.OrderFlow.Modules.Identity.Domain\Camilo.OrderFlow.Modules.Identity.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

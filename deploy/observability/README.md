@@ -1,136 +1,55 @@
-# Local Observability Stack
+# Stack local de observabilidad
 
-Provides a zero-infrastructure-cost observability environment for local development:
+Entorno de desarrollo para **Camilo.OrderFlow**. Configuración disponible no significa telemetría verificada: comprobar datos recibidos con el stack y la API en ejecución.
 
-| Component | Role | Host URL |
+| Componente | Función | URL / puerto del host |
 |---|---|---|
-| **OTel Collector** | Receives OTLP from the API | grpc `localhost:4317` · http `localhost:4318` |
-| **Grafana Tempo** | Distributed trace storage | `http://localhost:3200` |
-| **Grafana Loki** | Log storage (Serilog writes here directly) | `http://localhost:3100` |
-| **Prometheus** | Metrics storage | `http://localhost:9090` |
-| **Grafana** | Dashboards (Tempo + Loki + Prometheus) | `http://localhost:3000` |
+| OTel Collector | Recibe trazas y métricas OTLP | gRPC 4317, HTTP 4318; métricas internas 8888 y exportador 8889 |
+| Tempo | Almacena trazas | http://localhost:3200 |
+| Loki | Recibe logs directamente de Serilog si el sink está configurado | http://localhost:3100 |
+| Prometheus | Consulta métricas del Collector | http://localhost:9090 |
+| Grafana | Consulta Tempo, Loki y Prometheus | http://localhost:3000 |
 
----
+## Arranque
 
-## Quick start
-
-```powershell
-# From the solution root
-./dev/observability.ps1 up          # start all containers
-./dev/observability.ps1 down        # stop all containers
-./dev/observability.ps1 logs        # stream combined logs
-./dev/observability.ps1 status      # show container state
-
-# Or use docker compose directly
-docker compose -f deploy/observability/docker-compose.observability.yml up -d
-```
-
-> First run pulls ~600 MB of images. Subsequent starts are instant.
-
----
-
-## Wire the API
-
-### `appsettings.json` (or `appsettings.Development.json`)
-
-```json
-"OpenTelemetry": {
-  "Enabled": true,
-  "OtlpEndpoint": "http://localhost:4317",
-  "ExporterProtocol": "grpc"
-}
-```
-
-### Launch profile `Local+OTel` (`Properties/launchSettings.json`)
-
-The profile is pre-configured in `launchSettings.json`. Select it in Visual Studio / Rider or:
+Comprobar primero el daemon con `docker info`. Desde la raíz:
 
 ```powershell
-dotnet run --launch-profile "Local+OTel"
+./dev/observability.ps1 up
+./dev/observability.ps1 status
+./dev/observability.ps1 logs
+./dev/observability.ps1 down
 ```
 
-It additionally sets `EnableConsoleExporter=true` so spans are printed to the terminal.
+Alternativa: `docker compose -f deploy/observability/docker-compose.observability.yml up -d`. La primera ejecución descarga imágenes; registrar tiempos reales sin prometer arranque instantáneo.
 
----
+La API exporta trazas/métricas cuando OpenTelemetry está habilitado con OtlpEndpoint http://localhost:4317 y protocolo grpc. Logs usan Serilog:WriteTo/GrafanaLoki del archivo local; revisar su plantilla `.example` sin imprimir secretos. El Collector actual tiene pipelines de trazas y métricas, no de logs.
 
-## Verify traces end-to-end
+El perfil Local+OTel de launchSettings.json habilita además spans en consola:
 
-1. Start the stack: `./dev/observability.ps1 up`
-2. Start the API with the `Local+OTel` launch profile.
-3. Hit any endpoint (e.g. `GET /health/live`).
-4. Open **Grafana** → **Explore** → select **Tempo** datasource.
-5. Run a **Search** query – the span should appear within ~2 s.
-6. Confirm the span has a `correlation_id` tag matching the `X-Correlation-Id` response header.
-
-## Verify metrics end-to-end
-
-1. Open **Grafana** → **Explore** → select **Prometheus** datasource.
-2. Query `http_server_request_duration_seconds_count` (ASP.NET Core requests).
-3. Query `dotnet_gc_collections_total` (runtime GC metrics).
-4. Check `otel_collector_*` metrics to confirm the collector pipeline is healthy.
-
-## Verify logs end-to-end
-
-1. Open **Grafana** → **Explore** → select **Loki** datasource.
-2. Query `{app="company-product-webapi"}` — Serilog pushes here via the `GrafanaLoki` sink
-   configured in `appsettings.Development.json` (see the `.example` file).
-3. Correlate with a trace: `{app="company-product-webapi"} | json | traceId="<id>"`.
-4. From a Tempo span, the **Logs for this span** link jumps straight to the matching logs
-   thanks to the `derivedFields` in the provisioned datasources.
-
-## Verify outbound HttpClient propagation
-
-Inspect any outbound request made by the API:
-- `traceparent` header — W3C trace context injected by OTel `AddHttpClientInstrumentation`.
-- `X-Correlation-Id` header — business correlation ID injected by `CorrelationIdHandler`.
-
-Both headers should be present simultaneously.
-
----
-
-## Architecture
-
-```
-┌──────────────────────┐
-│    .NET Web API       │
-│  OTLP gRPC :4317     │
-└──────────┬───────────┘
-           │ OTLP (traces + metrics)
-           ▼
-┌──────────────────────┐        ┌─────────────────────┐
-│   OTel Collector     │─traces▶│   Grafana Tempo     │
-│  :4317  :4318  :8889 │        │       :3200         │
-└──────────┬───────────┘        └──────────┬──────────┘
-           │ Prometheus scrape              │
-           ▼                               │
-┌──────────────────────┐                   │
-│     Prometheus       │                   │
-│       :9090          │                   │
-└──────────┬───────────┘                   │
-           │                               │
-           ▼                               ▼
-┌──────────────────────────────────────────────────────┐
-│                    Grafana :3000                      │
-│  Explore → Prometheus (metrics)                      │
-│  Explore → Tempo     (traces + service map)          │
-└──────────────────────────────────────────────────────┘
+```powershell
+dotnet run --project Camilo.OrderFlow.WebApi --launch-profile Local+OTel
 ```
 
----
+## Comprobaciones de extremo a extremo
 
-## Data persistence
+1. Levantar stack y API, generar solicitudes y abrir Grafana → Explore → Tempo.
+2. Buscar el servicio Camilo.OrderFlow.WebApi o el traceId de una respuesta. Registrar recepción y demora observada; comprobar correlation_id frente al header X-Correlation-Id.
+3. En Prometheus consultar `http_server_request_duration_seconds_count`, `dotnet_gc_collections_total` y métricas `otel_collector_*`.
+4. En Loki consultar `{app="camilo-order-flow-webapi"}` y correlacionar con `{app="camilo-order-flow-webapi"} | json | traceId="<id>"`. El enlace de Tempo a logs depende de los derivedFields provisionados y de que el sink esté activo.
+5. En una solicitud saliente verificar traceparent (OpenTelemetry) y X-Correlation-Id (CorrelationIdHandler). No almacenar tokens ni headers sensibles.
 
-Named Docker volumes keep data between `down`/`up` cycles:
+Recorrido real: API/OpenTelemetry → Collector → Tempo (trazas) y exportador Prometheus (métricas); API/Serilog → Loki (logs). Grafana consulta los almacenes. Ver [guía de observabilidad](../../docs/Observability.md).
 
-| Volume | Contains |
+## Persistencia y convivencia
+
+| Volumen lógico | Contenido |
 |---|---|
-| `tempo-data` | Trace blocks + WAL |
-| `loki-data` | Log chunks + index |
-| `prometheus-data` | TSDB metrics |
-| `grafana-data` | Dashboards, user config |
+| tempo-data | Bloques de trazas y WAL |
+| loki-data | Logs e índices |
+| prometheus-data | Métricas TSDB |
+| grafana-data | Dashboards y configuración |
 
-To wipe everything and start fresh:
+El proyecto Compose es camilo-order-flow-observability: cambia el prefijo de esos volúmenes frente al proyecto de plantilla. Los volúmenes anteriores permanecen conservados; no se migran automáticamente. down/up conserva datos. No usar wipe ni down -v para validar esta fase.
 
-```powershell
-docker compose -f deploy/observability/docker-compose.observability.yml down -v
-```
+La red observability y los nombres de contenedores tempo, loki, prometheus, grafana y otel-collector siguen compartidos; antes de otro stack comprobar colisiones sin interrumpir procesos del usuario.

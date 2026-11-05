@@ -83,3 +83,6 @@ desktop.ini
 ## ── Coverage HTML reports (reportgenerator, etc.) ────────────────────────────
 coverage/
 coveragereport/
+
+# Documentacion personal de desarrollo (solo local)
+/docs-develop/

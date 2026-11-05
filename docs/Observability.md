@@ -1,6 +1,6 @@
 # Observabilidad — Guía rápida
 
-La plantilla exporta **trazas, métricas y logs** a un OTel Collector local, que los reenvía a Tempo, Prometheus y Loki respectivamente. Todo se visualiza desde Grafana.
+La API exporta **trazas y métricas** por OpenTelemetry al Collector: las trazas van a Tempo y las métricas se exponen para Prometheus. Los **logs** salen de Serilog directamente a Loki cuando el sink GrafanaLoki está configurado. Grafana consulta esos almacenes. El código no registra un pipeline OTel de logs.
 
 ---
 
@@ -62,10 +62,10 @@ Los logs **no pasan por el OTel Collector**: Serilog los envía directamente a L
 declara ese sink — `app` y `env` — no `service_name`.
 
 1. **Explore** → datasource **Loki**.
-2. Query básica: `{app="company-product-webapi"}`.
-3. Filtrar errores: `{app="company-product-webapi"} |= "Error"`.
-4. Correlacionar con traza: `{app="company-product-webapi"} | json | traceId="<id>"`.
-5. Filtrar por entorno: `{app="company-product-webapi", env="dev"}`.
+2. Query básica: `{app="camilo-order-flow-webapi"}`.
+3. Filtrar errores: `{app="camilo-order-flow-webapi"} |= "Error"`.
+4. Correlacionar con traza: `{app="camilo-order-flow-webapi"} | json | traceId="<id>"`.
+5. Filtrar por entorno: `{app="camilo-order-flow-webapi", env="dev"}`.
 
 > Si renombraste la plantilla, la etiqueta `app` cambió con ella: revisa el bloque `Serilog:WriteTo`
 > de tu `appsettings.Development.json`.

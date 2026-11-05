@@ -1,4 +1,4 @@
-name: company-product-observability
+name: camilo-order-flow-observability
 
 networks:
   observability:

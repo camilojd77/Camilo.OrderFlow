@@ -1,13 +1,13 @@
 # Documento 1 — Arquitectura de la solución
 
-> **Audiencia:** desarrolladores que van a usar `Company.Product` como plantilla para iniciar un nuevo backend dentro de la organización.
+> **Audiencia:** desarrolladores que van a usar `Camilo.OrderFlow` como plantilla para iniciar un nuevo backend dentro de la organización.
 > **Objetivo:** entender la arquitectura, qué se debe respetar al extenderla y qué ventajas ofrece.
 
 ---
 
 ## 1. Visión general
 
-`Company.Product` es una **plantilla backend en .NET 10** diseñada como **monolito modular** con la capacidad de evolucionar a microservicios sin cambiar el código existente.
+`Camilo.OrderFlow` es una **plantilla backend en .NET 10** diseñada como **monolito modular** con separación de capas que facilita evaluar una extracción futura; todavía requiere contratos y tratamiento de fallos distribuidos.
 
 La estructura nace lista para soportar:
 
@@ -22,33 +22,33 @@ La estructura nace lista para soportar:
 
 ## 2. Estructura de la solución
 
-Definida en `Company.Product.slnx`:
+Definida en `Camilo.OrderFlow.slnx`:
 
 ```
 src/
 ├── BuildingBlocks/
-│   ├── Company.Product.BuildingBlocks.SharedKernel/      ← tipos compartidos (excepciones)
-│   └── Company.Product.BuildingBlocks.Infrastructure/    ← abstracciones reutilizables
+│   ├── Camilo.OrderFlow.BuildingBlocks.SharedKernel/      ← tipos compartidos (excepciones)
+│   └── Camilo.OrderFlow.BuildingBlocks.Infrastructure/    ← abstracciones reutilizables
 ├── Host/
-│   └── Company.Product.WebApi/                           ← entrada HTTP, DI root
+│   └── Camilo.OrderFlow.WebApi/                           ← entrada HTTP, DI root
 └── Modules/
     └── Identity/
-        ├── Company.Product.Modules.Identity.Domain/         ← entidades, reglas
-        ├── Company.Product.Modules.Identity.Application/    ← casos de uso (CQRS dispatcher)
-        └── Company.Product.Modules.Identity.Infrastructure/ ← EF Core, JWT, repos
+        ├── Camilo.OrderFlow.Modules.Identity.Domain/         ← entidades, reglas
+        ├── Camilo.OrderFlow.Modules.Identity.Application/    ← casos de uso (CQRS dispatcher)
+        └── Camilo.OrderFlow.Modules.Identity.Infrastructure/ ← EF Core, JWT, repos
 tests/
-├── Company.Product.ArchitectureTests/                    ← Clean Architecture no violable
-├── Company.Product.Identity.UnitTests/                   ← tests de dominio y handlers
-├── Company.Product.WebApi.IntegrationTests/              ← endpoints con SQLite in-memory
-└── Company.Product.WebApi.IntegrationTests.RealDb/       ← E2E con SQL Server real (Testcontainers)
+├── Camilo.OrderFlow.ArchitectureTests/                    ← Clean Architecture no violable
+├── Camilo.OrderFlow.Identity.UnitTests/                   ← tests de dominio y handlers
+├── Camilo.OrderFlow.WebApi.IntegrationTests/              ← endpoints con SQLite in-memory
+└── Camilo.OrderFlow.WebApi.IntegrationTests.RealDb/       ← E2E con SQL Server real (Testcontainers)
 ```
 
 Cada módulo tiene **3 proyectos** propios — `Domain`, `Application` e `Infrastructure` — y comparte el `WebApi` host con los demás. Para crear otro módulo (por ejemplo, `Catalog`), se replica el mismo patrón:
 
 ```
-Company.Product.Modules.Catalog.Domain
-Company.Product.Modules.Catalog.Application
-Company.Product.Modules.Catalog.Infrastructure
+Camilo.OrderFlow.Modules.Catalog.Domain
+Camilo.OrderFlow.Modules.Catalog.Application
+Camilo.OrderFlow.Modules.Catalog.Infrastructure
 ```
 
 ---
@@ -59,7 +59,7 @@ Company.Product.Modules.Catalog.Infrastructure
 WebApi → Infrastructure → Application → Domain
 ```
 
-**Nunca al revés.** Esta regla está protegida por `tests/Company.Product.ArchitectureTests/CleanArchitectureTests.cs` y rompe el build de CI si se viola.
+**Nunca al revés.** Esta regla está protegida por `tests/Camilo.OrderFlow.ArchitectureTests/CleanArchitectureTests.cs` y rompe el build de CI si se viola.
 
 | Proyecto | Puede referenciar |
 |---|---|
@@ -127,7 +127,7 @@ WebApi → Infrastructure → Application → Domain
 4. **No poner `Version="..."` en archivos `.csproj`.** Toda versión de NuGet va en `Directory.Packages.props` (gestión central).
 5. **No exponer entidades de Domain en respuestas HTTP.** Se mapean con DTOs vía Mapperly (source generator) o métodos de extensión manuales.
 6. **Toda escritura de password debe pasar por BCrypt** (o el hasher que se centralice en Infrastructure).
-7. **Toda autorización por endpoint usa `[AuthorizePermission("...")]`**, no `[Authorize(Roles = "...")]`. Los permisos viven en BBDD; los roles solo agrupan permisos.
+7. **Toda autorización por endpoint usa `[AuthorizePermission(IdentityPermissions.UsersRead)]`**, no `[Authorize(Roles = "...")]`. Los permisos viven en BBDD; los roles solo agrupan permisos.
 8. **El `IdentityDbContext` es interno al módulo Identity.** Cada módulo nuevo tendrá su propio `DbContext` con su propio schema.
 9. **Cada migración nueva se genera contra el `DbContext` del módulo correspondiente**, no contra un contexto global.
 10. **Cada módulo registra su propio `I<Modulo>ExecutionContext : IExecutionContext`**, nunca la interfaz genérica de SharedKernel. Registrar `IExecutionContext` desnudo hace que el último módulo cargado gane y que los handlers de los demás dejen de persistir **sin lanzar ningún error**. El test `ModuleRegistrationTests` lo impide.
@@ -147,7 +147,7 @@ WebApi → Infrastructure → Application → Domain
 | **Resiliencia HTTP** | Timeout + retry + circuit breaker, vía `Microsoft.Extensions.Http.Resilience` | `WebApi/Extensions/ServiceCollectionExtensions.Resilience.cs` |
 | **Security headers** | HSTS, X-Frame-Options, Referrer-Policy, CSP opcional | `WebApi/Security/SecurityHeadersMiddleware.cs` |
 | **Health checks** | `/health/live`, `/health/ready` (incluye SQL Server) | `WebApi/Observability/Health` |
-| **Observabilidad** | OpenTelemetry → OTel Collector → Tempo + Loki + Prometheus + Grafana | `WebApi/Observability/OpenTelemetry` y `deploy/observability` |
+| **Observabilidad** | Trazas/métricas: OpenTelemetry → Collector → Tempo/Prometheus; logs: Serilog → Loki cuando el sink está configurado; Grafana consulta los tres | `WebApi/Observability/OpenTelemetry` y `deploy/observability` |
 | **Logs** | Serilog estructurado con `traceId`, `spanId`, `correlationId` | `Program.cs` (sección `UseSerilog`) |
 | **Tests** | **xunit.v3** sobre Microsoft Testing Platform + **Shouldly**; arquitectura con `NetArchTest` | `tests/` y `global.json` |
 | **CI** | GitHub Actions: restore → build → test → coverage | `.github/workflows/ci.yml` |
@@ -168,7 +168,7 @@ WebApi → Infrastructure → Application → Domain
 ### 7.2 Listo para escalar
 
 - **Modular monolith**: cada nuevo dominio (Catalog, Orders, Billing…) se agrega como un módulo independiente con sus propios `Domain`/`Application`/`Infrastructure` y su propio schema en BBDD. Esto **aísla** las dependencias entre dominios desde el día 1.
-- **Migración a microservicios sin reescribir**: como cada módulo ya es independiente, extraer uno como servicio aparte solo requiere cambiar el host (de WebApi compartido a un WebApi propio del módulo) y mover la BBDD si se desea. El código de dominio y casos de uso no cambia.
+- **Extracción futura**: la separación favorece reutilizar dominio y casos de uso, pero mover un módulo a red exige contratos, ownership de datos, timeouts, consistencia y validaciones; no es una garantía de cambio mecánico.
 - **Versionado de API por header** desde el inicio: permite evolucionar contratos sin romper consumidores.
 
 ### 7.3 Calidad y operación
@@ -192,13 +192,13 @@ WebApi → Infrastructure → Application → Domain
 
 Cuando se agrega un nuevo módulo de negocio, la regla es:
 
-1. **Crear los 3 proyectos** del módulo siguiendo `Company.Product.Modules.<Nombre>.<Capa>`.
-2. **Agregarlos al `Company.Product.slnx`** dentro de la carpeta `/src/Modules/`.
+1. **Crear los 3 proyectos** del módulo siguiendo `Camilo.OrderFlow.Modules.<Nombre>.<Capa>`.
+2. **Agregarlos al `Camilo.OrderFlow.slnx`** dentro de la carpeta `/src/Modules/`.
 3. **Definir `AddXxxApplication()` y `AddXxxInfrastructure(IConfiguration)`** en `DependencyInjection/ServiceCollectionExtensions.cs` de cada capa.
 4. **Registrarlos en `Program.cs`** (dos líneas, sin más).
 5. **Crear su propio `DbContext`** con su propio schema y sus propias migraciones.
 6. **No referenciar otros módulos directamente.** Si un módulo necesita información de otro, se hace por:
-   - Una **interfaz de Application** que el otro módulo implementa (intra-monolito).
+   - Un **puerto en Application del consumidor y adaptador en el host**, hacia la fachada pública del proveedor (patrón previsto, sin ejemplo multimódulo actual).
    - Una llamada HTTP / mensajería (cuando se separe a microservicio).
 
 Esto último es la pieza clave: **diseñar como si ya fueran servicios separados**, aunque corran en el mismo proceso.
@@ -207,7 +207,7 @@ Esto último es la pieza clave: **diseñar como si ya fueran servicios separados
 
 ## 9. Decisiones explícitas (lo que **no** se debe cambiar sin justificación)
 
-- **Permisos en BBDD**, no como claims hardcoded en el JWT: permite revocar sin reemitir tokens.
+- **Permisos en BBDD**, consultados mediante caché: los cambios no requieren reemitir el JWT, pero su propagación depende de invalidación/TTL. La desactivación de usuario no demuestra revocación de access tokens vigentes; requiere una decisión y prueba posterior.
 - **Cache de permisos con `HybridCache`** (L1 in-memory + L2 Redis opcional), TTL configurable. La migración a Redis es un setting de config (una línea de DI), sin cambiar el código.
 - **Schema separado por módulo en SQL Server** (`identity.Users`, `catalog.Products`, …): facilita la futura extracción a microservicios y deja claro a quién pertenece cada tabla.
 - **`_info` endpoint público** con `commitSha` / `buildDate`: necesario para diagnósticos en entornos compartidos.
@@ -225,3 +225,13 @@ Esto último es la pieza clave: **diseñar como si ya fueran servicios separados
 - [`docs/ReleaseChecklist.md`](ReleaseChecklist.md) — qué validar antes de cada deploy.
 - [`docs/02-Instrucciones-IA.md`](02-Instrucciones-IA.md) — convenciones para agentes de IA que trabajen sobre este repo.
 - [`docs/05-Plan-Definitivo.md`](05-Plan-Definitivo.md) — decisiones de diseño tomadas durante la construcción de la plantilla (evidencia de qué se construyó y por qué).
+
+## Alcance comprobable
+
+ModuleCatalog descubre ensamblados referenciados y copiados a la salida de tests. Al agregar un módulo, comprobar esas referencias y registrar manualmente Add<Module>Infrastructure y la resolución de su execution context en ModuleRegistrationTests. El aislamiento entre dos módulos todavía no tiene ejemplo ejecutable: hoy solo existe Identity.
+
+HybridCache usa L1 local y L2 Redis opcional. Redis compartido no demuestra revocación inmediata entre réplicas: verificar propagación por clave y por tag y medir la ventana de permisos obsoletos. CacheInvalidationTests solo prueba una WebApiFactory; no hay garantía temporal multiinstancia medida.
+
+Patrón previsto para integración entre módulos: puerto en Application del consumidor y adaptador en el host de composición que llama una fachada pública del proveedor. No añadir referencias directas entre módulos. Este patrón no está implementado en un escenario multimódulo actual; la extracción a red requiere decisiones de contratos, latencia y fallos parciales.
+
+`global.json` selecciona Microsoft Testing Platform sin fijar SDK. CI usa 10.0.x, push/PR a main/develop y tests sin filtro; publica TRX/cobertura sin umbral ni auditoría dedicada de vulnerabilidades.

@@ -1,3 +1,5 @@
+> Precedencia vigente: documento histórico. Comandos, cantidades, licencias y promesas de implementación corresponden a su fecha; consultar las guías actuales. Prevalecen instrucciones vigentes del entorno y usuario.
+
 # Documento 7 — Plan de cambios propuesto tras revisión de la plantilla
 
 > **Autor:** revisión asistida (Claude Opus 5) — 2026-08-20
@@ -74,7 +76,7 @@ Los problemas encontrados son de **tres tipos**:
 
 1. **Un bloqueante real de CI** (vulnerabilidades transitivas → el pipeline hoy fallaría).
 2. **Documentación desactualizada o contradictoria** respecto al código real (rutas muertas, carpetas que no existen, número de proyectos, archivos citados que no están).
-3. **La brecha principal que motivó esta revisión:** no existe guía de "clonar en un equipo nuevo", ni de "renombrar la plantilla", ni de "apuntar a otro repositorio", ni una guía completa de contenedores. Lo que hay en el README son 6 líneas superficiales que **no alcanzan**: 219 archivos versionados contienen el token `Company.Product`.
+3. **La brecha principal que motivó esta revisión:** no existe guía de "clonar en un equipo nuevo", ni de "renombrar la plantilla", ni de "apuntar a otro repositorio", ni una guía completa de contenedores. Lo que hay en el README son 6 líneas superficiales que **no alcanzan**: 219 archivos versionados contienen el token `Camilo.OrderFlow`.
 
 ---
 
@@ -128,18 +130,18 @@ El README resuelve el renombrado en 6 líneas. La realidad medida en el repo:
 
 | Token | Dónde aparece |
 |---|---|
-| `Company.Product` | **219 archivos versionados** (namespaces, `using`, `.csproj`, `.slnx`, migraciones, tests, docs) |
-| `company-product` | `appsettings.Development.json.example` (label de Loki), `README.md`, `deploy/database/docker-compose.sqlserver.yml` (`container_name`), `deploy/observability/docker-compose.observability.yml` (`name:` del proyecto compose), `deploy/observability/grafana/provisioning/datasources/datasources.yml`, `dev/database.ps1` |
-| `CompanyProduct` | `appsettings.Development.json.example` (nombre de BBDD `CompanyProductDev`) |
+| `Camilo.OrderFlow` | **219 archivos versionados** (namespaces, `using`, `.csproj`, `.slnx`, migraciones, tests, docs) |
+| `camilo-order-flow` | `appsettings.Development.json.example` (label de Loki), `README.md`, `deploy/database/docker-compose.sqlserver.yml` (`container_name`), `deploy/observability/docker-compose.observability.yml` (`name:` del proyecto compose), `deploy/observability/grafana/provisioning/datasources/datasources.yml`, `dev/database.ps1` |
+| `CamiloOrderFlow` | `appsettings.Development.json.example` (nombre de BBDD `CamiloOrderFlowDev`) |
 
 Puntos que el README **no menciona** y que ensucian o rompen el proyecto derivado:
 
-- Nombres de contenedor y de proyecto compose (`company-product-sqlserver`, `name: company-product-observability`) → colisionan si dos proyectos derivados corren a la vez en la misma máquina.
+- Nombres de contenedor y de proyecto compose (`camilo-order-flow-sqlserver`, `name: camilo-order-flow-observability`) → colisionan si dos proyectos derivados corren a la vez en la misma máquina.
 - Puertos fijos (1433, 3000, 3100, 3200, 4317, 4318, 8888, 8889, 9090, 5070, 7297) → misma colisión.
 - Email del admin semilla (`admin@company.com`) en `IdentityDataSeeder`.
 - `MigrationsHistoryTable("__EFMigrationsHistory", "identity")` y el schema `identity` del módulo.
 - `OpenTelemetry:ServiceName` (aparece en las queries de Loki/Tempo ya documentadas).
-- Nombres de assembly hardcodeados en `tests/Company.Product.ArchitectureTests/CleanArchitectureTests.cs`.
+- Nombres de assembly hardcodeados en `tests/Camilo.OrderFlow.ArchitectureTests/CleanArchitectureTests.cs`.
 - El propio `.http`, `launchSettings.json` y el nombre de la carpeta raíz.
 - La decisión de **conservar o regenerar** las 4 migraciones EF.
 
@@ -192,7 +194,7 @@ Es exactamente el escenario que la plantilla promete soportar, así que conviene
 
 #### H21 — Los architecture tests no cubren módulos nuevos
 
-`CleanArchitectureTests` fija los assemblies de Identity en constantes. Un módulo `Catalog` nuevo **no quedaría cubierto** por las reglas de dirección de dependencias (solo por el test genérico de aislamiento entre módulos, que sí descubre assemblies por convención). Propuesta: generalizar por convención de nombre (`Company.Product.Modules.*.Domain`, etc.) o documentar explícitamente que hay que añadir cada módulo a las constantes.
+`CleanArchitectureTests` fija los assemblies de Identity en constantes. Un módulo `Catalog` nuevo **no quedaría cubierto** por las reglas de dirección de dependencias (solo por el test genérico de aislamiento entre módulos, que sí descubre assemblies por convención). Propuesta: generalizar por convención de nombre (`Camilo.OrderFlow.Modules.*.Domain`, etc.) o documentar explícitamente que hay que añadir cada módulo a las constantes.
 
 #### H22 — `Infrastructure/Authorization/IPermissionService.cs` es un residuo de refactor
 
@@ -210,7 +212,7 @@ Los permisos son strings literales en 16 puntos de los controllers y repetidos e
 
 #### H25 — Cambios locales sin commitear
 
-`Company.Product.WebApi/Properties/launchSettings.json` tiene un cambio no versionado (`launchBrowser: true` en el perfil `http`), y `docs/EntenderObservabilidad.md` (62 KB) está sin versionar y sin enlazar desde ningún índice. Hay que decidir qué se hace con ambos.
+`Camilo.OrderFlow.WebApi/Properties/launchSettings.json` tiene un cambio no versionado (`launchBrowser: true` en el perfil `http`), y `docs/EntenderObservabilidad.md` (62 KB) está sin versionar y sin enlazar desde ningún índice. Hay que decidir qué se hace con ambos.
 
 ---
 
@@ -252,7 +254,7 @@ Guía paso a paso, copy-paste, para quien clona por primera vez. Índice propues
 2. **Inventario completo de tokens** — la tabla de H3, con el comando de verificación final (`git grep -l "Company\.Product" | wc -l` → debe dar `0`).
 3. **Procedimiento manual paso a paso**, ordenado para no romper el build a mitad:
    1. Cerrar el IDE; borrar `bin/`, `obj/`, `.vs/`.
-   2. Reemplazo de contenido `Company.Product` → nombre nuevo en archivos de texto.
+   2. Reemplazo de contenido `Camilo.OrderFlow` → nombre nuevo en archivos de texto.
    3. Renombrar carpetas y `.csproj`.
    4. Renombrar el `.slnx` y actualizar sus rutas.
    5. Tokens en minúscula: contenedores, proyecto compose, labels de Loki, datasources de Grafana, scripts `dev/*.ps1`.
@@ -262,7 +264,7 @@ Guía paso a paso, copy-paste, para quien clona por primera vez. Índice propues
    9. Verificación: `dotnet restore && dotnet build && dotnet test --filter "Category!=RealDb"` → 197 verdes.
 4. **Script asistido** — `dev/rename.ps1 -NewName "Acme.Inventory" [-WhatIf]` (ver N4), con la ruta manual siempre disponible como respaldo.
 5. **Repositorio nuevo** — dos caminos:
-   - *Historia limpia* (recomendado para un producto nuevo): borrar `.git`, `git init`, primer commit «Base a partir de la plantilla Company.Product».
+   - *Historia limpia* (recomendado para un producto nuevo): borrar `.git`, `git init`, primer commit «Base a partir de la plantilla Camilo.OrderFlow».
    - *Historia conservada*: `git remote set-url origin <nuevo>` o `git remote add`, y push al nuevo remoto; cuándo tiene sentido cada uno.
    Incluye: crear el repo en la organización, ramas `main` / `develop`, protección de rama, y qué revisar de `.github/workflows/ci.yml` (secrets, runners, y el bloque de Azure DevOps que ya viene comentado en el YAML por si la organización usa ADO).
 6. **Checklist post-renombrado**: build, tests, arranque, Swagger, login, Grafana con el nuevo `ServiceName`, `git grep` sin residuos.

@@ -46,17 +46,17 @@ Revisar antes de cada deploy a Staging o Production.
 - [ ] Existe al menos un usuario con rol **Admin** activo y contraseña fuerte
 - [ ] **Primer deploy:** fuera de `Development` el seeder crea el admin con un hash placeholder inutilizable a propósito. Hay que fijarle una contraseña real antes de entregar el entorno; si no, nadie puede autenticarse
 - [ ] Los permisos semilla (`users.read/write`, `roles.read/write`, `permissions.read/write`) están en la BBDD
-- [ ] Si hay más de una réplica del servicio, `Cache:Redis` apunta a una instancia Redis compartida (sin Redis, `InvalidateRoleAsync` solo invalida la L1 local de la réplica que recibe la petición)
+- [ ] Si hay más de una réplica, configurar Redis compartido y verificar propagación por clave/tag entre réplicas; medir la ventana aceptada de permisos obsoletos. Redis configurado no acredita revocación inmediata
 - [ ] `Lockout:MaxAttempts` y `Lockout:DurationMinutes` ajustados a la política de seguridad del cliente
 - [ ] `Permissions:CacheTtlMinutes` revisado (default 10 min); reducir si los cambios de permisos deben propagarse más rápido
 
 ## Tests
 
 - [ ] `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` pasa en verde (unit + arch + integración SQLite)
-- [ ] `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` pasa en el entorno de staging (requiere Docker o SQL Server accesible)
+- [ ] `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` pasa en el entorno de staging (requiere Docker operativo para la fixture Testcontainers; confirmar casos realmente ejecutados)
 
 ## Post-deploy
 
 - [ ] `GET /_info` responde con el `commitSha` y `buildDate` del artefacto desplegado
 - [ ] `GET /health/ready` verde en el nuevo entorno
-- [ ] Primeras trazas/métricas visibles en Grafana dentro de los 2 primeros minutos
+- [ ] Primeras trazas/métricas visibles en Grafana con demora observada y registrada

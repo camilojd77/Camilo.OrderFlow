@@ -16,11 +16,11 @@
 # Puertos distintos a los del entorno local (8080 en vez de 5070, 1434 en vez de 1433)
 # para poder correr esto y `dotnet run` a la vez sin colisionar.
 
-name: company-product-app
+name: camilo-order-flow-app
 
 networks:
   app:
-    name: company-product-app
+    name: camilo-order-flow-app
   # Descomenta esta red (y la del servicio `api`) para alcanzar al OTel Collector
   # del stack de observabilidad, que la crea al levantarse.
   # observability:
@@ -36,7 +36,7 @@ services:
   # ─────────────────────────────────────────────────────────────────
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: company-product-app-sqlserver
+    container_name: camilo-order-flow-app-sqlserver
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "Password123!"
@@ -62,10 +62,10 @@ services:
       context: ../..
       dockerfile: Dockerfile
       target: migrator
-    container_name: company-product-app-migrator
+    container_name: camilo-order-flow-app-migrator
     environment:
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
-      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CamiloOrderFlow;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CamiloOrderFlow;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
       # dotnet ef construye el host del WebApi para localizar el DbContext; la clave debe
       # existir y tener 32+ caracteres aunque aquí no se emita ningún token.
       Jwt__Key: "DOCKER_COMPOSE_ONLY_KEY_CHANGE_ME_32+CHARS"
@@ -87,7 +87,7 @@ services:
       args:
         COMMIT_SHA: "${COMMIT_SHA:-local}"
         BUILD_DATE: "${BUILD_DATE:-unknown}"
-    container_name: company-product-app-api
+    container_name: camilo-order-flow-app-api
     environment:
       # Development para que este compose sea utilizable de punta a punta: habilita Swagger
       # y hace que el seed cree el admin con contraseña real. Fuera de demos usa Production
@@ -95,11 +95,11 @@ services:
       # proposito, y la contrasena real se fija en el primer deploy).
       ASPNETCORE_ENVIRONMENT: "Development"
       ASPNETCORE_HTTP_PORTS: "8080"
-      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
-      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CompanyProduct;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__DefaultConnection: "Server=sqlserver,1433;Database=CamiloOrderFlow;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
+      ConnectionStrings__Db: "Server=sqlserver,1433;Database=CamiloOrderFlow;User Id=sa;Password=Password123!;TrustServerCertificate=True;Encrypt=False;"
       Jwt__Key: "DOCKER_COMPOSE_ONLY_KEY_CHANGE_ME_32+CHARS"
-      Jwt__Issuer: "Company.Product"
-      Jwt__Audience: "Company.Product.WebApi"
+      Jwt__Issuer: "Camilo.OrderFlow"
+      Jwt__Audience: "Camilo.OrderFlow.WebApi"
       Seed__Enabled: "true"
       # OpenTelemetry apagado por defecto. Para enviar al stack de observabilidad:
       #   1. ./dev/observability.ps1 up

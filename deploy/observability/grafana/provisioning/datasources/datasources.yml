@@ -46,7 +46,7 @@ datasources:
         # ${__trace.traceId} is replaced by Grafana with the selected span's trace ID.
         # `| json` parses the Loki JSON body; `traceId=` matches the structured field
         # emitted by Serilog.Enrichers.Span – faster than substring search on high volume.
-        query: '{app="company-product-webapi"} | json | traceId="${__trace.traceId}"'
+        query: '{app="camilo-order-flow-webapi"} | json | traceId="${__trace.traceId}"'
 
   # ── Loki ─────────────────────────────────────────────────────────────────────
   # derivedFields: extract TraceId from each log line and create a link to Tempo.

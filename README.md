@@ -1,4 +1,4 @@
-# Company.Product — Backend Template
+# Camilo.OrderFlow — Backend Template
 
 Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modular Monolith, lista para clonar y arrancar en minutos. Diseñada para crecer de monolito modular a microservicios sin reescribir el código de negocio.
 
@@ -50,14 +50,14 @@ Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modu
 
 ```pwsh
 git clone <url-del-repo>
-cd Company.Product
+cd Camilo.OrderFlow
 ```
 
 ### 2. Configurar secretos locales
 
 ```pwsh
-Copy-Item Company.Product.WebApi\appsettings.Development.json.example `
-          Company.Product.WebApi\appsettings.Development.json
+Copy-Item Camilo.OrderFlow.WebApi\appsettings.Development.json.example `
+          Camilo.OrderFlow.WebApi\appsettings.Development.json
 ```
 
 Editar la copia y ajustar al menos:
@@ -87,8 +87,8 @@ Editar la copia y ajustar al menos:
 dotnet tool restore
 
 dotnet ef database update `
-  --project Company.Product.Modules.Identity.Infrastructure `
-  --startup-project Company.Product.WebApi
+  --project Camilo.OrderFlow.Modules.Identity.Infrastructure `
+  --startup-project Camilo.OrderFlow.WebApi
 ```
 
 Aplica las 4 migraciones en orden:
@@ -100,7 +100,7 @@ Aplica las 4 migraciones en orden:
 ### 5. Ejecutar
 
 ```pwsh
-dotnet run --project Company.Product.WebApi
+dotnet run --project Camilo.OrderFlow.WebApi
 ```
 
 - Swagger → `http://localhost:5070/swagger`
@@ -130,7 +130,7 @@ Invoke-RestMethod -Uri http://localhost:5070/api/users/me/permissions `
 
 También puedes usar el archivo `.http` incluido:
 ```
-Company.Product.WebApi/Company.Product.WebApi.http
+Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.http
 ```
 (compatible con Visual Studio y VS Code + REST Client)
 
@@ -149,7 +149,7 @@ dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8
 dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8
 
 # Solo architecture tests
-dotnet test tests/Company.Product.ArchitectureTests
+dotnet test --project tests/Camilo.OrderFlow.ArchitectureTests/Camilo.OrderFlow.ArchitectureTests.csproj
 
 # Con coverage (cobertura) y reporte TRX
 dotnet test -- --coverage --coverage-output-format cobertura --report-trx
@@ -161,7 +161,7 @@ dotnet test -- --coverage --coverage-output-format cobertura --report-trx
 > tests que ejecutar y el runner lo trataría como fallo. Sin filtro (`dotnet test` a secas) corre
 > todo y no hace falta.
 
-Referencia: **206 tests** — 200 en la suite rápida (121 unit + 20 arquitectura + 59 integración) y 6 en RealDb.
+Registrar cantidades actuales por suite y fecha de ejecución. RealDb excluida o sin casos no acredita SQL Server.
 
 **Cobertura de referencia (plantilla base):**
 - Unit tests (Domain): ~80% líneas
@@ -169,14 +169,14 @@ Referencia: **206 tests** — 200 en la suite rápida (121 unit + 20 arquitectur
 
 No hay umbral mínimo en la plantilla; el equipo consumidor decide su umbral.
 
-**Nota sobre la suite RealDb:** arranca un contenedor SQL Server 2022 via Testcontainers. Usa Docker Desktop corriendo. Tiempo: ~30 s.
+**Nota sobre la suite RealDb:** arranca un contenedor SQL Server 2022 via Testcontainers. Usa Docker Desktop corriendo. Registrar duración real según el entorno.
 
 ---
 
 ## Estructura del repositorio
 
 ```
-Company.Product/
+<workspace>/
 ├── .github/workflows/        ← CI (GitHub Actions)
 ├── Dockerfile                ← imagen de la API (build → migrator → runtime)
 ├── deploy/
@@ -219,9 +219,9 @@ Para contribuciones con IA (Copilot, Claude, Cursor), lee primero [`docs/02-Inst
 
 El revisor de TI marca estos criterios antes de aprobar la plantilla:
 
-- [ ] `git clone` + copiar `appsettings.Development.json.example` + `dotnet ef database update` + `dotnet run` arranca en < 5 minutos en máquina sin estado previo
+- [ ] `git clone` + copiar `appsettings.Development.json.example` + `dotnet ef database update` + `dotnet run` arranca con prerrequisitos verificados y tiempo real registrado
 - [ ] Login admin (`admin@company.com` / `Admin123!`) devuelve `accessToken` + cookie `refresh_token`
-- [ ] `dotnet test` → verde (206 tests: 200 + 6 RealDb, con Docker corriendo)
+- [ ] `dotnet test` → verde con cantidades registradas y casos RealDb realmente ejecutados con Docker
 - [ ] `dotnet build /p:TreatWarningsAsErrors=true` → 0 warnings, 0 errores
 - [ ] `dotnet list package --vulnerable` → vacío
 - [ ] `dotnet list package --deprecated` → vacío
@@ -268,8 +268,8 @@ Aparecen en la respuesta de `GET /_info`.
 
 ## Renombrar la plantilla para un proyecto nuevo
 
-El token `Company.Product` aparece en ~230 archivos, además de nombres de contenedor, proyectos de
-compose y labels de Loki. Hay un script que lo hace:
+El script conserva el origen Company.Product y solo deriva una copia de plantilla sin renombrar. Este producto ya se llama Camilo.OrderFlow; no volver a ejecutar el script esperando renombrarlo arbitrariamente. Los nombres de contenedor, proyectos de
+compose y labels de Loki también forman parte del inventario técnico. Ejemplo sobre una copia de plantilla original:
 
 ```pwsh
 .\dev\rename.ps1 -NewName "Acme.Inventory" -WhatIf   # simula
@@ -281,6 +281,12 @@ a otro repositorio — está en [`docs/04-Guia-Renombrado-y-Repositorio.md`](doc
 
 ---
 
-## Licencia / propiedad
+## Alcance de la base actual
 
-Plantilla interna de **EmasT**. No publicar en repositorios públicos sin autorización.
+Nombre técnico Camilo.OrderFlow, rama develop; la carpeta física del workspace, historia y remotos se conservan. No se ha autorizado una fase de negocio.
+
+HybridCache usa L1 local y L2 Redis opcional. Redis compartido no demuestra revocación inmediata entre réplicas: verificar propagación por clave y por tag y medir la ventana de permisos obsoletos. CacheInvalidationTests solo prueba una WebApiFactory; no hay garantía temporal multiinstancia medida.
+
+ModuleCatalog descubre ensamblados referenciados y copiados a la salida de tests. Al agregar un módulo, comprobar esas referencias y registrar manualmente Add<Module>Infrastructure y la resolución de su execution context en ModuleRegistrationTests. El aislamiento entre dos módulos todavía no tiene ejemplo ejecutable: hoy solo existe Identity.
+
+CI: push/PR a main/develop, SDK 10.0.x, restore/build/tests sin filtro y publicación TRX/cobertura. Sin nightly, umbral de cobertura ni auditoría dedicada. global.json fija runner, no SDK. Las cifras de cobertura anteriores son antecedentes, no una medición de esta fase.

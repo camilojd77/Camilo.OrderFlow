@@ -1,3 +1,5 @@
+> Precedencia vigente: documento histórico. Comandos, cantidades, licencias y promesas de implementación corresponden a su fecha; consultar las guías actuales. Prevalecen instrucciones vigentes del entorno y usuario.
+
 > ⚠️ **DOCUMENTO HISTÓRICO — EJECUTADO.** Este plan se completó durante el hand-off a TI.
 > **No describe el estado actual de la plantilla** y sus decisiones abiertas («preguntar al usuario»)
 > ya están resueltas. Para el estado actual: [`../README.md`](../README.md) y [`../03-Guia-Nuevo-Equipo.md`](../03-Guia-Nuevo-Equipo.md).
@@ -7,7 +9,7 @@
 
 # Documento 6 — Plan de Hand-Off al Equipo de TI
 
-> **Audiencia:** asistente de implementación (Sonnet 4.6) que dejará la plantilla `Company.Product` en estado **listo para revisión por el equipo de TI** de la compañía.
+> **Audiencia:** asistente de implementación (Sonnet 4.6) que dejará la plantilla `Camilo.OrderFlow` en estado **listo para revisión por el equipo de TI** de la compañía.
 > **Estado:** las fases 0–10 del [`05-Plan-Definitivo.md`](../05-Plan-Definitivo.md) están ejecutadas. Falta una pasada de **operación, limpieza y cierre documental** para que un revisor externo pueda clonar, levantar y aprobar la plantilla sin sorpresas.
 >
 > **Premisas del entorno local del usuario:**
@@ -27,7 +29,7 @@ Dejar el repositorio en un estado donde un ingeniero externo (revisor de TI) pue
 2. Copiar `appsettings.Development.json.example` → `appsettings.Development.json` y ajustar credenciales.
 3. Correr `dev/observability.ps1 up` (opcional) y `dotnet ef database update`.
 4. Correr `dotnet test --filter "Category!=RealDb"` y verlo verde.
-5. Correr `dotnet run --project Company.Product.WebApi`, abrir Swagger, hacer login con el admin seed y ejercitar al menos 3 endpoints.
+5. Correr `dotnet run --project Camilo.OrderFlow.WebApi`, abrir Swagger, hacer login con el admin seed y ejercitar al menos 3 endpoints.
 6. Leer **un único** documento de entrada (`README.md`) y entender en < 10 minutos qué es la plantilla, qué tiene, qué le falta y cómo extenderla.
 
 Si cualquiera de esos pasos falla, **el hand-off no está completo**.
@@ -64,8 +66,8 @@ Asumir que el connection string `ConnectionStrings:DefaultConnection` ya apunta 
 
 ```pwsh
 dotnet ef database update `
-  --project Company.Product.Modules.Identity.Infrastructure `
-  --startup-project Company.Product.WebApi
+  --project Camilo.OrderFlow.Modules.Identity.Infrastructure `
+  --startup-project Camilo.OrderFlow.WebApi
 ```
 
 - Verificar que las 4 migraciones se aplicaron en orden:
@@ -78,7 +80,7 @@ dotnet ef database update `
 #### A.3 Levantar la API y validar boot
 
 ```pwsh
-dotnet run --project Company.Product.WebApi
+dotnet run --project Camilo.OrderFlow.WebApi
 ```
 
 - `GET /_info` debe responder 200 con `commitSha` y `buildDate`.
@@ -201,7 +203,7 @@ El revisor de TI debe poder leer **un solo archivo** y saber qué hacer. Reescri
    2. Copiar `appsettings.Development.json.example` → `appsettings.Development.json` y ajustar.
    3. Levantar BD + observabilidad (con los comandos correctos resueltos en D.2).
    4. `dotnet ef database update ...`.
-   5. `dotnet run --project Company.Product.WebApi`.
+   5. `dotnet run --project Camilo.OrderFlow.WebApi`.
 5. **Validación rápida** (curl o bloque `.http`):
    - login admin → access token.
    - `GET /api/users/me` con el token.
@@ -242,7 +244,7 @@ Si hay desfase, **corregir el doc** (no el código).
 > **Esta fase la corre el asistente, pero los resultados los reporta al usuario para que él valide.**
 
 1. Levantar API local.
-2. Ejecutar la siguiente secuencia con `Company.Product.WebApi.http` (o `curl`):
+2. Ejecutar la siguiente secuencia con `Camilo.OrderFlow.WebApi.http` (o `curl`):
    - `POST /api/auth/login` (admin) → captura `accessToken`.
    - `GET /api/users/me` → 200 con perfil del admin.
    - `GET /api/users/me/permissions` → contiene los 6 permisos del seed.

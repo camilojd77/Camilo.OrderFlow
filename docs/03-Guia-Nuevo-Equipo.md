@@ -2,7 +2,7 @@
 
 > **Audiencia:** desarrollador que acaba de clonar el repositorio y necesita dejarlo corriendo.
 > **Objetivo:** de `git clone` a la API funcionando con login del admin, sin adivinar nada.
-> **Tiempo estimado:** 15–25 minutos la primera vez (la mayor parte es descarga de imágenes Docker).
+> Registrar el tiempo real de preparación; depende de dependencias disponibles y descarga de imágenes.
 
 Si lo que quieres es **adaptar la plantilla a un proyecto nuevo** (otro nombre, otro repositorio), esa es otra guía: [`04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md). Primero deja el proyecto corriendo con esta.
 
@@ -72,7 +72,7 @@ Acepta el diálogo de confianza de Windows. Sin esto el navegador rechaza `https
 
 ```pwsh
 git clone <url-del-repo>
-cd Company.Product
+cd <carpeta-del-workspace> # La fase local conserva el nombre físico anterior.
 dotnet --version
 docker compose version
 ```
@@ -84,8 +84,8 @@ docker compose version
 `appsettings.json` **no trae secretos**: los campos sensibles están vacíos a propósito. Cada desarrollador crea su propio `appsettings.Development.json`, que está en `.gitignore` y nunca se commitea.
 
 ```pwsh
-Copy-Item Company.Product.WebApi\appsettings.Development.json.example `
-          Company.Product.WebApi\appsettings.Development.json
+Copy-Item Camilo.OrderFlow.WebApi\appsettings.Development.json.example `
+          Camilo.OrderFlow.WebApi\appsettings.Development.json
 ```
 
 Abre la copia y ajusta como mínimo:
@@ -100,7 +100,7 @@ El resto del archivo ya viene con valores razonables: seed activado, Serilog hac
 
 > **Alternativa sin archivo:** si prefieres no tener secretos en disco dentro del repo, usa User Secrets:
 > ```pwsh
-> dotnet user-secrets --project Company.Product.WebApi set "Jwt:Key" "una-clave-de-al-menos-32-caracteres"
+> dotnet user-secrets --project Camilo.OrderFlow.WebApi set "Jwt:Key" "una-clave-de-al-menos-32-caracteres"
 > ```
 
 ---
@@ -168,8 +168,8 @@ Con SQL Server accesible y el connection string configurado:
 
 ```pwsh
 dotnet ef database update `
-  --project Company.Product.Modules.Identity.Infrastructure `
-  --startup-project Company.Product.WebApi
+  --project Camilo.OrderFlow.Modules.Identity.Infrastructure `
+  --startup-project Camilo.OrderFlow.WebApi
 ```
 
 Crea la base de datos, el schema `identity` y su tabla de historial `identity.__EFMigrationsHistory`, y aplica las 4 migraciones en orden:
@@ -183,8 +183,8 @@ Para comprobar el estado en cualquier momento:
 
 ```pwsh
 dotnet ef migrations list `
-  --project Company.Product.Modules.Identity.Infrastructure `
-  --startup-project Company.Product.WebApi
+  --project Camilo.OrderFlow.Modules.Identity.Infrastructure `
+  --startup-project Camilo.OrderFlow.WebApi
 ```
 
 ---
@@ -192,7 +192,7 @@ dotnet ef migrations list `
 ## 6. Paso 4 — Ejecutar
 
 ```pwsh
-dotnet run --project Company.Product.WebApi
+dotnet run --project Camilo.OrderFlow.WebApi
 ```
 
 Perfiles disponibles (`--launch-profile <nombre>`):
@@ -237,7 +237,7 @@ Resultado esperado:
 | 2 | Datos del admin: email, userName, perfil |
 | 3 | Los 6 permisos: `users.read/write`, `roles.read/write`, `permissions.read/write` |
 
-También puedes usar `Company.Product.WebApi/Company.Product.WebApi.http` (Visual Studio, o VS Code con la extensión REST Client): pega el `accessToken` en la variable `@token` del inicio y ejecuta cualquier bloque.
+También puedes usar `Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.http` (Visual Studio, o VS Code con la extensión REST Client): pega el `accessToken` en la variable `@token` del inicio y ejecuta cualquier bloque.
 
 ---
 
@@ -263,7 +263,7 @@ dotnet test -- --coverage --coverage-output-format cobertura
 > tests que ejecutar y el runner lo trataría como fallo. Sin filtro (`dotnet test` a secas) corre
 > todo y no hace falta.
 
-Referencia de lo que debes ver: **206 tests verdes** en total — 200 en la suite rápida (121 unit + 20 arquitectura + 59 integración) y 6 en la RealDb.
+Registrar las cantidades actuales por suite. Una suite RealDb excluida o sin casos no valida SQL Server. El resultado real depende del checkout y de Docker operativo.
 
 La suite RealDb levanta su propio contenedor de SQL Server en un puerto aleatorio, así que **no** choca con el de `dev/database.ps1`.
 
@@ -287,7 +287,7 @@ docker compose -f deploy/app/docker-compose.yml down -v   # parar y borrar datos
 Para construir solo la imagen:
 
 ```pwsh
-docker build -t company-product-api .
+docker build -t camilo-order-flow-api .
 ```
 
 > La imagen final corre como usuario sin privilegios, expone el puerto 8080 y trae `HEALTHCHECK` contra `/health/live`. Los argumentos de build `COMMIT_SHA` y `BUILD_DATE` alimentan el endpoint `/_info`.
@@ -296,7 +296,7 @@ docker build -t company-product-api .
 
 ## 10. Configurar el IDE
 
-**Visual Studio 2022/2026** — abre `Company.Product.slnx`. El proyecto de arranque es `Company.Product.WebApi`; el selector de perfiles (`http`, `https`, `Local+OTel`) está junto al botón de ejecutar.
+**Visual Studio 2022/2026** — abre `Camilo.OrderFlow.slnx`. El proyecto de arranque es `Camilo.OrderFlow.WebApi`; el selector de perfiles (`http`, `https`, `Local+OTel`) está junto al botón de ejecutar.
 
 **VS Code** — instala *C# Dev Kit* y *REST Client* (para el `.http`).
 
@@ -337,11 +337,11 @@ docker build -t company-product-api .
 - [ ] Existe `appsettings.Development.json` con connection string y `Jwt:Key` propios
 - [ ] SQL Server accesible (contenedor, LocalDB o instancia de red)
 - [ ] `dotnet ef database update` aplicó las 4 migraciones
-- [ ] `dotnet run --project Company.Product.WebApi` arranca sin errores
+- [ ] `dotnet run --project Camilo.OrderFlow.WebApi` arranca sin errores
 - [ ] Swagger abre y el login del admin devuelve `accessToken`
 - [ ] `GET /api/users/me/permissions` devuelve los 6 permisos
-- [ ] `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` → 200 verdes
-- [ ] (Opcional) `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` → 6 verdes con Docker arriba
+- [ ] `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` → casos rápidos aprobados, cantidad registrada
+- [ ] (Opcional) `dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8` → casos SQL realmente ejecutados y aprobados con Docker operativo
 
 ---
 
@@ -351,3 +351,7 @@ docker build -t company-product-api .
 - **Entender la arquitectura** → [`01-Arquitectura.md`](01-Arquitectura.md)
 - **Agregar un módulo, entidad, comando o endpoint** → [`Standards.md`](Standards.md)
 - **Trabajar con asistentes de IA sobre este repo** → [`02-Instrucciones-IA.md`](02-Instrucciones-IA.md)
+
+## Precisiones de ejecución local
+
+`docker compose version` acredita el CLI; comprobar el daemon con `docker info`. En esta fase se conserva la raíz física y se usa develop, sin publicar. No ejecutar wipe ni down -v para validar. No sobrescribir configuración local existente: ajustar selectivamente sin imprimir credenciales. Las duraciones y cantidades anteriores son orientativas/históricas, no garantías.

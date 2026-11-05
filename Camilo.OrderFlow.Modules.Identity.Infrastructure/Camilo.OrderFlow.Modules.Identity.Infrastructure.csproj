@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Caching.Hybrid" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Camilo.OrderFlow.BuildingBlocks.Infrastructure\Camilo.OrderFlow.BuildingBlocks.Infrastructure.csproj" />
+    <ProjectReference Include="..\Camilo.OrderFlow.BuildingBlocks.SharedKernel\Camilo.OrderFlow.BuildingBlocks.SharedKernel.csproj" />
+    <ProjectReference Include="..\Camilo.OrderFlow.Modules.Identity.Application\Camilo.OrderFlow.Modules.Identity.Application.csproj" />
+    <ProjectReference Include="..\Camilo.OrderFlow.Modules.Identity.Domain\Camilo.OrderFlow.Modules.Identity.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

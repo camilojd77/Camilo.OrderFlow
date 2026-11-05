@@ -1,0 +1,25 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/BuildingBlocks/">
+    <Project Path="Camilo.OrderFlow.BuildingBlocks.Infrastructure/Camilo.OrderFlow.BuildingBlocks.Infrastructure.csproj" />
+    <Project Path="Camilo.OrderFlow.BuildingBlocks.SharedKernel/Camilo.OrderFlow.BuildingBlocks.SharedKernel.csproj" />
+  </Folder>
+  <Folder Name="/src/Host/">
+    <Project Path="Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/">
+    <Project Path="Camilo.OrderFlow.Modules.Identity.Application/Camilo.OrderFlow.Modules.Identity.Application.csproj" />
+    <Project Path="Camilo.OrderFlow.Modules.Identity.Domain/Camilo.OrderFlow.Modules.Identity.Domain.csproj" />
+    <Project Path="Camilo.OrderFlow.Modules.Identity.Infrastructure/Camilo.OrderFlow.Modules.Identity.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Camilo.OrderFlow.ArchitectureTests/Camilo.OrderFlow.ArchitectureTests.csproj" />
+  </Folder>
+  <Folder Name="/tests/Integration/">
+    <Project Path="tests/Camilo.OrderFlow.WebApi.IntegrationTests/Camilo.OrderFlow.WebApi.IntegrationTests.csproj" />
+    <Project Path="tests/Camilo.OrderFlow.WebApi.IntegrationTests.RealDb/Camilo.OrderFlow.WebApi.IntegrationTests.RealDb.csproj" />
+  </Folder>
+  <Folder Name="/tests/Unit/">
+    <Project Path="tests/Camilo.OrderFlow.Identity.UnitTests/Camilo.OrderFlow.Identity.UnitTests.csproj" />
+  </Folder>
+</Solution>

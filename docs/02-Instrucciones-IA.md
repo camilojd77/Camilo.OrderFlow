@@ -3,7 +3,7 @@
 > **Audiencia:** modelos de IA (Claude, Copilot, Cursor, etc.) que generan o modifican código en este repositorio.
 > **Objetivo:** establecer reglas no-negociables de arquitectura, nomenclatura y orden de implementación para que cualquier output sea consistente con la plantilla.
 
-> Lee este documento **antes** de proponer o escribir cualquier cambio. Si una instrucción del usuario contradice este documento, **prioriza este documento** y avisa al usuario antes de continuar.
+> Lee este documento **antes** de proponer o escribir cualquier cambio. Respetar las instrucciones vigentes del entorno y del usuario; ante conflicto con esta guía, registrar la desviación. Una autorización explícita de alcance evita pedir otra confirmación rutinaria.
 
 ---
 
@@ -13,7 +13,7 @@
 - **Lenguaje:** C# (`net10.0`), nullables habilitados.
 - **Patrones principales:** Clean Architecture + Modular Monolith + CQRS (dispatcher propio en `BuildingBlocks.SharedKernel.Messaging`) + Result-by-exception (excepciones de dominio).
 - **Persistencia:** EF Core 10 + SQL Server, un `DbContext` por módulo, schema separado por módulo.
-- **Autorización:** basada en **permisos en BBDD** (`[AuthorizePermission("xxx.read")]`), no en roles hardcoded.
+- **Autorización:** basada en **permisos en BBDD** (`[AuthorizePermission(IdentityPermissions.UsersRead)]`), no en roles hardcoded.
 - **Versiones de NuGet:** **siempre** centralizadas en `Directory.Packages.props`. Nunca poner `Version="..."` en un `.csproj`.
 
 Antes de proponer una librería externa, verifica que ya esté en `Directory.Packages.props`. Si no está, propónla al usuario antes de añadirla.
@@ -35,14 +35,14 @@ WebApi → Infrastructure → Application → Domain
 - `BuildingBlocks.SharedKernel` no referencia a nadie del proyecto.
 - `BuildingBlocks.Infrastructure` solo referencia `SharedKernel`.
 
-> Hay tests que rompen el build si esto se viola: `tests/Company.Product.ArchitectureTests/CleanArchitectureTests.cs`. Si tu cambio rompe esos tests, el cambio está mal — corrige el cambio, no el test.
+> Hay tests que rompen el build si esto se viola: `tests/Camilo.OrderFlow.ArchitectureTests/CleanArchitectureTests.cs`. Si tu cambio rompe esos tests, el cambio está mal — corrige el cambio, no el test.
 
 ### 2.2 Aislamiento entre módulos
 
 - Un módulo (`Modules.Catalog.*`) **NUNCA** referencia directamente otro módulo (`Modules.Identity.*`).
 - Si necesitas datos de otro módulo:
   - Define una **interfaz en `Application`** del módulo consumidor.
-  - **Implementa esa interfaz** en `Infrastructure` del mismo módulo, llamando al otro módulo por una API pública (interfaz expuesta) o por HTTP/mensajería en el futuro.
+  - **Implementa el adaptador local en el host de composición**, que referencia los contratos de ambos módulos y llama la fachada pública del proveedor. Es un patrón previsto, todavía sin ejemplo multimódulo. Un adaptador futuro de red puede vivir en Infrastructure sin referenciar directamente otro módulo.
 - Cada módulo es candidato a ser extraído como microservicio sin tocar su código de Domain/Application.
 
 ### 2.3 Capas: qué va dónde
@@ -73,9 +73,9 @@ WebApi → Infrastructure → Application → Domain
 ### 3.1 Proyectos
 
 ```
-Company.Product.<Layer>                        ← BuildingBlocks o WebApi
-Company.Product.BuildingBlocks.<Block>          ← p.ej. SharedKernel, Infrastructure
-Company.Product.Modules.<Module>.<Layer>        ← p.ej. Modules.Identity.Domain
+Camilo.OrderFlow.<Layer>                        ← BuildingBlocks o WebApi
+Camilo.OrderFlow.BuildingBlocks.<Block>          ← p.ej. SharedKernel, Infrastructure
+Camilo.OrderFlow.Modules.<Module>.<Layer>        ← p.ej. Modules.Identity.Domain
 ```
 
 ### 3.2 Namespaces
@@ -83,8 +83,8 @@ Company.Product.Modules.<Module>.<Layer>        ← p.ej. Modules.Identity.Domai
 Coinciden 1:1 con la ruta de carpetas dentro del proyecto:
 
 ```
-Company.Product.Modules.Identity.Application.Commands.Users.CreateUser
-Company.Product.Modules.Identity.Application.Queries.Users.GetUserById
+Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.CreateUser
+Camilo.OrderFlow.Modules.Identity.Application.Queries.Users.GetUserById
 ```
 
 ### 3.3 Archivos
@@ -140,7 +140,7 @@ Company.Product.Modules.Identity.Application.Queries.Users.GetUserById
 | **Validación automática** | `ValidationPipelineBehavior<TRequest,TResponse>` | Crea un `AbstractValidator<T>`; se ejecuta antes del handler y lanza `ValidationException`. |
 | **Excepciones de dominio → ProblemDetails** | `GlobalExceptionHandler` mapea las excepciones de `SharedKernel.Exceptions` | Lanza `NotFoundException`, `ConflictException`, `ForbiddenException`, `ValidationException`. NO inventes nuevos handlers. |
 | **JWT** | `JwtTokenService` + `AuthService.LoginAsync` | Para endpoints que devuelven tokens, usa `IAuthService` desde el controller. |
-| **Autorización por permiso** | `[AuthorizePermission("...")]` + `PermissionPolicyProvider` | Decora el endpoint o método. Cachea automáticamente con `HybridCache` (TTL configurable). |
+| **Autorización por permiso** | `[AuthorizePermission(IdentityPermissions.UsersRead)]` + `PermissionPolicyProvider` | Decora el endpoint o método. Cachea automáticamente con `HybridCache` (TTL configurable). |
 | **Commit transaccional** | `IIdentityExecutionContext` (una interfaz por módulo) | Inyéctala en el handler y llama `CommitAsync(ct)` al final. Los repos nunca llaman `SaveChangesAsync`. |
 | **Correlation ID** | `CorrelationIdMiddleware` + `CorrelationIdHandler` | Para outgoing HttpClients: `.AddHttpMessageHandler<CorrelationIdHandler>()`. |
 | **Resiliencia HTTP** | `AddResilientHttpClients` | Añade nueva config en `appsettings:Resilience:<Cliente>` y registra siguiendo el patrón de `ErpClient`. |
@@ -172,8 +172,8 @@ Cuando te pidan **agregar una funcionalidad nueva**, sigue este orden estricto:
    - Si es servicio externo: implementar el cliente; registrar en `ServiceCollectionExtensions`.
 
 4. **WebApi al final**
-   - Controller con la ruta correcta y `[AuthorizePermission("...")]` cuando aplique.
-   - Tests de integración en `tests/Company.Product.WebApi.IntegrationTests` para el camino feliz y un caso de error.
+   - Controller con la ruta correcta y `[AuthorizePermission(IdentityPermissions.UsersRead)]` cuando aplique.
+   - Tests de integración en `tests/Camilo.OrderFlow.WebApi.IntegrationTests` para el camino feliz y un caso de error.
 
 5. **Seeder / config / docs**
    - Si añadiste un permiso: agregarlo al seeder.
@@ -221,9 +221,9 @@ Antes de marcar una funcionalidad como completa, deben pasar:
 
 ```bash
 dotnet test                                                # todo (incluye RealDb, requiere Docker)
-dotnet test tests/Company.Product.ArchitectureTests         # arquitectura
-dotnet test tests/Company.Product.Identity.UnitTests        # dominio + handlers
-dotnet test tests/Company.Product.WebApi.IntegrationTests   # endpoints
+dotnet test --project tests/Camilo.OrderFlow.ArchitectureTests/Camilo.OrderFlow.ArchitectureTests.csproj         # arquitectura
+dotnet test --project tests/Camilo.OrderFlow.Identity.UnitTests/Camilo.OrderFlow.Identity.UnitTests.csproj        # dominio + handlers
+dotnet test --project tests/Camilo.OrderFlow.WebApi.IntegrationTests/Camilo.OrderFlow.WebApi.IntegrationTests.csproj   # endpoints
 ```
 
 Los tests corren con **xunit.v3** sobre Microsoft Testing Platform (runner declarado en `global.json`).
@@ -236,13 +236,13 @@ Dos consecuencias al escribir tests nuevos:
 Estructura de un test (Arrange/Act/Assert):
 
 ```csharp
-[Fact(DisplayName = "Login con credenciales correctas devuelve token")]
+[Fact(DisplayName = "Login with valid credentials returns a token")]
 public async Task Login_ValidCredentials_ReturnsToken()
 {
     // Arrange
     ...
     // Act
-    var result = await sut.LoginAsync(request, default);
+    var result = await sut.LoginAsync(request, TestContext.Current.CancellationToken);
     // Assert
     result.ShouldNotBeNull();
     result.Token.ShouldNotBeNullOrWhiteSpace();
@@ -284,16 +284,16 @@ Antes de:
 ## 11. Cuando se agrega un módulo nuevo (checklist mínimo)
 
 1. Crear los 3 `.csproj` (`Domain`, `Application`, `Infrastructure`) con las referencias correctas.
-2. Agregar al `Company.Product.slnx` bajo `/src/Modules/`.
+2. Agregar al `Camilo.OrderFlow.slnx` bajo `/src/Modules/`.
 3. Definir entidades en `Domain/Entities/`.
 4. Crear `<Module>DbContext` propio en `Infrastructure/Persistence/Context`, con schema propio (`HasDefaultSchema("<module>")`).
 5. Configurar entidades con `IEntityTypeConfiguration<T>`.
-6. Generar primera migración: `dotnet ef migrations add Initial<Module> --project Company.Product.Modules.<Module>.Infrastructure --startup-project Company.Product.WebApi --context <Module>DbContext`.
+6. Generar primera migración: `dotnet ef migrations add Initial<Module> --project Camilo.OrderFlow.Modules.<Module>.Infrastructure --startup-project Camilo.OrderFlow.WebApi --context <Module>DbContext`.
 7. Crear `I<Module>ExecutionContext : IExecutionContext` en `Application/Abstractions` y su implementación en `Infrastructure/Persistence`.
 8. Crear `Add<Module>Application` y `Add<Module>Infrastructure(IConfiguration)` extensions, registrando `I<Module>ExecutionContext` (nunca `IExecutionContext`).
 9. Registrarlos en `Program.cs`.
 10. (Si aplica) seeder, permisos, controllers, integration tests.
-11. Verificar que los Architecture Tests siguen pasando: descubren el módulo nuevo automáticamente por convención de nombre.
+11. Verificar que los Architecture Tests siguen pasando: descubren por convención los ensamblados efectivamente referenciados y copiados a su salida. Incorporar además los registros y comprobaciones manuales de ModuleRegistrationTests.
 
 ---
 
@@ -312,8 +312,18 @@ Antes de:
 > 1. Dependencias solo hacia adentro (`WebApi → Infrastructure → Application → Domain`).
 > 2. Cada módulo es independiente, con su `DbContext`, su schema y su `I<Modulo>ExecutionContext` propios.
 > 3. Versiones de NuGet **solo** en `Directory.Packages.props`.
-> 4. Autorización por permiso (`[AuthorizePermission("...")]`), no por rol hardcoded.
+> 4. Autorización por permiso (`[AuthorizePermission(IdentityPermissions.UsersRead)]`), no por rol hardcoded.
 > 5. CQRS con dispatcher propio (`ISender`), validación con FluentValidation, mapping con **Mapperly** o manual. Tests con **Shouldly**.
 > 6. Excepciones de dominio extienden `DomainException`; el `GlobalExceptionHandler` las traduce a `ProblemDetails`.
 > 7. Orden de implementación: Domain → Application → Infrastructure → WebApi → tests.
 > 8. Antes de cualquier cambio destructivo o estructural, preguntar.
+
+## Idioma y alcance de validación
+
+Documentación, análisis, planes, prompts e informes en español. Identificadores, código y comentarios nuevos/modificados en inglés, sin traducción masiva del código histórico.
+
+ModuleCatalog descubre ensamblados referenciados y copiados a la salida de tests. Al agregar un módulo, comprobar esas referencias y registrar manualmente Add<Module>Infrastructure y la resolución de su execution context en ModuleRegistrationTests. El aislamiento entre dos módulos todavía no tiene ejemplo ejecutable: hoy solo existe Identity.
+
+HybridCache usa L1 local y L2 Redis opcional. Redis compartido no demuestra revocación inmediata entre réplicas: verificar propagación por clave y por tag y medir la ventana de permisos obsoletos. CacheInvalidationTests solo prueba una WebApiFactory; no hay garantía temporal multiinstancia medida.
+
+Suite rápida: `dotnet test --no-build --no-restore -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8`. Suite SQL: cambiar a `--filter-trait` y comprobar casos realmente ejecutados con Docker. El código 8 permite un proyecto sin casos por el filtro, nunca acredita SQL.

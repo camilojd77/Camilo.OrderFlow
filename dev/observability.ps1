@@ -67,7 +67,7 @@ function Show-Urls {
     Write-Label '    "ExporterProtocol": "grpc"'
     Write-Host ""
     Write-Label "  Or run with the pre-configured launch profile:"
-    Write-Label "    dotnet run --project Company.Product.WebApi --launch-profile `"Local+OTel`""
+    Write-Label "    dotnet run --project Camilo.OrderFlow.WebApi --launch-profile `"Local+OTel`""
     Write-Host ""
 }
 

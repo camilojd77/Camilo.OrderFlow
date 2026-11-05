@@ -3,8 +3,8 @@
 # Imagen de la API. Multi-stage: el SDK solo existe durante la compilación; la imagen
 # final lleva únicamente el runtime de ASP.NET y los binarios publicados.
 #
-#   docker build -t company-product-api .
-#   docker run --rm -p 8080:8080 company-product-api
+#   docker build -t camilo-order-flow-api .
+#   docker run --rm -p 8080:8080 camilo-order-flow-api
 #
 # Etapas:
 #   build     → restore + publish
@@ -22,16 +22,16 @@ WORKDIR /src
 # Los manifiestos primero: mientras no cambien, Docker reutiliza la capa de restore
 # aunque cambie el código. Central Package Management exige Directory.Packages.props.
 COPY Directory.Build.props Directory.Packages.props nuget.config ./
-COPY Company.Product.BuildingBlocks.SharedKernel/*.csproj      Company.Product.BuildingBlocks.SharedKernel/
-COPY Company.Product.BuildingBlocks.Infrastructure/*.csproj    Company.Product.BuildingBlocks.Infrastructure/
-COPY Company.Product.Modules.Identity.Domain/*.csproj          Company.Product.Modules.Identity.Domain/
-COPY Company.Product.Modules.Identity.Application/*.csproj     Company.Product.Modules.Identity.Application/
-COPY Company.Product.Modules.Identity.Infrastructure/*.csproj  Company.Product.Modules.Identity.Infrastructure/
-COPY Company.Product.WebApi/*.csproj                           Company.Product.WebApi/
-RUN dotnet restore Company.Product.WebApi/Company.Product.WebApi.csproj
+COPY Camilo.OrderFlow.BuildingBlocks.SharedKernel/*.csproj      Camilo.OrderFlow.BuildingBlocks.SharedKernel/
+COPY Camilo.OrderFlow.BuildingBlocks.Infrastructure/*.csproj    Camilo.OrderFlow.BuildingBlocks.Infrastructure/
+COPY Camilo.OrderFlow.Modules.Identity.Domain/*.csproj          Camilo.OrderFlow.Modules.Identity.Domain/
+COPY Camilo.OrderFlow.Modules.Identity.Application/*.csproj     Camilo.OrderFlow.Modules.Identity.Application/
+COPY Camilo.OrderFlow.Modules.Identity.Infrastructure/*.csproj  Camilo.OrderFlow.Modules.Identity.Infrastructure/
+COPY Camilo.OrderFlow.WebApi/*.csproj                           Camilo.OrderFlow.WebApi/
+RUN dotnet restore Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.csproj
 
 COPY . .
-RUN dotnet publish Company.Product.WebApi/Company.Product.WebApi.csproj \
+RUN dotnet publish Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.csproj \
         --configuration Release \
         --no-restore \
         --output /app/publish \
@@ -46,8 +46,8 @@ FROM build AS migrator
 # (Con el manifiesto presente, `dotnet ef` resuelve al tool local e ignora el global.)
 RUN dotnet tool restore
 ENTRYPOINT ["dotnet", "ef", "database", "update", \
-            "--project", "Company.Product.Modules.Identity.Infrastructure", \
-            "--startup-project", "Company.Product.WebApi"]
+            "--project", "Camilo.OrderFlow.Modules.Identity.Infrastructure", \
+            "--startup-project", "Camilo.OrderFlow.WebApi"]
 
 # ──────────────────────────────────────────────────────────────────────────────
 # final — imagen de ejecución
@@ -80,4 +80,4 @@ USER $APP_UID
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
     CMD curl --fail --silent http://localhost:8080/health/live || exit 1
 
-ENTRYPOINT ["dotnet", "Company.Product.WebApi.dll"]
+ENTRYPOINT ["dotnet", "Camilo.OrderFlow.WebApi.dll"]

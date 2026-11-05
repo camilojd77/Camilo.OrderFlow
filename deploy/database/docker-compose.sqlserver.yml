@@ -1,7 +1,7 @@
 services:
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
-    container_name: company-product-sqlserver
+    container_name: camilo-order-flow-sqlserver
     environment:
       ACCEPT_EULA: "Y"
       MSSQL_SA_PASSWORD: "Password123!"

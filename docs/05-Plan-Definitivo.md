@@ -1,7 +1,7 @@
 # Documento 5 — Plan Definitivo de Implementación
 
-> **Audiencia:** desarrollador (humano o IA) responsable de terminar la plantilla `Company.Product`.
-> **Estado:** **EJECUTADO — fases 0..10 completas** (2026-05-08). Documento **histórico**: se conserva como evidencia de qué se construyó y por qué. Las decisiones D1–D10 siguen vigentes; el resto del texto describe el proceso, no el estado actual.
+> **Audiencia:** desarrollador (humano o IA) responsable de terminar la plantilla `Camilo.OrderFlow`.
+> **Estado:** **EJECUTADO — fases 0..10 completas** (2026-05-08). Documento **histórico**: se conserva como evidencia del proceso. La conciliación siguiente reemplaza las afirmaciones indicadas; las instrucciones actuales del entorno y usuario prevalecen. Este documento no autoriza ejecutar de nuevo sus fases ni su prompt histórico.
 > **Documentos de soporte:**
 > - [`01-Arquitectura.md`](01-Arquitectura.md) — qué es la plantilla y qué reglas estructurales no se rompen.
 > - [`02-Instrucciones-IA.md`](02-Instrucciones-IA.md) — convenciones de código, nomenclatura, capas.
@@ -13,6 +13,17 @@
 ---
 
 ## 1. Decisiones tomadas (no negociables)
+
+### Conciliación vigente — 5 de octubre de 2026
+
+- **D4 reemplazada:** repositorios sin `SaveChangesAsync`; el handler confirma mediante `IIdentityExecutionContext.CommitAsync` (o el contexto específico del módulo). `IdentityExecutionContext` delega a EF. La excepción single-entity de § 3 es histórica y queda reemplazada por esta regla y `Standards.md`.
+- **D6 / fase 9 / checklist reemplazados:** `.github/workflows/ci.yml` dispara en push/PR a main/develop y ejecuta tests sin filtro, incluidos RealDb con Docker; no existe schedule nightly.
+- **D5 / fase 7:** Redis configura L2 compartida, pero no acredita revocación inmediata multiinstancia. Las pruebas de invalidación actuales usan una sola WebApiFactory; verificar propagación por clave/tag y medir ventana pendiente.
+- **D1–D3 y fase 0:** cifras de líneas, velocidad (~10x), ahorro, licencias y objetivo “100% OSS” son motivación histórica no auditada en esta fase, no resultados actuales ni certificación de licencias. No se cambian paquetes ni versiones.
+- Comandos de tests históricos `--filter` de VSTest quedan reemplazados por `dotnet test --no-build --no-restore -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` y, para SQL, `--filter-trait`. Un proyecto filtrado sin casos no valida SQL. Consultar la guía de arranque vigente.
+- Los permisos usan constantes existentes como `IdentityPermissions.RolesRead`; los literales del plan son antecedentes. Nuevos permisos hipotéticos requieren su propia clase/seed.
+- `global.json` selecciona Microsoft Testing Platform sin fijar SDK; CI usa 10.0.x y publica TRX/cobertura sin umbral ni auditoría dedicada. Paquetes centrales no garantizan por sí solos resolución bloqueada.
+- Las rutas de documentos eliminados, duraciones y checklist de construcción siguientes pertenecen al snapshot histórico. No describen aceptación actual del producto.
 
 | # | Decisión | Justificación corta |
 |---|---|---|
@@ -79,13 +90,13 @@ Paquetes que **se agregan en Fase 0**:
 
 Archivos a crear:
 
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.SharedKernel/Messaging/IRequest.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.SharedKernel/Messaging/IRequest.cs`
   ```csharp
   public interface IRequest<TResponse> { }
   public interface IRequest : IRequest<Unit> { }
   public readonly record struct Unit { public static readonly Unit Value = new(); }
   ```
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.SharedKernel/Messaging/IRequestHandler.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.SharedKernel/Messaging/IRequestHandler.cs`
   ```csharp
   public interface IRequestHandler<in TRequest, TResponse>
       where TRequest : IRequest<TResponse>
@@ -93,7 +104,7 @@ Archivos a crear:
       Task<TResponse> Handle(TRequest request, CancellationToken ct);
   }
   ```
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.SharedKernel/Messaging/IPipelineBehavior.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.SharedKernel/Messaging/IPipelineBehavior.cs`
   ```csharp
   public delegate Task<TResponse> RequestHandlerDelegate<TResponse>();
   public interface IPipelineBehavior<in TRequest, TResponse>
@@ -102,18 +113,18 @@ Archivos a crear:
       Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken ct);
   }
   ```
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.SharedKernel/Messaging/ISender.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.SharedKernel/Messaging/ISender.cs`
   ```csharp
   public interface ISender
   {
       Task<TResponse> Send<TResponse>(IRequest<TResponse> request, CancellationToken ct = default);
   }
   ```
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.Infrastructure/Messaging/Sender.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.Infrastructure/Messaging/Sender.cs`
   - Resuelve `IRequestHandler<TRequest, TResponse>` vía `IServiceProvider`.
   - Compone los `IPipelineBehavior<,>` registrados, en orden de registro, alrededor del handler.
   - Cachea el delegate compilado por `(TRequest, TResponse)` para evitar reflection en cada call.
-- `src/BuildingBlocks/Company.Product.BuildingBlocks.Infrastructure/Messaging/MessagingServiceCollectionExtensions.cs`
+- `src/BuildingBlocks/Camilo.OrderFlow.BuildingBlocks.Infrastructure/Messaging/MessagingServiceCollectionExtensions.cs`
   ```csharp
   public static IServiceCollection AddMessaging(this IServiceCollection services, params Assembly[] assembliesToScan);
   // Registra ISender + escanea handlers (IRequestHandler<,>) y los registra como Scoped.
@@ -122,7 +133,7 @@ Archivos a crear:
 #### 0.2 Eliminar AutoMapper
 
 - `Directory.Packages.props`: borrar `AutoMapper 16.1.0`.
-- `src/Modules/Identity/Company.Product.Modules.Identity.Application/Company.Product.Modules.Identity.Application.csproj`: borrar el `<PackageReference>`.
+- `src/Modules/Identity/Camilo.OrderFlow.Modules.Identity.Application/Camilo.OrderFlow.Modules.Identity.Application.csproj`: borrar el `<PackageReference>`.
 - `Modules.Identity.Application/DependencyInjection/ServiceCollectionExtensions.cs`: quitar `services.AddAutoMapper(...)`.
 - Agregar `Riok.Mapperly` a `Directory.Packages.props` y referenciarlo en `Modules.Identity.Application.csproj`.
 
@@ -137,19 +148,19 @@ Archivos a crear:
 #### 0.4 Eliminar FluentAssertions
 
 - `Directory.Packages.props`: reemplazar `FluentAssertions 8.8.0` por `Shouldly` (última estable).
-- `tests/Company.Product.Identity.UnitTests/Company.Product.Identity.UnitTests.csproj`: cambiar el `<PackageReference>`.
-- `tests/Company.Product.WebApi.IntegrationTests/Company.Product.WebApi.IntegrationTests.csproj`: idem si lo usaba.
+- `tests/Camilo.OrderFlow.Identity.UnitTests/Camilo.OrderFlow.Identity.UnitTests.csproj`: cambiar el `<PackageReference>`.
+- `tests/Camilo.OrderFlow.WebApi.IntegrationTests/Camilo.OrderFlow.WebApi.IntegrationTests.csproj`: idem si lo usaba.
 - Reescribir los asserts de `Should().X()` a `ShouldX()` (son pocos hoy).
 
 #### 0.5 Reemplazar `EF.InMemory` por SQLite
 
 - `Directory.Packages.props`: borrar `Microsoft.EntityFrameworkCore.InMemory`.
 - Agregar `Microsoft.EntityFrameworkCore.Sqlite 10.0.3`.
-- En `tests/Company.Product.WebApi.IntegrationTests`: si hay un `WebApiFactory`, sustituir el `UseInMemoryDatabase(...)` por SQLite con conexión `:memory:` mantenida abierta durante toda la fixture (necesario para que el schema sobreviva).
+- En `tests/Camilo.OrderFlow.WebApi.IntegrationTests`: si hay un `WebApiFactory`, sustituir el `UseInMemoryDatabase(...)` por SQLite con conexión `:memory:` mantenida abierta durante toda la fixture (necesario para que el schema sobreviva).
 
 #### 0.6 Architecture Tests
 
-`tests/Company.Product.ArchitectureTests/CleanArchitectureTests.cs`:
+`tests/Camilo.OrderFlow.ArchitectureTests/CleanArchitectureTests.cs`:
 
 - Eliminar reglas que mencionen `AutoMapper` o `MediatR`.
 - Añadir:
@@ -460,7 +471,7 @@ Cubrir:
 
 Asegurar que incluye placeholder para todos los settings: `ConnectionStrings:DefaultConnection`, `Jwt:*`, `OpenTelemetry:OtlpEndpoint`, `Cors:AllowedOrigins`, `Seed:Enabled`, `Permissions:CacheTtlMinutes`, `Cache:Redis`, `Lockout:*`.
 
-#### 10.2 `Company.Product.WebApi.http`
+#### 10.2 `Camilo.OrderFlow.WebApi.http`
 
 Ejemplos para cada endpoint nuevo: register, login, refresh, logout, change-password, CRUD users/roles/permissions, asignación de roles, me, me/permissions.
 
@@ -522,7 +533,7 @@ Sin cambios respecto al `03`. Solo nota: con HybridCache desde Fase 7, la migrac
 > **Cómo usar este prompt:** pégalo como mensaje de sistema o como primer mensaje en una nueva conversación con Sonnet 4.6 dentro de este repositorio. El asistente leerá los documentos y empezará por la Fase 0.
 
 ```
-Eres un asistente de implementación senior trabajando sobre el repositorio `Company.Product`,
+Eres un asistente de implementación senior trabajando sobre el repositorio `Camilo.OrderFlow`,
 una plantilla backend en .NET 10 con Clean Architecture + Modular Monolith. Tu único trabajo
 en esta sesión es ejecutar el plan definido en `docs/05-Plan-Definitivo.md`, fase por fase,
 sin desviaciones.

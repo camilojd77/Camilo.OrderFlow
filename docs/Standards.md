@@ -25,7 +25,7 @@ WebApi → Infrastructure → Application → Domain
 
 ## Cómo agregar un nuevo módulo
 
-1. Crear **tres** proyectos siguiendo el patrón `Company.Product.Modules.<Nombre>.<Capa>`: `Domain`, `Application` e `Infrastructure` (el host `WebApi` se comparte).
+1. Crear **tres** proyectos siguiendo el patrón `Camilo.OrderFlow.Modules.<Nombre>.<Capa>`: `Domain`, `Application` e `Infrastructure` (el host `WebApi` se comparte).
 2. Agregar referencias solo en la dirección permitida (tabla anterior).
 3. Exponer la DI mediante extension methods en `DependencyInjection/ServiceCollectionExtensions.cs`.
 4. Registrar en `Program.cs`:
@@ -74,13 +74,13 @@ WebApi → Infrastructure → Application → Domain
    (en Identity: `IdentityPermissions.cs`), con el formato `<recurso>.<accion>` en minúsculas,
    y agregarla también a la lista `All`:
    ```csharp
-   public const string OrdersRead = "orders.read";
+   public static class OrdersPermissions { public const string OrdersRead = "orders.read"; }
    ```
 2. Sembrarlo en el seeder del módulo, para que exista en BBDD y el rol Admin lo tenga.
    `IdentityDataSeeder` falla al arrancar si una constante declarada no está en el seed.
 3. Decorar el endpoint — siempre con la constante, nunca con el literal:
    ```csharp
-   [AuthorizePermission(IdentityPermissions.OrdersRead)]
+   [AuthorizePermission(OrdersPermissions.OrdersRead)]
    public IActionResult Get() { ... }
    ```
 
@@ -116,10 +116,10 @@ Todas las versiones de NuGet están en `Directory.Packages.props` en la raíz.
 Cada módulo expone dos extension methods en `DependencyInjection/ServiceCollectionExtensions.cs`:
 
 ```csharp
-// Application (handlers, validators, mappers — sin infraestructura)
+// Application: handlers, validators and mappers
 builder.Services.AddOrdersApplication();
 
-// Infrastructure (DbContext, repos, servicios externos, opciones)
+// Infrastructure: persistence and external services
 builder.Services.AddOrdersInfrastructure(builder.Configuration);
 ```
 
@@ -189,7 +189,7 @@ public sealed class MyActionCommandHandler : IRequestHandler<MyActionCommand, My
             ?? throw new NotFoundException($"Entity {request.Id} not found.");
 
         entity.DoSomething(request.Name);
-        await _executionContext.CommitAsync(ct);  // siempre al final del handler
+        await _executionContext.CommitAsync(ct);  // Commit at the end of the handler
 
         return entity.ToDto();
     }
@@ -203,7 +203,7 @@ public sealed class MyActionCommandHandler : IRequestHandler<MyActionCommand, My
 ### Cómo añadir un Query paginado
 
 ```csharp
-// Query hereda PagedRequest para obtener SafePage, SafePageSize y Skip ya calculados
+// PagedRequest provides SafePage, SafePageSize and Skip
 public sealed record ListMyEntitiesQuery(int Page, int PageSize, string? Search)
     : PagedRequest(Page, PageSize), IRequest<PagedResult<MyEntityDto>>;
 ```
@@ -239,7 +239,7 @@ public sealed class MyEntitiesController : ControllerBase
     public MyEntitiesController(ISender sender) => _sender = sender;
 
     [HttpGet]
-    [AuthorizePermission("myentities.read")]
+    [AuthorizePermission(MyEntitiesPermissions.Read)]
     [ProducesResponseType(typeof(PagedResult<MyEntityDto>), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
@@ -256,7 +256,7 @@ public sealed class MyEntitiesController : ControllerBase
 ```
 
 Reglas:
-- `[AuthorizePermission("resource.action")]`, nunca `[Authorize(Roles="...")]`.
+- `[AuthorizePermission(IdentityPermissions.UsersRead)]`, nunca `[Authorize(Roles="...")]`.
 - Todo permiso nuevo debe estar en el seed (`IdentityDataSeeder`) y asignado al rol Admin.
 - `[ProducesResponseType]` para cada código HTTP posible (200, 201, 400, 401, 403, 404, 409).
 
@@ -276,8 +276,8 @@ Cuándo invalidar:
 
 Patrón en un handler:
 ```csharp
-await _executionContext.CommitAsync(ct);            // primero persistir
-await _permissionService.InvalidateRoleAsync(roleId, ct);  // luego invalidar
+await _executionContext.CommitAsync(ct);            // Persist first
+await _permissionService.InvalidateRoleAsync(roleId, ct);  // Invalidate after commit
 ```
 
 > En producción multi-instancia se requiere Redis configurado (`Cache:Redis` en appsettings).  
@@ -310,7 +310,7 @@ services.AddScoped<IOrdersExecutionContext, OrdersExecutionContext>();
 ```
 
 Los handlers del módulo inyectan `IOrdersExecutionContext`. El test `ModuleRegistrationTests`
-falla si algún módulo registra `IExecutionContext` directamente.
+falla si un módulo registrado explícitamente en ese test registra `IExecutionContext` directamente. Incorporar manualmente cada registro nuevo y su comprobación de resolución.
 
 ---
 
@@ -348,7 +348,7 @@ public sealed class MyActionCommandHandlerTests
 
         var result = await CreateHandler().Handle(
             new MyActionCommand(entity.Id, "New Name"),
-            CancellationToken.None);
+            TestContext.Current.CancellationToken);
 
         result.Name.ShouldBe("New Name");
         await _ctx.Received(1).CommitAsync(Arg.Any<CancellationToken>());
@@ -362,7 +362,7 @@ public sealed class MyActionCommandHandlerTests
         await Should.ThrowAsync<NotFoundException>(() =>
             CreateHandler().Handle(
                 new MyActionCommand(Guid.NewGuid(), "X"),
-                CancellationToken.None));
+                TestContext.Current.CancellationToken));
     }
 }
 ```
@@ -416,3 +416,15 @@ Convenciones:
 - Un caso feliz + al menos un caso de error por endpoint.
 - Datos únicos por test (`Guid.NewGuid().ToString("N")[..8]`) para evitar colisiones entre tests que comparten la misma instancia de BD.
 - No testear reglas de negocio en integration tests — para eso están los unit tests de handlers.
+
+## Límites y ejemplos previstos
+
+OrdersPermissions y MyEntitiesPermissions son ejemplos hipotéticos que requieren crear su clase, lista All y seed del módulo; no son miembros existentes de IdentityPermissions. Para el endpoint del ejemplo definir `public static class MyEntitiesPermissions { public const string Read = "myentities.read"; }`. No se crean módulos de negocio como parte de esta conciliación.
+
+ModuleCatalog descubre ensamblados referenciados y copiados a la salida de tests. Al agregar un módulo, comprobar esas referencias y registrar manualmente Add<Module>Infrastructure y la resolución de su execution context en ModuleRegistrationTests. El aislamiento entre dos módulos todavía no tiene ejemplo ejecutable: hoy solo existe Identity.
+
+HybridCache usa L1 local y L2 Redis opcional. Redis compartido no demuestra revocación inmediata entre réplicas: verificar propagación por clave y por tag y medir la ventana de permisos obsoletos. CacheInvalidationTests solo prueba una WebApiFactory; no hay garantía temporal multiinstancia medida.
+
+Patrón previsto para integración entre módulos: puerto en Application del consumidor y adaptador en el host de composición que llama una fachada pública del proveedor. No añadir referencias directas entre módulos. Este patrón no está implementado en un escenario multimódulo actual; la extracción a red requiere decisiones de contratos, latencia y fallos parciales.
+
+Documentación en español; código, identificadores y comentarios nuevos/modificados en inglés. Los ejemplos son fragmentos de extensión, no capacidades ya implementadas.

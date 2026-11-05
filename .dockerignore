@@ -38,6 +38,7 @@ coveragereport/
 
 # ── Documentación y utilidades de desarrollo ─────────────────────────────────
 docs/
+docs-develop/
 dev/
 deploy/
 README.md

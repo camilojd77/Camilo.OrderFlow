@@ -19,7 +19,7 @@ El punto de entrada es el [`README.md`](../README.md) de la raíz. Esta página 
 | [`01-Arquitectura.md`](01-Arquitectura.md) | Visión estructural, reglas de dependencias, decisiones explícitas |
 | [`02-Instrucciones-IA.md`](02-Instrucciones-IA.md) | Convenciones no negociables para agentes de IA que extiendan la plantilla |
 | [`03-Guia-Nuevo-Equipo.md`](03-Guia-Nuevo-Equipo.md) | De `git clone` a la API corriendo: prerrequisitos, contenedores, migraciones, troubleshooting |
-| [`04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md) | Renombrar la plantilla para un producto nuevo y apuntar a otro repositorio |
+| [`04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md) | Renombrado técnico, exclusiones y validación; otro repositorio es opción fuera de la fase local |
 | [`05-Plan-Definitivo.md`](05-Plan-Definitivo.md) | Decisiones D1–D10 tomadas al construir la plantilla (**histórico**, ya ejecutado) |
 | [`Standards.md`](Standards.md) | Patrones completos: módulo, entidad, command, query, endpoint, tests |
 | [`Observability.md`](Observability.md) | Cómo usar Grafana, Loki, Tempo y Prometheus con esta API |

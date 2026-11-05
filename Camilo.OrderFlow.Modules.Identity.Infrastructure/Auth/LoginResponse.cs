@@ -1,0 +1,9 @@
+namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Auth;
+
+public sealed record LoginResponse(
+    string AccessToken,
+    DateTime ExpiresUtc,
+    LoginUserDto User,
+    string RawRefreshToken);
+
+public sealed record LoginUserDto(Guid Id, string UserName, string Email);

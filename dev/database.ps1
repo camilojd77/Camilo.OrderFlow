@@ -34,7 +34,7 @@ switch ($Command) {
         do {
             Start-Sleep -Seconds 5
             $retries++
-            $status = docker inspect --format='{{.State.Health.Status}}' company-product-sqlserver 2>$null
+            $status = docker inspect --format='{{.State.Health.Status}}' camilo-order-flow-sqlserver 2>$null
         } while ($status -ne 'healthy' -and $retries -lt 12)
 
         if ($status -eq 'healthy') {
