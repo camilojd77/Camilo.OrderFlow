@@ -18,7 +18,9 @@ disable-model-invocation: true
    - **Sin atribución de IA**: ni `Co-Authored-By`, ni `Generated with`, ni mención a un modelo o asistente.
 4. Escribe el mensaje en un archivo **UTF-8 sin BOM** con la herramienta de escritura de archivos (en el scratchpad,
    nunca dentro del repo) y ejecuta `git commit -F <archivo>`. Nunca `-m` con here-string de PowerShell 5.1.
-5. Nunca `--no-verify`, `-n`, `--amend` sobre commits ya publicados, ni `git push`: el push lo hace la persona.
+5. Los hooks de `.githooks/` ([ADR-0027](../../../docs/adr/0027-hooks-de-git-con-core-hookspath.md)) validan el mensaje y el formato: si uno rechaza el
+   commit, corrige la causa y vuelve a intentarlo. Si `git config core.hooksPath` no devuelve `.githooks`, avisa.
+   Nunca `--no-verify`, `-n`, `--amend` sobre commits ya publicados, ni `git push`: el push lo hace la persona.
 6. Muestra `git log --oneline -1` y el hash.
 7. **Si con este commit la rama corta queda terminada y estable** (verificación en verde, nada pendiente): intégrala
    en `develop` con `git switch develop` y `git merge --no-ff <rama>`. Comprueba `git status` limpio y borra la rama

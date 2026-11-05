@@ -1,0 +1,21 @@
+#!/bin/sh
+# pre-commit: dotnet format check on the staged C# files of the solution.
+# Enabled with: git config core.hooksPath .githooks   (docs/adr/0027-hooks-de-git-con-core-hookspath.md)
+# Note: dotnet format reads the working tree, so partially staged files are checked as they are on disk.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.cs')
+[ -n "$staged" ] || exit 0
+
+# Build the --include argument list without word-splitting file names.
+set --
+for file in $(printf '%s\n' "$staged" | tr ' ' '\001'); do
+  set -- "$@" "$(printf '%s' "$file" | tr '\001' ' ')"
+done
+
+echo "pre-commit: dotnet format --verify-no-changes on $# staged C# file(s)..."
+if ! dotnet format Camilo.OrderFlow.slnx --verify-no-changes --include "$@"; then
+  echo "pre-commit: formatting issues. Run: dotnet format Camilo.OrderFlow.slnx --include <files>, then stage again." >&2
+  exit 1
+fi
+
+exit 0

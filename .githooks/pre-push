@@ -1,0 +1,18 @@
+#!/bin/sh
+# pre-push: Release build (warnings are errors) and the fast test suite (no Docker needed).
+# The full suite (RealDb) and the coverage gate run in CI.
+# Enabled with: git config core.hooksPath .githooks   (docs/adr/0027-hooks-de-git-con-core-hookspath.md)
+
+echo "pre-push: dotnet build -c Release..."
+if ! dotnet build Camilo.OrderFlow.slnx -c Release --nologo -v quiet; then
+  echo "pre-push: build failed; push aborted." >&2
+  exit 1
+fi
+
+echo "pre-push: fast test suite (without RealDb)..."
+if ! dotnet test --no-build -c Release -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8; then
+  echo "pre-push: tests failed; push aborted." >&2
+  exit 1
+fi
+
+exit 0
