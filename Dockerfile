@@ -11,12 +11,15 @@
 #   migrator  → aplica migraciones EF (la usa deploy/app/docker-compose.yml)
 #   final     → imagen de ejecución (por defecto)
 
-ARG DOTNET_VERSION=10.0
+# Versiones fijadas (docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md):
+# el SDK coincide con global.json y el runtime es el que trae ese SDK.
+ARG DOTNET_SDK_VERSION=10.0.403
+ARG ASPNET_RUNTIME_VERSION=10.0.14
 
 # ──────────────────────────────────────────────────────────────────────────────
 # build
 # ──────────────────────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS build
+FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_SDK_VERSION} AS build
 WORKDIR /src
 
 # Los manifiestos primero: mientras no cambien, Docker reutiliza la capa de restore
@@ -52,7 +55,7 @@ ENTRYPOINT ["dotnet", "ef", "database", "update", \
 # ──────────────────────────────────────────────────────────────────────────────
 # final — imagen de ejecución
 # ──────────────────────────────────────────────────────────────────────────────
-FROM mcr.microsoft.com/dotnet/aspnet:${DOTNET_VERSION} AS final
+FROM mcr.microsoft.com/dotnet/aspnet:${ASPNET_RUNTIME_VERSION} AS final
 
 # curl es solo para el HEALTHCHECK de abajo. Si tu orquestador ya sondea /health/live
 # por su cuenta (Kubernetes, ECS), puedes borrar tanto el apt-get como el HEALTHCHECK.

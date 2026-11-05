@@ -7,7 +7,7 @@ Este archivo no los repite. Documentación en español; código, commits y ramas
 
 ## 1. Primera vez que clonas
 
-1. Trabaja desde `develop` (rama de desarrollo); `main` es la principal. SDK .NET 10 (no fijado en `global.json`; el CI usa `10.0.x`).
+1. Trabaja desde `develop` (rama de desarrollo); `main` es la principal. SDK .NET `10.0.403` o un parche posterior de la banda 10.0.4xx (`global.json`).
 2. `dotnet tool restore` (trae `dotnet-ef`) y `dotnet restore Camilo.OrderFlow.slnx`.
 3. Copia `Camilo.OrderFlow.WebApi/appsettings.Development.json.example` a `appsettings.Development.json` (ignorado) y
    rellena las dos cadenas de conexión y `Jwt:Key` (≥ 32 caracteres).
@@ -128,7 +128,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) Permisos en base de datos con HybridCache, no roles.
 - [ADR-0010](docs/adr/0010-identidad-propia-bcrypt-jwt.md) Identidad propia, BCrypt, JWT con `ClockSkew = 0`.
 - [ADR-0011](docs/adr/0011-migraciones-fuera-del-arranque.md) Migraciones fuera del arranque.
-- [ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md) CPM; pines transitivos solo por seguridad; SDK sin fijar.
+- [ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md) Reemplazada por ADR-0024.
 - [ADR-0013](docs/adr/0013-configuracion-sin-secretos-y-opciones-validadas.md) Sin secretos en el repo; opciones validadas al arrancar.
 - [ADR-0014](docs/adr/0014-estilo-editorconfig-y-cero-avisos-en-ci.md) Reemplazada por ADR-0023.
 - [ADR-0015](docs/adr/0015-telemetria-otel-y-serilog-loki.md) OTel/OTLP para trazas y métricas; Serilog → Loki para logs.
@@ -140,6 +140,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0021](docs/adr/0021-main-principal-y-develop-de-desarrollo.md) `main` principal; `develop` de desarrollo; ramas cortas que vuelven a `develop` con merge.
 - [ADR-0022](docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md) Clientes HTTP de un módulo en su `Infrastructure/Http`, detrás de un puerto.
 - [ADR-0023](docs/adr/0023-avisos-como-errores-en-local-y-ci.md) Avisos como errores en local y en CI; estilo en `suggestion`.
+- [ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md) CPM; SDK en `global.json`; imágenes por versión exacta; acciones por SHA.
 
 ## 8. Reglas para modelos de IA
 
