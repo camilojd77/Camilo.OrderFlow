@@ -6,6 +6,30 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Seguimiento de la revisión del plan 01
+
+- **Qué:**
+  - [ADR-0021](docs/adr/0021-una-sola-rama-develop.md): una sola rama de larga vida, `develop` (se borró `main` del
+    remoto). [ADR-0022](docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md): los clientes HTTP de un módulo
+    van en su `Infrastructure/Http`, detrás de un puerto.
+  - `SystemClockUsageTests`: test de arquitectura que impide lecturas nuevas de `DateTime.UtcNow`/`Now` en producción
+    ([ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md)); hoy hay 20 permitidas en 8 archivos.
+  - `OpenTelemetry:Environment` vale `dev` por defecto en `appsettings.json` (antes `production`); el
+    ReleaseChecklist pide fijarlo en cada entorno.
+  - `.gitattributes` con LF en el repositorio y CRLF/LF en disco según `.editorconfig`.
+  - Comentarios corregidos en `CleanArchitectureTests.cs` (adaptador en el host) y `dev/rename.ps1` (ruta archivada).
+- **Provisional:** el disparador de `main` sigue en `.github/workflows/ci.yml` (sin efecto); quitarlo es un cambio de
+  pipeline pendiente.
+- **Cifras:**
+
+  | Comprobación | Resultado |
+  |---|---|
+  | Tests | 208/208: ArchitectureTests 22 (antes 20) · Identity.UnitTests 121 · WebApi.IntegrationTests 59 · WebApi.IntegrationTests.RealDb 6 |
+  | Avisos (`-c Release -p:TreatWarningsAsErrors=true`) | 0 |
+  | Paquetes vulnerables | 0 |
+  | `dotnet format --verify-no-changes` | OK |
+  | Cobertura | No se volvió a medir (sin cambios de código de producción salvo `appsettings.json`) |
+
 ## 2026-11-05 — Estructura para trabajar con Claude (plan 01)
 
 - **Qué:**
