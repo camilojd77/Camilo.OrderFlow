@@ -90,9 +90,17 @@
         Llega por: Microsoft.EntityFrameworkCore.Sqlite 10.0.3 (tests de integracion).
         Motivo:    GHSA-2m69-gcr7-jv3q (severidad alta) afecta a 2.1.11.
         Revisar:   cuando EF Core publique una version que ya referencie >= 2.1.13.
+
+    · System.Security.Cryptography.Pkcs
+        Llega por: Microsoft.Data.SqlClient 6.1.1 <- Microsoft.EntityFrameworkCore.SqlServer 10.0.3
+                   y AspNetCore.HealthChecks.SqlServer 9.0.0.
+        Motivo:    GHSA-846f-f764-76mx (severidad alta) y GHSA-2fmv-rv2c-59x7 (severidad moderada)
+                   afectan a 9.0.4 (rango 9.0.0-9.0.20; corregido en 10.0.13 para la linea 10.0.x).
+        Revisar:   cuando Microsoft.Data.SqlClient arrastre ya una version corregida.
   -->
   <ItemGroup Label="Transitive pins">
     <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3"                          Version="2.1.13" />
+    <PackageVersion Include="System.Security.Cryptography.Pkcs"                   Version="10.0.13" />
   </ItemGroup>
 
 </Project>
