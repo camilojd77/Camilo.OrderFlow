@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Reemplazado por las skills de `.claude/skills/`, las reglas de `.claude/rules/` y [`docs/architecture.md`](../architecture.md). Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Estándares y Convenciones
 
 ## Regla de oro: las dependencias solo fluyen hacia adentro

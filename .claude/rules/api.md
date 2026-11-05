@@ -22,6 +22,9 @@ paths:
 - Errores: lanzar la excepción de dominio; `GlobalExceptionHandler` la convierte en `ProblemDetails`. No construyas
   respuestas de error a mano.
 - Rutas en `api/<recurso-en-plural-kebab-case>`; acciones como sub-recursos (`/{id}/deactivate`).
+- Códigos: 200 GET con cuerpo · 201 POST con `Location` · 204 sin cuerpo · 400 validación · 401 sin token ·
+  403 sin permiso · 404 no existe · 409 conflicto.
+- Endpoints de autenticación o sensibles: política de rate limiting `auth` (`[EnableRateLimiting("auth")]`).
 
 Referencia: `Camilo.OrderFlow.WebApi/Controllers/UsersController.cs`, `Controllers/AuthController.cs`.
 

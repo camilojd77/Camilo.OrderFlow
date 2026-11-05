@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Reemplazado por el [README](../../README.md) (Requisitos, Desarrollo local, Resolución de problemas) y [`CLAUDE.md`](../../CLAUDE.md) §1. Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Documento 3 — Puesta en marcha en un equipo nuevo
 
 > **Audiencia:** desarrollador que acaba de clonar el repositorio y necesita dejarlo corriendo.

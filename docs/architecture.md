@@ -93,6 +93,26 @@ lo consume directamente. Para que otro módulo use Identity hará falta la **fac
 Los handlers se registran por reflexión en `Add<Modulo>Application()`. Ejemplo completo:
 `Camilo.OrderFlow.Modules.Identity.Application/Commands/Users/CreateUser/` y `WebApi/Controllers/UsersController.cs`.
 
+Orden de implementación: Domain (y sus tests) → Application (puertos, request, validator, handler, DTO, mapper, tests
+del handler) → Infrastructure (implementación, configuración EF, migración) → endpoint (y tests de integración) →
+seed, configuración y documentación. Nunca se empieza por el endpoint.
+
+### Nomenclatura
+
+| Elemento | Patrón | Ejemplo |
+|---|---|---|
+| Proyecto | `Camilo.OrderFlow.Modules.<Modulo>.<Capa>` · `Camilo.OrderFlow.BuildingBlocks.<Bloque>` | `Camilo.OrderFlow.Modules.Identity.Domain` |
+| Namespace | Igual a la ruta de carpetas dentro del proyecto | `…Identity.Application.Commands.Users.CreateUser` |
+| Command / handler / validator | `<Verbo><Nombre>Command`, `…CommandHandler`, `…CommandValidator` | `CreateUserCommand` |
+| Query | `Get<Nombre>Query` · `List<Nombre>Query` (+ `Handler`) | `GetUserByIdQuery`, `ListUsersQuery` |
+| DTO | `<Nombre>Dto` · `<Nombre>Response` | `UserDto`, `LoginResponse` |
+| Repositorio | `I<Entidad>Repository` / `<Entidad>Repository` | `IUserRepository` |
+| Configuración EF | `<Entidad>Configuration` | `UserConfiguration` |
+| Mapper | `<Entidad>Mapper` (partial, Mapperly) | `UserMapper` |
+| Extensión de DI | `ServiceCollectionExtensions.cs`, partida por tema (`.Cors.cs`, `.Resilience.cs`) | `ServiceCollectionExtensions.RateLimiting.cs` |
+| Permiso | `<recurso>.<accion>` en minúsculas, constante en `<Modulo>Permissions` | `users.read` → `IdentityPermissions.UsersRead` |
+| Ruta HTTP | `api/<recurso-en-plural>` | `api/users` |
+
 ## 6. Comunicación entre módulos
 
 - **Hoy**: no hay ninguna (un solo módulo). Sin eventos de integración, outbox/inbox ni broker.

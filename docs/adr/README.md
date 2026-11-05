@@ -7,7 +7,7 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 1. Copia [`plantilla.md`](plantilla.md) como `NNNN-<decision-en-minusculas-con-guiones>.md` con el siguiente número
    libre (o usa la skill `nuevo-adr`).
 2. Un ADR **Aceptada** no se edita. Si la decisión cambia, el ADR nuevo dice qué reemplaza y el antiguo cambia solo su
-   estado a «Reemplazada por [ADR-NNNN](…)».
+   estado a `Reemplazada por [ADR-NNNN](NNNN-....md)`.
 3. En el **mismo PR**: fila en esta tabla y línea en [`CLAUDE.md`](../../CLAUDE.md) §7.
 
 ## Índice

@@ -20,6 +20,8 @@ paths:
 - Nunca se lee `IConfiguration` desde Domain ni Application.
 - `ConnectionStrings:DefaultConnection` (EF) y `ConnectionStrings:Db` (health check) deben ir siempre juntas.
 - Los valores de `deploy/app` y `deploy/database` son solo de desarrollo local; no los reutilices en otro sitio.
+- Si el cambio afecta al arranque o al despliegue (clave obligatoria nueva, dependencia nueva), actualiza
+  `docs/ReleaseChecklist.md`.
 - `Dockerfile`: la imagen final corre sin privilegios y con `HEALTHCHECK`; el target `migrator` es el que migra.
 
 Referencia: `Camilo.OrderFlow.WebApi/appsettings.json`, `appsettings.Development.json.example`,

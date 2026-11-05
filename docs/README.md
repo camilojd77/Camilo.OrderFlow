@@ -1,40 +1,44 @@
 # Índice de documentación
 
-El punto de entrada es el [`README.md`](../README.md) de la raíz. Esta página dice qué leer según lo que necesites hacer.
+El punto de entrada es el [`README.md`](../README.md) de la raíz; el manual operativo, [`CLAUDE.md`](../CLAUDE.md).
+Cada tema tiene **una sola fuente**; los demás documentos enlazan a ella.
 
 ## Por dónde empezar
 
 | Si eres… | Lee, en este orden |
 |---|---|
-| **Desarrollador nuevo en el proyecto** | [`03-Guia-Nuevo-Equipo.md`](03-Guia-Nuevo-Equipo.md) → [`01-Arquitectura.md`](01-Arquitectura.md) → [`Standards.md`](Standards.md) |
-| **Quien arranca un producto nuevo con la plantilla** | [`03-Guia-Nuevo-Equipo.md`](03-Guia-Nuevo-Equipo.md) → [`04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md) |
-| **Arquitecto o revisor de TI** | [`01-Arquitectura.md`](01-Arquitectura.md) → [`05-Plan-Definitivo.md`](05-Plan-Definitivo.md) → checklist de aprobación del [`README.md`](../README.md) |
-| **Responsable de un deploy** | [`ReleaseChecklist.md`](ReleaseChecklist.md) → [`Observability.md`](Observability.md) |
-| **Agente de IA (Copilot, Claude, Cursor)** | [`02-Instrucciones-IA.md`](02-Instrucciones-IA.md) → [`Standards.md`](Standards.md) |
+| Desarrollador nuevo | [`README.md`](../README.md) → [`CLAUDE.md`](../CLAUDE.md) → [`architecture.md`](architecture.md) |
+| Arquitecto o revisor | [`architecture.md`](architecture.md) → [`adr/`](adr/README.md) → [`CHANGELOG.md`](../CHANGELOG.md) |
+| Responsable de un despliegue | [`ReleaseChecklist.md`](ReleaseChecklist.md) → [`observabilidad.md`](observabilidad.md) |
+| Modelo de IA (Claude u otro) | [`CLAUDE.md`](../CLAUDE.md); las reglas de `.claude/rules/` se cargan solas por ruta y las recetas están en `.claude/skills/` |
 
-## Todos los documentos
+## Documentos vigentes
+
+| Documento | Fuente única de |
+|---|---|
+| [`../README.md`](../README.md) | Estado del proyecto, requisitos, desarrollo local, comandos, resolución de problemas |
+| [`../CLAUDE.md`](../CLAUDE.md) | Manual operativo para personas y modelos de IA |
+| [`../CHANGELOG.md`](../CHANGELOG.md) | Historial de cambios con cifras |
+| [`architecture.md`](architecture.md) | Arquitectura: proyectos, reglas de dependencia, cadena de un caso de uso, datos, API, ruta a microservicios |
+| [`observabilidad.md`](observabilidad.md) | Flujo de señales, catálogo, convenciones de telemetría, stack local, runbooks |
+| [`adr/`](adr/README.md) | Decisiones de arquitectura y su porqué |
+| [`ReleaseChecklist.md`](ReleaseChecklist.md) | Qué validar antes de cada despliegue |
+| [`EntenderObservabilidad.md`](EntenderObservabilidad.md) | Ruta de estudio de observabilidad (formación general; no fija convenciones del repo) |
+| [`../deploy/observability/README.md`](../deploy/observability/README.md) | Detalle del stack local: componentes, puertos, volúmenes |
+
+## Archivo (histórico)
+
+`archive/` documenta **cómo se llegó hasta aquí**; no describe el estado actual y no se actualiza. Cada documento
+dice al principio qué lo reemplaza.
 
 | Documento | Contenido |
 |---|---|
-| [`01-Arquitectura.md`](01-Arquitectura.md) | Visión estructural, reglas de dependencias, decisiones explícitas |
-| [`02-Instrucciones-IA.md`](02-Instrucciones-IA.md) | Convenciones no negociables para agentes de IA que extiendan la plantilla |
-| [`03-Guia-Nuevo-Equipo.md`](03-Guia-Nuevo-Equipo.md) | De `git clone` a la API corriendo: prerrequisitos, contenedores, migraciones, troubleshooting |
-| [`04-Guia-Renombrado-y-Repositorio.md`](04-Guia-Renombrado-y-Repositorio.md) | Renombrado técnico, exclusiones y validación; otro repositorio es opción fuera de la fase local |
-| [`05-Plan-Definitivo.md`](05-Plan-Definitivo.md) | Decisiones D1–D10 tomadas al construir la plantilla (**histórico**, ya ejecutado) |
-| [`Standards.md`](Standards.md) | Patrones completos: módulo, entidad, command, query, endpoint, tests |
-| [`Observability.md`](Observability.md) | Cómo usar Grafana, Loki, Tempo y Prometheus con esta API |
-| [`EntenderObservabilidad.md`](EntenderObservabilidad.md) | Ruta de estudio de observabilidad moderna (material de formación, independiente de la plantilla) |
-| [`ReleaseChecklist.md`](ReleaseChecklist.md) | Qué validar antes de cada deploy a Staging o Production |
-| [`archive/06-Plan-HandOff.md`](archive/06-Plan-HandOff.md) | Plan de hand-off a TI (**ejecutado**) |
-| [`archive/07-Plan-Cambios-Revision.md`](archive/07-Plan-Cambios-Revision.md) | Revisión completa de la plantilla y plan de cambios (**ejecutado**) |
-
-> Los documentos de `archive/` documentan **cómo se llegó hasta aquí**; no describen el estado actual.
-
-## Documentación fuera de `docs/`
-
-| Ubicación | Contenido |
-|---|---|
-| [`../README.md`](../README.md) | Puerta de entrada: qué es la plantilla, arranque rápido, checklist de TI |
-| [`../deploy/observability/README.md`](../deploy/observability/README.md) | Detalle del stack de observabilidad local: componentes, puertos, volúmenes |
-| [`../Dockerfile`](../Dockerfile) | Imagen de la API, comentada etapa por etapa |
-| [`../deploy/app/docker-compose.yml`](../deploy/app/docker-compose.yml) | Aplicación completa en contenedores (BBDD + migraciones + API) |
+| [`archive/01-Arquitectura.md`](archive/01-Arquitectura.md) | Guía de arquitectura de la plantilla |
+| [`archive/02-Instrucciones-IA.md`](archive/02-Instrucciones-IA.md) | Instrucciones anteriores para agentes de IA |
+| [`archive/03-Guia-Nuevo-Equipo.md`](archive/03-Guia-Nuevo-Equipo.md) | Puesta en marcha paso a paso |
+| [`archive/04-Guia-Renombrado-y-Repositorio.md`](archive/04-Guia-Renombrado-y-Repositorio.md) | Renombrar la plantilla con `dev/rename.ps1` |
+| [`archive/05-Plan-Definitivo.md`](archive/05-Plan-Definitivo.md) | Plan de construcción de la plantilla (decisiones D1-D10) |
+| [`archive/06-Plan-HandOff.md`](archive/06-Plan-HandOff.md) | Plan de hand-off a TI |
+| [`archive/07-Plan-Cambios-Revision.md`](archive/07-Plan-Cambios-Revision.md) | Revisión de la plantilla y plan de cambios |
+| [`archive/Standards.md`](archive/Standards.md) | Recetas de módulo, command, query, endpoint y tests |
+| [`archive/Observability.md`](archive/Observability.md) | Guía rápida anterior de observabilidad |

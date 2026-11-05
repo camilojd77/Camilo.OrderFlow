@@ -24,6 +24,8 @@ paths:
 - Un tipo de error nuevo = excepción que hereda de `DomainException` + una línea de mapeo en
   `Errors/GlobalExceptionHandler.cs`. No reescribas el handler.
 - No debilites security headers, CORS (`*` con credenciales), `ClockSkew`, ni la validación de opciones.
+- Una dependencia crítica nueva (base de datos, servicio externo) lleva su health check en
+  `Observability/Health/HealthChecksExtensions.cs`, con etiqueta `ready`; `live` no comprueba dependencias.
 - `HttpClient` saliente: con `Microsoft.Extensions.Http.Resilience` siguiendo el patrón `ErpClient` y, si aplica,
   `CorrelationIdHandler`. Ojo: los reintentos solo para operaciones idempotentes.
 
