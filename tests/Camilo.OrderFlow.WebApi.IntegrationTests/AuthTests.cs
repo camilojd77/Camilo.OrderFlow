@@ -41,6 +41,21 @@ public sealed class AuthTests : IClassFixture<WebApiFactory>
     }
 
     [Fact]
+    public async Task Register_DuplicateUserName_Returns409()
+    {
+        var userName = $"dupname-{Guid.NewGuid():N}"[..20];
+        await _client.PostAsJsonAsync("/api/auth/register",
+            new { email = $"first-{Guid.NewGuid():N}@test.com", userName, password = "Password1!" },
+            TestContext.Current.CancellationToken);
+
+        var response = await _client.PostAsJsonAsync("/api/auth/register",
+            new { email = $"second-{Guid.NewGuid():N}@test.com", userName, password = "Password1!" },
+            TestContext.Current.CancellationToken);
+
+        response.StatusCode.ShouldBe(HttpStatusCode.Conflict);
+    }
+
+    [Fact]
     public async Task Register_InvalidPassword_Returns422()
     {
         var response = await _client.PostAsJsonAsync("/api/auth/register",

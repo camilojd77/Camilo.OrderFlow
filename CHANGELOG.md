@@ -6,6 +6,15 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Registro con nombre de usuario repetido
+
+- **Qué:** `RegisterUser` comprueba también el nombre de usuario; uno repetido devuelve 409 en vez de 500 (antes lo
+  rechazaba el índice único de la base de datos). Test unitario y de integración nuevos; el de integración reproducía
+  el 500 antes de la corrección.
+- **Provisional:** nada.
+- **Cifras:** tests 210/210 (Identity.UnitTests 122, WebApi.IntegrationTests 60, ArchitectureTests 22, RealDb 6);
+  0 avisos; formato OK.
+
 ## 2026-11-05 — Endurecimiento: datos personales, avisos y versiones fijadas
 
 - **Qué:**
