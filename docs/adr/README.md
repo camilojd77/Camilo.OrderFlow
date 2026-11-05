@@ -22,7 +22,7 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0006](0006-integracion-modulos-adaptador-en-host.md) | Integrar módulos con un puerto en el consumidor y un adaptador en el host | Aceptada | 2026-11-05 |
 | [0007](0007-errores-excepciones-dominio-problemdetails.md) | Errores como excepciones de dominio traducidas a ProblemDetails | Aceptada | 2026-11-05 |
 | [0008](0008-versionado-por-cabecera-y-swashbuckle.md) | Versionar la API por cabecera `api-version` y documentarla con Swashbuckle | Aceptada | 2026-11-05 |
-| [0009](0009-autorizacion-por-permisos-con-hybridcache.md) | Autorizar por permisos en base de datos con caché HybridCache | Aceptada | 2026-11-05 |
+| [0009](0009-autorizacion-por-permisos-con-hybridcache.md) | Autorizar por permisos en base de datos con caché HybridCache | Reemplazada por [0030](0030-cache-de-permisos-con-ventana-acotada.md) | 2026-11-05 |
 | [0010](0010-identidad-propia-bcrypt-jwt.md) | Identidad propia con BCrypt y JWT sin tolerancia de reloj | Reemplazada por [0029](0029-revocacion-de-sesiones.md) | 2026-11-05 |
 | [0011](0011-migraciones-fuera-del-arranque.md) | Aplicar migraciones fuera del arranque | Aceptada | 2026-11-05 |
 | [0012](0012-versiones-centralizadas-y-pines-transitivos.md) | Versiones centralizadas (CPM) y pines transitivos solo por seguridad | Reemplazada por [0024](0024-versiones-fijadas-sdk-imagenes-y-acciones.md) | 2026-11-05 |
@@ -43,3 +43,4 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0027](0027-hooks-de-git-con-core-hookspath.md) | Hooks de git versionados con `core.hooksPath` | Aceptada | 2026-11-05 |
 | [0028](0028-superficie-publica-de-los-modulos.md) | Superficie pública mínima por módulo; fachada `Contracts` con el primer consumidor | Aceptada | 2026-11-05 |
 | [0029](0029-revocacion-de-sesiones.md) | Identidad propia con revocación inmediata de sesiones y rotación segura de refresh tokens | Aceptada | 2026-11-05 |
+| [0030](0030-cache-de-permisos-con-ventana-acotada.md) | Autorizar por permisos en base de datos, con caché de ventana acotada entre réplicas | Aceptada | 2026-11-05 |

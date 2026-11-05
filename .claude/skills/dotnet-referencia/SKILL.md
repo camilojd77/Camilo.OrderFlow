@@ -19,7 +19,7 @@ description: "Cómo consultar la documentación oficial de .NET/ASP.NET Core/EF 
 | E-2 | `dotnet add package` / versión en el `.csproj` | Versiones solo en `Directory.Packages.props`, con la skill `actualizar-dependencias` | [ADR-0024](../../../docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md) |
 | E-3 | MediatR para CQRS, AutoMapper para mapeo, FluentAssertions | Dispatcher propio (`ISender`), Mapperly, Shouldly | [ADR-0004](../../../docs/adr/0004-dispatcher-propio-y-mapperly.md) |
 | E-4 | ASP.NET Core Identity | Módulo Identity propio, BCrypt, JWT | [ADR-0029](../../../docs/adr/0029-revocacion-de-sesiones.md) |
-| E-5 | `[Authorize(Roles = …)]` | Permisos: `[AuthorizePermission(IdentityPermissions.X)]` o política | [ADR-0009](../../../docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) |
+| E-5 | `[Authorize(Roles = …)]` | Permisos: `[AuthorizePermission(IdentityPermissions.X)]` o política | [ADR-0030](../../../docs/adr/0030-cache-de-permisos-con-ventana-acotada.md) |
 | E-6 | `Database.Migrate()` al arrancar | Migraciones fuera del arranque (CLI o contenedor `migrator`) | [ADR-0011](../../../docs/adr/0011-migraciones-fuera-del-arranque.md) |
 | E-7 | Validación integrada de .NET 10 (`AddValidation()`, data annotations en requests) | FluentValidation + `ValidationPipelineBehavior` | [ADR-0007](../../../docs/adr/0007-errores-excepciones-dominio-problemdetails.md) |
 | E-8 | Patrón Result / `Results.Problem` en cada endpoint | Excepciones de dominio + `GlobalExceptionHandler` → `ProblemDetails` | [ADR-0007](../../../docs/adr/0007-errores-excepciones-dominio-problemdetails.md) |

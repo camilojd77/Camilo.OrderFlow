@@ -1,6 +1,6 @@
 # ADR-0009 — Autorizar por permisos en base de datos con caché HybridCache
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0030](0030-cache-de-permisos-con-ventana-acotada.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** se despliegue con varias réplicas y haya que garantizar un plazo de revocación, o se adopte un
   proveedor de identidad externo.

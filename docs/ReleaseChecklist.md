@@ -47,7 +47,7 @@ Revisar antes de cada deploy a Staging o Production.
 - [ ] Existe al menos un usuario con rol **Admin** activo y contraseña fuerte
 - [ ] **Primer deploy:** fuera de `Development` el seeder crea el admin con un hash placeholder inutilizable a propósito. Hay que fijarle una contraseña real antes de entregar el entorno; si no, nadie puede autenticarse
 - [ ] Los permisos semilla (`users.read/write`, `roles.read/write`, `permissions.read/write`) están en la BBDD
-- [ ] Si hay más de una réplica, configurar Redis compartido y verificar propagación por clave/tag entre réplicas; medir la ventana aceptada de permisos obsoletos. Redis configurado no acredita revocación inmediata
+- [ ] Si hay más de una réplica, `Cache:Redis` configurado (obligatorio). Ventana aceptada de permisos obsoletos en otras réplicas = `Permissions:LocalCacheTtlMinutes` (1 min por defecto; [ADR-0030](adr/0030-cache-de-permisos-con-ventana-acotada.md))
 - [ ] `Lockout:MaxAttempts` y `Lockout:DurationMinutes` ajustados a la política de seguridad del cliente
 - [ ] `Permissions:CacheTtlMinutes` revisado (default 10 min); reducir si los cambios de permisos deben propagarse más rápido
 

@@ -148,7 +148,7 @@ seed, configuración y documentación. Nunca se empieza por el endpoint.
 | OpenAPI | Swashbuckle, un documento por versión, UI en Development y Staging |
 | Errores | Excepciones de dominio → `GlobalExceptionHandler` → `ProblemDetails` con `traceId` y `correlationId` ([ADR-0007](adr/0007-errores-excepciones-dominio-problemdetails.md)) |
 | Autenticación | JWT Bearer, `ClockSkew = 0`; además, el usuario debe seguir activo en cada petición (si no, 401). Refresh token en cookie, rotado con consumo atómico y detección de reutilización ([ADR-0029](adr/0029-revocacion-de-sesiones.md)) |
-| Autorización | Por permiso: `[AuthorizePermission(IdentityPermissions.X)]` ([ADR-0009](adr/0009-autorizacion-por-permisos-con-hybridcache.md)) |
+| Autorización | Por permiso: `[AuthorizePermission(IdentityPermissions.X)]` ([ADR-0030](adr/0030-cache-de-permisos-con-ventana-acotada.md)) |
 | Transversales | Rate limiting (`default` en todo, `auth` en autenticación), security headers, CORS, límites de Kestrel, `X-Correlation-Id`, resiliencia de `HttpClient` |
 | Diagnóstico | `/health/live`, `/health/ready` (SQL Server), `/health`, `/_info` (versión, commit, fecha de build) |
 

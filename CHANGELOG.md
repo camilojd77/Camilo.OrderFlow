@@ -6,6 +6,24 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Deuda funcional heredada de la fase cero
+
+- **Qué:**
+  - **Sesiones de usuarios desactivados:** el host comprueba en cada petición autenticada que el usuario sigue activo
+    (401 si no) y desactivar revoca sus refresh tokens ([ADR-0029](docs/adr/0029-revocacion-de-sesiones.md),
+    reemplaza a ADR-0010). Antes el JWT seguía valiendo hasta 60 min.
+  - **Refresh tokens:** consumo atómico (UPDATE condicional en la misma transacción que el token nuevo) y detección
+    de reutilización (un token ya rotado revoca toda la cadena). Antes, 8 refresh paralelos daban 5 tokens válidos.
+  - **Caché de permisos:** L1 local por defecto 5 → 1 min; ventana entre réplicas documentada y Redis obligatorio con
+    varias réplicas ([ADR-0030](docs/adr/0030-cache-de-permisos-con-ventana-acotada.md), reemplaza a ADR-0009).
+  - **Validación:** un único `ValidationPipelineBehavior` en BuildingBlocks, registrado una vez y secuencial.
+  - **Reintentos HTTP:** el cliente resiliente ya no reintenta `POST`, `PATCH`, `PUT`, `DELETE` ni `CONNECT`.
+- **Provisional:** la ventana de 1 min entre réplicas es un límite conocido; eliminarla requiere un backplane de
+  invalidación.
+- **Cifras:** tests 212 → 227 (SessionRevocation 4, RefreshTokenRotation 3, RefreshTokenConcurrency 1 en RealDb,
+  Resilience 5, registro de behaviors 1, unitario de desactivación 1); cada test nuevo falló antes de su arreglo.
+  Cobertura total 87,1 % → 88,9 %; 0 avisos; formato OK; modelo de EF sin cambios.
+
 ## 2026-11-05 — Superficie pública mínima de Identity
 
 - **Qué:** `internal` por defecto ([ADR-0028](docs/adr/0028-superficie-publica-de-los-modulos.md)). En Identity pasan a `internal` 21 handlers, 8

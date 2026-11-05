@@ -30,5 +30,5 @@ Referencia: `Persistence/Configurations/UserConfiguration.cs`, `Persistence/Repo
 `Camilo.OrderFlow.Modules.Identity.Infrastructure/`).
 
 Fuente: [ADR-0005](../../docs/adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md) ·
-[ADR-0009](../../docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) ·
+[ADR-0030](../../docs/adr/0030-cache-de-permisos-con-ventana-acotada.md) ·
 [ADR-0029](../../docs/adr/0029-revocacion-de-sesiones.md) · [docs/architecture.md](../../docs/architecture.md) §7

@@ -46,7 +46,9 @@ public static class ServiceCollectionExtensions
 
         // Permissions cache — L1 in-process (always) + L2 Redis (when Cache:Redis is set)
         var ttl = configuration.GetValue<int?>("Permissions:CacheTtlMinutes") ?? 10;
-        var localTtl = configuration.GetValue<int?>("Permissions:LocalCacheTtlMinutes") ?? 5;
+        // Local (L1) entries are not invalidated on other instances: this is the longest a replica can keep
+        // serving stale permissions after a change (docs/adr/0030-cache-de-permisos-con-ventana-acotada.md).
+        var localTtl = configuration.GetValue<int?>("Permissions:LocalCacheTtlMinutes") ?? 1;
         services.AddHybridCache();
         services.AddSingleton(new HybridCacheEntryOptions
         {

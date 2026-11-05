@@ -30,4 +30,4 @@ Referencia: `Camilo.OrderFlow.WebApi/Controllers/UsersController.cs`, `Controlle
 
 Fuente: [ADR-0007](../../docs/adr/0007-errores-excepciones-dominio-problemdetails.md) ·
 [ADR-0008](../../docs/adr/0008-versionado-por-cabecera-y-swashbuckle.md) ·
-[ADR-0009](../../docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) · [docs/architecture.md](../../docs/architecture.md) §8
+[ADR-0030](../../docs/adr/0030-cache-de-permisos-con-ventana-acotada.md) · [docs/architecture.md](../../docs/architecture.md) §8
