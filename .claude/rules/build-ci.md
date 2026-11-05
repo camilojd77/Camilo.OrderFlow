@@ -9,6 +9,7 @@ paths:
   - "*.slnx"
   - "**/*.csproj"
   - ".editorconfig"
+  - "eng/**"
 ---
 
 # Build, paquetes y CI
@@ -20,6 +21,7 @@ paths:
   archivo.
 - **No** añadas `NoWarn`, `WarningsAsErrors` relajados, `#pragma warning disable` ni `[SuppressMessage]`, ni bajes
   severidades de `.editorconfig` para pasar el build: corrige el código.
+- El CI aplica `eng/coverage-gate.cs` tras los tests; no lo quites ni bajes `eng/coverage-thresholds.json`.
 - `TreatWarningsAsErrors=true` en `Directory.Build.props` (local y CI): no lo desactives. El CI ejecuta todos los tests (RealDb incluida). No lo debilites (ni
   filtros, ni `continue-on-error`).
 - Proyectos nuevos solo con la skill `nuevo-modulo`, y siempre en el `.slnx` en su carpeta virtual.

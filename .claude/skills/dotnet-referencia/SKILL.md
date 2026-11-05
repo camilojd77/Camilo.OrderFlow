@@ -28,7 +28,7 @@ description: "Cómo consultar la documentación oficial de .NET/ASP.NET Core/EF 
 | E-11 | .NET Aspire (AppHost, ServiceDefaults) | No se usa: compose en `deploy/` y OpenTelemetry configurado a mano | [ADR-0015](../../../docs/adr/0015-telemetria-otel-y-serilog-loki.md) |
 | E-12 | Logs por el exportador OTLP de OpenTelemetry | Serilog → Loki | [ADR-0015](../../../docs/adr/0015-telemetria-otel-y-serilog-loki.md) |
 | E-13 | `DbContext` inyectado en el endpoint o el handler | Repositorios + `I<Modulo>ExecutionContext` | [ADR-0005](../../../docs/adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md) |
-| E-14 | EF Core InMemory para tests | SQLite en memoria y Testcontainers | [ADR-0016](../../../docs/adr/0016-estrategia-de-pruebas.md) |
+| E-14 | EF Core InMemory para tests | SQLite en memoria y Testcontainers | [ADR-0026](../../../docs/adr/0026-umbral-de-cobertura-por-proyecto.md) |
 | E-15 | Controladores (en ejemplos antiguos) | Endpoints nuevos con Minimal APIs; controladores existentes se quedan | [ADR-0019](../../../docs/adr/0019-endpoints-nuevos-minimal-apis.md) |
 
 Si la referencia contradice una excepción, `CLAUDE.md` o un ADR, **manda el repo**. No cambies el repo para alinearlo

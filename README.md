@@ -35,7 +35,7 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 
 **Aplazado a propósito**
 
-- Umbral de cobertura y hooks de git (se reportan / se verifican con la skill `verificar-cambio`).
+- Hooks de git (la verificación local es la skill `verificar-cambio`).
 - Dashboards y alertas como código.
 - Criterios de extracción a microservicios ([`docs/architecture.md`](docs/architecture.md) §11).
 
@@ -130,7 +130,9 @@ dotnet list Camilo.OrderFlow.slnx package --vulnerable --include-transitive
   para la app de test. `--ignore-exit-code 8` evita que un proyecto sin casos tras el filtro cuente como fallo; una
   suite RealDb filtrada sin casos **no** valida SQL Server.
 - En Git Bash usa `-p:` y no `/p:` (MSYS lo convierte en ruta).
-- Sin umbral de cobertura por ahora ([ADR-0016](docs/adr/0016-estrategia-de-pruebas.md)).
+- Cobertura de líneas mínima por proyecto (`eng/coverage-thresholds.json`, solo sube; [ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md)). Tras
+  la suite completa con `--coverage --coverage-output-format cobertura --results-directory <dir>`:
+  `dotnet run eng/coverage-gate.cs -- <dir>`. El CI la aplica en cada push y PR.
 
 ---
 

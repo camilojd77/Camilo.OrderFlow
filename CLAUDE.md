@@ -103,8 +103,9 @@ entre módulos → host. En la duda, en el módulo.
 | Build como el CI (avisos = errores) | `dotnet build Camilo.OrderFlow.slnx -c Release` |
 
 xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van después de `--`. En Git Bash, `-p:` y no
-`/p:`. Sin umbral de cobertura (se reporta). Convenciones: `.claude/rules/pruebas.md` y
-[ADR-0016](docs/adr/0016-estrategia-de-pruebas.md).
+`/p:`. Cobertura mínima por proyecto en `eng/coverage-thresholds.json` (solo sube): tras la suite completa con
+cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Convenciones: `.claude/rules/pruebas.md` y
+[ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md).
 
 ## 6. Commits
 
@@ -133,7 +134,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0013](docs/adr/0013-configuracion-sin-secretos-y-opciones-validadas.md) Sin secretos en el repo; opciones validadas al arrancar.
 - [ADR-0014](docs/adr/0014-estilo-editorconfig-y-cero-avisos-en-ci.md) Reemplazada por ADR-0023.
 - [ADR-0015](docs/adr/0015-telemetria-otel-y-serilog-loki.md) OTel/OTLP para trazas y métricas; Serilog → Loki para logs.
-- [ADR-0016](docs/adr/0016-estrategia-de-pruebas.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite y Testcontainers.
+- [ADR-0016](docs/adr/0016-estrategia-de-pruebas.md) Reemplazada por ADR-0026.
 - [ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md) Reemplazada por ADR-0025.
 - [ADR-0018](docs/adr/0018-loggermessage-para-logs-nuevos.md) Logs nuevos con `[LoggerMessage]`.
 - [ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md) Endpoints nuevos con Minimal APIs; los controladores se quedan.
@@ -143,6 +144,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0023](docs/adr/0023-avisos-como-errores-en-local-y-ci.md) Avisos como errores en local y en CI; estilo en `suggestion`.
 - [ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md) CPM; SDK en `global.json`; imágenes por versión exacta; acciones por SHA.
 - [ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md) `TimeProvider` en todo el código; el dominio recibe la hora por parámetro.
+- [ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite, Testcontainers; cobertura mínima por proyecto con trinquete.
 
 ## 8. Reglas para modelos de IA
 

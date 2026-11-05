@@ -15,6 +15,8 @@ paths:
   error por endpoint; datos únicos por test. No prueban reglas de negocio (eso es unitario).
 - **RealDb**: `[Trait("Category", "RealDb")]` y Testcontainers; necesitan Docker. Un cambio de persistencia se
   verifica también aquí.
+- **Cobertura**: mínimo por proyecto en `eng/coverage-thresholds.json`, comprobado por `eng/coverage-gate.cs` sobre la
+  suite completa. No se bajan mínimos; un módulo nuevo añade el suyo. Código nuevo, con sus tests.
 - **Arquitectura**: no se relajan ni se borran reglas para que pase un cambio. Al añadir un módulo, registra su
   `Add<Modulo>Infrastructure` y su execution context en `ModuleRegistrationTests`.
 - Reloj en tests: `TestTime.UtcNow` y `TestTime.Provider` (`FixedTimeProvider`) de `Identity.UnitTests`, y valores
@@ -28,5 +30,5 @@ Referencia: `tests/Camilo.OrderFlow.Identity.UnitTests/Application/Users/CreateU
 `tests/Camilo.OrderFlow.WebApi.IntegrationTests.RealDb/IdentitySmokeTests.cs`,
 `tests/Camilo.OrderFlow.ArchitectureTests/ModuleRegistrationTests.cs`.
 
-Fuente: [ADR-0016](../../docs/adr/0016-estrategia-de-pruebas.md) · [ADR-0003](../../docs/adr/0003-validar-capas-con-tests-de-arquitectura.md) ·
+Fuente: [ADR-0026](../../docs/adr/0026-umbral-de-cobertura-por-proyecto.md) · [ADR-0003](../../docs/adr/0003-validar-capas-con-tests-de-arquitectura.md) ·
 [CLAUDE.md](../../CLAUDE.md) §5

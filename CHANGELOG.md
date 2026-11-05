@@ -6,6 +6,25 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Umbral de cobertura por proyecto
+
+- **Qué:** `eng/coverage-gate.cs` fusiona los informes Cobertura de todas las suites, excluye migraciones y `obj/`, y
+  comprueba los mínimos de `eng/coverage-thresholds.json`; el CI lo ejecuta tras los tests y la skill
+  `verificar-cambio` en local con Docker ([ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md), reemplaza a
+  ADR-0016). Mínimos = línea base redondeada hacia abajo a múltiplo de 5; solo suben.
+- **Provisional:** nada.
+- **Cifras** (cobertura de líneas fusionada, 210/210 tests con RealDb):
+
+  | Proyecto | Cobertura | Mínimo |
+  |---|---|---|
+  | BuildingBlocks.Infrastructure | 100,0 % (29/29) | 100 |
+  | BuildingBlocks.SharedKernel | 79,2 % (19/24) | 75 |
+  | Identity.Application | 100,0 % (510/510) | 100 |
+  | Identity.Domain | 98,9 % (94/95) | 95 |
+  | Identity.Infrastructure | 93,2 % (454/487) | 90 |
+  | WebApi | 72,3 % (529/732) | 70 |
+  | **Total** | **87,1 % (1635/1877)** | **85** |
+
 ## 2026-11-05 — `TimeProvider` en todo el código
 
 - **Qué:** las 20 lecturas de `DateTime.UtcNow`/`DateTimeOffset.UtcNow` de producción pasan a `TimeProvider`
