@@ -10,15 +10,17 @@ namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Auth;
 public sealed class JwtTokenService : IJwtTokenService
 {
     private readonly JwtOptions _options;
+    private readonly TimeProvider _timeProvider;
 
-    public JwtTokenService(IOptions<JwtOptions> options)
+    public JwtTokenService(IOptions<JwtOptions> options, TimeProvider timeProvider)
     {
         _options = options.Value;
+        _timeProvider = timeProvider;
     }
 
     public (string Token, DateTime ExpiresUtc) GenerateToken(User user)
     {
-        var expiresUtc = DateTime.UtcNow.AddMinutes(_options.ExpiresMinutes);
+        var expiresUtc = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_options.ExpiresMinutes);
 
         Claim[] claims =
         [

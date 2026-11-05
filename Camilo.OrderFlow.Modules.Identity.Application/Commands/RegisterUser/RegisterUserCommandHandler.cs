@@ -13,17 +13,20 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
     private readonly IPasswordHasher _passwordHasher;
     private readonly IIdentityExecutionContext _executionContext;
     private readonly UserMapper _userMapper;
+    private readonly TimeProvider _timeProvider;
 
     public RegisterUserCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         IIdentityExecutionContext executionContext,
-        UserMapper userMapper)
+        UserMapper userMapper,
+        TimeProvider timeProvider)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _executionContext = executionContext;
         _userMapper = userMapper;
+        _timeProvider = timeProvider;
     }
 
     public async Task<UserDto> Handle(RegisterUserCommand request, CancellationToken ct)
@@ -34,7 +37,8 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
         if (await _userRepository.UserNameExistsAsync(request.UserName, ct))
             throw new ConflictException("The username is already taken.");
 
-        var user = new User(Guid.NewGuid(), request.Email, request.UserName, _passwordHasher.Hash(request.Password));
+        var user = new User(Guid.NewGuid(), request.Email, request.UserName, _passwordHasher.Hash(request.Password),
+            _timeProvider.GetUtcNow().UtcDateTime);
         _userRepository.Add(user);
         await _executionContext.CommitAsync(ct);
 

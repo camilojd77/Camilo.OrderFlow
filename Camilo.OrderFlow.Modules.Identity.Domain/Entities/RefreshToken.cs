@@ -11,9 +11,11 @@ public sealed class RefreshToken
     public string CreatedByIp { get; private set; } = default!;
     public Guid? ReplacedByTokenId { get; private set; }
 
-    public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
     public bool IsRevoked => RevokedAtUtc.HasValue;
-    public bool IsActive => !IsRevoked && !IsExpired;
+
+    public bool IsExpired(DateTime utcNow) => utcNow >= ExpiresAtUtc;
+
+    public bool IsActive(DateTime utcNow) => !IsRevoked && !IsExpired(utcNow);
 
     private RefreshToken() { } // EF
 

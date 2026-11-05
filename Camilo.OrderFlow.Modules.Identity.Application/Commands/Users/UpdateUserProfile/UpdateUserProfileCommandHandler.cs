@@ -14,19 +14,22 @@ public sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUser
     private readonly IPermissionService _permissionService;
     private readonly IIdentityExecutionContext _executionContext;
     private readonly UserMapper _userMapper;
+    private readonly TimeProvider _timeProvider;
 
     public UpdateUserProfileCommandHandler(
         IUserRepository userRepository,
         ICurrentUser currentUser,
         IPermissionService permissionService,
         IIdentityExecutionContext executionContext,
-        UserMapper userMapper)
+        UserMapper userMapper,
+        TimeProvider timeProvider)
     {
         _userRepository = userRepository;
         _currentUser = currentUser;
         _permissionService = permissionService;
         _executionContext = executionContext;
         _userMapper = userMapper;
+        _timeProvider = timeProvider;
     }
 
     public async Task<UserDto> Handle(UpdateUserProfileCommand request, CancellationToken ct)
@@ -47,7 +50,8 @@ public sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUser
             request.FirstName,
             request.LastName,
             request.PhoneNumber,
-            request.AvatarUrl));
+            request.AvatarUrl),
+            _timeProvider.GetUtcNow().UtcDateTime);
 
         _userRepository.Update(user);
         await _executionContext.CommitAsync(ct);

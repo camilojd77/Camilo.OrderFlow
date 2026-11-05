@@ -22,15 +22,18 @@ public sealed class IdentityDataSeeder
     private readonly IdentityDbContext _context;
     private readonly IHostEnvironment _environment;
     private readonly IPasswordHasher _passwordHasher;
+    private readonly TimeProvider _timeProvider;
 
     public IdentityDataSeeder(
         IdentityDbContext context,
         IHostEnvironment environment,
-        IPasswordHasher passwordHasher)
+        IPasswordHasher passwordHasher,
+        TimeProvider timeProvider)
     {
         _context = context;
         _environment = environment;
         _passwordHasher = passwordHasher;
+        _timeProvider = timeProvider;
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
@@ -126,14 +129,16 @@ public sealed class IdentityDataSeeder
             .Where(u => u.Email == "admin@company.com")
             .FirstOrDefaultAsync(cancellationToken);
 
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+
         if (adminUser is null)
         {
             var passwordHash = _environment.IsDevelopment() || _environment.IsEnvironment("Testing")
                 ? _passwordHasher.Hash(devPassword)
                 : placeholderHash;
 
-            var user = new User(AdminUserId, "admin@company.com", "admin", passwordHash);
-            user.UpdateProfile(new UserProfile("Admin", "User"));
+            var user = new User(AdminUserId, "admin@company.com", "admin", passwordHash, utcNow);
+            user.UpdateProfile(new UserProfile("Admin", "User"), utcNow);
             _context.Users.Add(user);
 
             await _context.SaveChangesAsync(cancellationToken);
@@ -142,13 +147,13 @@ public sealed class IdentityDataSeeder
 
         if ((_environment.IsDevelopment() || _environment.IsEnvironment("Testing")) && adminUser.PasswordHash == placeholderHash)
         {
-            adminUser.UpdatePasswordHash(_passwordHasher.Hash(devPassword));
+            adminUser.UpdatePasswordHash(_passwordHasher.Hash(devPassword), utcNow);
             await _context.SaveChangesAsync(cancellationToken);
         }
 
         if (adminUser.Profile is null)
         {
-            adminUser.UpdateProfile(new UserProfile("Admin", "User"));
+            adminUser.UpdateProfile(new UserProfile("Admin", "User"), utcNow);
             await _context.SaveChangesAsync(cancellationToken);
         }
 

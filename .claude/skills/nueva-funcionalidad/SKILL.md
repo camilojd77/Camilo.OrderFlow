@@ -8,7 +8,7 @@ argument-hint: "<Modulo> <CasoDeUso>"
 
 **Antes de cada paso, lee el archivo de referencia real y escribe el tuyo a partir de él; no copies de memoria.** El
 código nuevo usa constructores primarios ([ADR-0020](../../../docs/adr/0020-constructores-primarios-en-codigo-nuevo.md)),
-`TimeProvider` ([ADR-0017](../../../docs/adr/0017-timeprovider-en-codigo-nuevo.md)) y `[LoggerMessage]`
+`TimeProvider` ([ADR-0025](../../../docs/adr/0025-timeprovider-en-todo-el-codigo.md)) y `[LoggerMessage]`
 ([ADR-0018](../../../docs/adr/0018-loggermessage-para-logs-nuevos.md)); las referencias son anteriores y usan
 constructores clásicos: copia la estructura, no ese estilo.
 

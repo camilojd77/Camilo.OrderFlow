@@ -26,8 +26,8 @@ virtuales de la solución.
 
 | Proyecto | Capa | Responsabilidad |
 |---|---|---|
-| `Camilo.OrderFlow.BuildingBlocks.SharedKernel` | Kernel | Abstracciones transversales: excepciones de dominio, mensajería CQRS (`IRequest`, `IRequestHandler`, `ISender`, `IPipelineBehavior`), paginación, `IExecutionContext`, `IDateTimeProvider` (obsoleto, [ADR-0017](adr/0017-timeprovider-en-codigo-nuevo.md)) |
-| `Camilo.OrderFlow.BuildingBlocks.Infrastructure` | Kernel | Implementaciones transversales: `Sender` (dispatcher), reloj del sistema; `AddBuildingBlocks()` |
+| `Camilo.OrderFlow.BuildingBlocks.SharedKernel` | Kernel | Abstracciones transversales: excepciones de dominio, mensajería CQRS (`IRequest`, `IRequestHandler`, `ISender`, `IPipelineBehavior`), paginación, `IExecutionContext` |
+| `Camilo.OrderFlow.BuildingBlocks.Infrastructure` | Kernel | Implementaciones transversales: `Sender` (dispatcher); `AddBuildingBlocks()` registra el dispatcher y `TimeProvider.System` |
 | `Camilo.OrderFlow.Modules.Identity.Domain` | Dominio | Entidades (`User`, `Role`, `Permission`, `RefreshToken`, relaciones) y value objects |
 | `Camilo.OrderFlow.Modules.Identity.Application` | Aplicación | Commands, queries, validators, handlers, DTOs, mappers Mapperly, puertos (`Abstractions/`) |
 | `Camilo.OrderFlow.Modules.Identity.Infrastructure` | Infraestructura | `IdentityDbContext`, configuraciones EF, repositorios, migraciones, JWT, BCrypt, autorización por permisos, seed |
@@ -62,9 +62,8 @@ WebApi ──► Modules.<M>.Infrastructure ──► Modules.<M>.Application �
    (`ModuleCatalog.cs`), así que un módulo nuevo queda cubierto en cuanto el host lo referencia.
 3. `ModuleRegistrationTests.cs`: nadie registra `IExecutionContext` a secas; cada módulo registra el suyo. El registro
    de cada módulo nuevo se añade **a mano** en este test.
-4. `SystemClockUsageTests.cs`: ningún archivo de producción añade lecturas de `DateTime.UtcNow`/`Now`
-   ([ADR-0017](adr/0017-timeprovider-en-codigo-nuevo.md)). Escanea el código fuente; las lecturas existentes están
-   listadas con su número y la lista solo puede bajar.
+4. `SystemClockUsageTests.cs`: ningún archivo de producción lee `DateTime.UtcNow`/`Now`; la hora viene de
+   `TimeProvider` ([ADR-0025](adr/0025-timeprovider-en-todo-el-codigo.md)). Escanea el código fuente; la lista de excepciones está vacía.
 
 Una violación rompe `dotnet test`, no `dotnet build`.
 

@@ -8,13 +8,21 @@ namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Persistence.Repositor
 internal sealed class RefreshTokenRepository : IRefreshTokenRepository
 {
     private readonly IdentityDbContext _context;
+    private readonly TimeProvider _timeProvider;
 
-    public RefreshTokenRepository(IdentityDbContext context) => _context = context;
+    public RefreshTokenRepository(IdentityDbContext context, TimeProvider timeProvider)
+    {
+        _context = context;
+        _timeProvider = timeProvider;
+    }
 
-    public Task<RefreshToken?> GetActiveByHashAsync(string tokenHash, CancellationToken ct = default) =>
-        _context.RefreshTokens
-            .Where(t => t.TokenHash == tokenHash && t.RevokedAtUtc == null && t.ExpiresAtUtc > DateTime.UtcNow)
+    public Task<RefreshToken?> GetActiveByHashAsync(string tokenHash, CancellationToken ct = default)
+    {
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        return _context.RefreshTokens
+            .Where(t => t.TokenHash == tokenHash && t.RevokedAtUtc == null && t.ExpiresAtUtc > utcNow)
             .FirstOrDefaultAsync(ct);
+    }
 
     public void Add(RefreshToken token) => _context.RefreshTokens.Add(token);
 }

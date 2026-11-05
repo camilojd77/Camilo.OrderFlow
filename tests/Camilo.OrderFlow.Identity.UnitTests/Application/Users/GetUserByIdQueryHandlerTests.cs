@@ -20,7 +20,7 @@ public sealed class GetUserByIdQueryHandlerTests
     public async Task Handle_ExistingUser_ReturnsDto()
     {
         var id = Guid.NewGuid();
-        var user = new User(id, "test@test.com", "testuser", "hash");
+        var user = new User(id, "test@test.com", "testuser", "hash", TestTime.UtcNow);
         _repo.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(user);
 
         var result = await CreateHandler().Handle(new GetUserByIdQuery(id), CancellationToken.None);

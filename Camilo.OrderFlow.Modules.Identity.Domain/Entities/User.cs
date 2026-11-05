@@ -18,61 +18,61 @@ namespace Camilo.OrderFlow.Modules.Identity.Domain.Entities
         public int FailedLoginAttempts { get; private set; }
         public DateTime? LockoutEndUtc { get; private set; }
 
-        public bool IsLockedOut => LockoutEndUtc.HasValue && LockoutEndUtc.Value > DateTime.UtcNow;
+        public bool IsLockedOut(DateTime utcNow) => LockoutEndUtc.HasValue && LockoutEndUtc.Value > utcNow;
 
         // Navegación
         public ICollection<UserRole> UserRoles { get; private set; } = new List<UserRole>();
 
         private User() { } // EF
 
-        public User(Guid id, string email, string userName, string passwordHash)
+        public User(Guid id, string email, string userName, string passwordHash, DateTime createdAtUtc)
         {
             Id = id;
             Email = email.Trim().ToLowerInvariant();
             UserName = userName.Trim();
             PasswordHash = passwordHash;
-            CreatedAtUtc = DateTime.UtcNow;
+            CreatedAtUtc = createdAtUtc;
             IsActive = true;
         }
 
-        public void Deactivate()
+        public void Deactivate(DateTime utcNow)
         {
             IsActive = false;
-            UpdatedAtUtc = DateTime.UtcNow;
+            UpdatedAtUtc = utcNow;
         }
 
-        public void Activate()
+        public void Activate(DateTime utcNow)
         {
             IsActive = true;
-            UpdatedAtUtc = DateTime.UtcNow;
+            UpdatedAtUtc = utcNow;
         }
 
-        public void UpdatePasswordHash(string passwordHash)
+        public void UpdatePasswordHash(string passwordHash, DateTime utcNow)
         {
             PasswordHash = passwordHash;
-            UpdatedAtUtc = DateTime.UtcNow;
+            UpdatedAtUtc = utcNow;
         }
 
-        public void UpdateProfile(UserProfile newProfile)
+        public void UpdateProfile(UserProfile newProfile, DateTime utcNow)
         {
             ArgumentNullException.ThrowIfNull(newProfile);
             Profile = newProfile;
-            UpdatedAtUtc = DateTime.UtcNow;
+            UpdatedAtUtc = utcNow;
         }
 
-        public void RegisterFailedLogin(int maxAttempts, TimeSpan lockoutDuration)
+        public void RegisterFailedLogin(int maxAttempts, TimeSpan lockoutDuration, DateTime utcNow)
         {
             FailedLoginAttempts++;
             if (FailedLoginAttempts >= maxAttempts)
-                LockoutEndUtc = DateTime.UtcNow.Add(lockoutDuration);
-            UpdatedAtUtc = DateTime.UtcNow;
+                LockoutEndUtc = utcNow.Add(lockoutDuration);
+            UpdatedAtUtc = utcNow;
         }
 
-        public void ResetFailedLoginAttempts()
+        public void ResetFailedLoginAttempts(DateTime utcNow)
         {
             FailedLoginAttempts = 0;
             LockoutEndUtc = null;
-            UpdatedAtUtc = DateTime.UtcNow;
+            UpdatedAtUtc = utcNow;
         }
     }
 }

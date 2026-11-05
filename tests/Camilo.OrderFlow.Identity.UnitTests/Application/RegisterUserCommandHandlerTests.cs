@@ -17,7 +17,7 @@ public sealed class RegisterUserCommandHandlerTests
     private readonly UserMapper _userMapper = new();
 
     private RegisterUserCommandHandler CreateHandler() =>
-        new(_userRepository, _passwordHasher, _executionContext, _userMapper);
+        new(_userRepository, _passwordHasher, _executionContext, _userMapper, TestTime.Provider);
 
     [Fact]
     public async Task Handle_NewEmail_ReturnsUserDto()

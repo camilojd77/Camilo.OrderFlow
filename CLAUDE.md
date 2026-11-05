@@ -38,7 +38,7 @@ Monolito modular; los proyectos están **en la raíz** (no en `src/`). Tabla com
   ([ADR-0006](docs/adr/0006-integracion-modulos-adaptador-en-host.md)).
 - **Dónde se valida**: referencias de `.csproj` + `tests/Camilo.OrderFlow.ArchitectureTests` (NetArchTest: dirección
   de capas, paquetes prohibidos, aislamiento, execution context por módulo) y `SystemClockUsageTests` (sin
-  `DateTime.UtcNow` nuevo). Rompe `dotnet test`.
+  `DateTime.UtcNow`). Rompe `dotnet test`.
 - **Contrato público**: no hay `*.Contracts` ni `internal`; el host usa los requests de Application y la autorización
   de Infrastructure. Lo que otro módulo pueda usar se expone como fachada (ADR-0006).
 - Hoy solo existe el módulo **Identity** (esquema `identity`).
@@ -70,9 +70,10 @@ entre módulos → host. En la duda, en el módulo.
 - Handlers con repositorios y `I<Modulo>ExecutionContext.CommitAsync`; nunca `DbContext` en handlers ni endpoints.
 - Errores con excepciones de `SharedKernel.Exceptions`; mensajes sin datos personales.
 - Configuración por `IOptions<T>` validadas al arrancar; nunca `IConfiguration` en Domain o Application.
+- La hora viene de `TimeProvider` inyectado; el dominio la recibe por parámetro. Nunca `DateTime.UtcNow`
+  ([ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md)).
 - **Solo en código nuevo** (lo existente no se migra): constructores primarios
-  ([ADR-0020](docs/adr/0020-constructores-primarios-en-codigo-nuevo.md)), `TimeProvider` en vez de `DateTime.UtcNow`
-  ([ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md)), logs con `[LoggerMessage]`
+  ([ADR-0020](docs/adr/0020-constructores-primarios-en-codigo-nuevo.md)), logs con `[LoggerMessage]`
   ([ADR-0018](docs/adr/0018-loggermessage-para-logs-nuevos.md)), endpoints como Minimal APIs con `TypedResults`
   ([ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md)).
 - C# 14 se puede usar libremente en código nuevo; migrar código existente a sintaxis nueva no.
@@ -133,7 +134,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0014](docs/adr/0014-estilo-editorconfig-y-cero-avisos-en-ci.md) Reemplazada por ADR-0023.
 - [ADR-0015](docs/adr/0015-telemetria-otel-y-serilog-loki.md) OTel/OTLP para trazas y métricas; Serilog → Loki para logs.
 - [ADR-0016](docs/adr/0016-estrategia-de-pruebas.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite y Testcontainers.
-- [ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md) `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto.
+- [ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md) Reemplazada por ADR-0025.
 - [ADR-0018](docs/adr/0018-loggermessage-para-logs-nuevos.md) Logs nuevos con `[LoggerMessage]`.
 - [ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md) Endpoints nuevos con Minimal APIs; los controladores se quedan.
 - [ADR-0020](docs/adr/0020-constructores-primarios-en-codigo-nuevo.md) Constructores primarios en código nuevo.
@@ -141,6 +142,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0022](docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md) Clientes HTTP de un módulo en su `Infrastructure/Http`, detrás de un puerto.
 - [ADR-0023](docs/adr/0023-avisos-como-errores-en-local-y-ci.md) Avisos como errores en local y en CI; estilo en `suggestion`.
 - [ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md) CPM; SDK en `global.json`; imágenes por versión exacta; acciones por SHA.
+- [ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md) `TimeProvider` en todo el código; el dominio recibe la hora por parámetro.
 
 ## 8. Reglas para modelos de IA
 

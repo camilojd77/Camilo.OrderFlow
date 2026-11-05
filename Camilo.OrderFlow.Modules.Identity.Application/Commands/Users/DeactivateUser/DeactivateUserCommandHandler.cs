@@ -8,11 +8,16 @@ public sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUse
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityExecutionContext _executionContext;
+    private readonly TimeProvider _timeProvider;
 
-    public DeactivateUserCommandHandler(IUserRepository userRepository, IIdentityExecutionContext executionContext)
+    public DeactivateUserCommandHandler(
+        IUserRepository userRepository,
+        IIdentityExecutionContext executionContext,
+        TimeProvider timeProvider)
     {
         _userRepository = userRepository;
         _executionContext = executionContext;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Unit> Handle(DeactivateUserCommand request, CancellationToken ct)
@@ -23,7 +28,7 @@ public sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUse
         if (await _userRepository.IsOnlyActiveAdminAsync(request.UserId, ct))
             throw new ConflictException("Cannot deactivate the last active admin user.");
 
-        user.Deactivate();
+        user.Deactivate(_timeProvider.GetUtcNow().UtcDateTime);
         _userRepository.Update(user);
         await _executionContext.CommitAsync(ct);
 

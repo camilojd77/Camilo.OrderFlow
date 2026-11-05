@@ -22,8 +22,8 @@ public sealed class ListUsersQueryHandlerTests
     {
         var users = new List<User>
         {
-            new(Guid.NewGuid(), "a@test.com", "usera", "hash"),
-            new(Guid.NewGuid(), "b@test.com", "userb", "hash"),
+            new(Guid.NewGuid(), "a@test.com", "usera", "hash", TestTime.UtcNow),
+            new(Guid.NewGuid(), "b@test.com", "userb", "hash", TestTime.UtcNow),
         };
         _repo.GetPagedAsync(null, 0, 20, Arg.Any<CancellationToken>()).Returns(users);
         _repo.CountAsync(null, Arg.Any<CancellationToken>()).Returns(2);

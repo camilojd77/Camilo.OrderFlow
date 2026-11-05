@@ -18,13 +18,13 @@ public sealed class UpdateUserProfileCommandHandlerTests
     private readonly UserMapper _mapper = new();
 
     private UpdateUserProfileCommandHandler CreateHandler()
-        => new(_repo, _currentUser, _permissionService, _ctx, _mapper);
+        => new(_repo, _currentUser, _permissionService, _ctx, _mapper, TestTime.Provider);
 
     [Fact]
     public async Task Handle_OwnProfile_UpdatesWithoutPermissionCheck()
     {
         var userId = Guid.NewGuid();
-        var user = new User(userId, "u@test.com", "u", "hash");
+        var user = new User(userId, "u@test.com", "u", "hash", TestTime.UtcNow);
         _currentUser.UserId.Returns(userId);
         _repo.GetByIdAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
         _ctx.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
@@ -42,7 +42,7 @@ public sealed class UpdateUserProfileCommandHandlerTests
     {
         var callerId = Guid.NewGuid();
         var targetId = Guid.NewGuid();
-        var user = new User(targetId, "target@test.com", "target", "hash");
+        var user = new User(targetId, "target@test.com", "target", "hash", TestTime.UtcNow);
         _currentUser.UserId.Returns(callerId);
         _permissionService.GetPermissionsAsync(callerId, Arg.Any<CancellationToken>())
             .Returns(new HashSet<string> { "users.write" });

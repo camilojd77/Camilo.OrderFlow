@@ -1,6 +1,6 @@
 # ADR-0017 — `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0025](0025-timeprovider-en-todo-el-codigo.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** se retire `IDateTimeProvider` y se migre el código existente.
 

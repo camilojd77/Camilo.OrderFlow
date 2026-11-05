@@ -24,7 +24,7 @@ public sealed class AssignRolesToUserCommandHandlerTests
     {
         var userId = Guid.NewGuid();
         var roleId = Guid.NewGuid();
-        var user = new User(userId, "u@test.com", "u", "hash");
+        var user = new User(userId, "u@test.com", "u", "hash", TestTime.UtcNow);
         var role = new Role(roleId, "Editor");
         _userRepo.GetByIdWithRolesAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
         _roleRepo.GetByIdsAsync(Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
@@ -55,7 +55,7 @@ public sealed class AssignRolesToUserCommandHandlerTests
     public async Task Handle_UnknownRole_ThrowsNotFoundException()
     {
         var userId = Guid.NewGuid();
-        var user = new User(userId, "u@test.com", "u", "hash");
+        var user = new User(userId, "u@test.com", "u", "hash", TestTime.UtcNow);
         _userRepo.GetByIdWithRolesAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
         _roleRepo.GetByIdsAsync(Arg.Any<IReadOnlyCollection<Guid>>(), Arg.Any<CancellationToken>())
             .Returns(new List<Role>()); // empty — role not found
@@ -70,7 +70,7 @@ public sealed class AssignRolesToUserCommandHandlerTests
     public async Task Handle_EmptyRoles_ClearsAllRoles()
     {
         var userId = Guid.NewGuid();
-        var user = new User(userId, "u@test.com", "u", "hash");
+        var user = new User(userId, "u@test.com", "u", "hash", TestTime.UtcNow);
         _userRepo.GetByIdWithRolesAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
         _ctx.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
 

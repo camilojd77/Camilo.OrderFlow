@@ -30,7 +30,7 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0014](0014-estilo-editorconfig-y-cero-avisos-en-ci.md) | Estilo por `.editorconfig` en `suggestion` y cero avisos en CI | Reemplazada por [0023](0023-avisos-como-errores-en-local-y-ci.md) | 2026-11-05 |
 | [0015](0015-telemetria-otel-y-serilog-loki.md) | Trazas y métricas por OpenTelemetry/OTLP; logs por Serilog a Loki | Aceptada | 2026-11-05 |
 | [0016](0016-estrategia-de-pruebas.md) | Pruebas con xUnit v3 sobre MTP, Shouldly, NSubstitute, SQLite y Testcontainers | Aceptada | 2026-11-05 |
-| [0017](0017-timeprovider-en-codigo-nuevo.md) | `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto | Aceptada | 2026-11-05 |
+| [0017](0017-timeprovider-en-codigo-nuevo.md) | `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto | Reemplazada por [0025](0025-timeprovider-en-todo-el-codigo.md) | 2026-11-05 |
 | [0018](0018-loggermessage-para-logs-nuevos.md) | Logs nuevos con `[LoggerMessage]` generado | Aceptada | 2026-11-05 |
 | [0019](0019-endpoints-nuevos-minimal-apis.md) | Endpoints nuevos con Minimal APIs y `TypedResults` | Aceptada | 2026-11-05 |
 | [0020](0020-constructores-primarios-en-codigo-nuevo.md) | Constructores primarios en código nuevo | Aceptada | 2026-11-05 |
@@ -38,3 +38,4 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0022](0022-clientes-http-de-modulo-en-infrastructure.md) | Los clientes HTTP de un módulo viven en su Infrastructure, detrás de un puerto | Aceptada | 2026-11-05 |
 | [0023](0023-avisos-como-errores-en-local-y-ci.md) | Avisos como errores en local y en CI; estilo por `.editorconfig` en `suggestion` | Aceptada | 2026-11-05 |
 | [0024](0024-versiones-fijadas-sdk-imagenes-y-acciones.md) | Versiones fijadas: paquetes (CPM), SDK, imágenes y acciones del CI | Aceptada | 2026-11-05 |
+| [0025](0025-timeprovider-en-todo-el-codigo.md) | `TimeProvider` en todo el código de producción; sin `IDateTimeProvider` | Aceptada | 2026-11-05 |
