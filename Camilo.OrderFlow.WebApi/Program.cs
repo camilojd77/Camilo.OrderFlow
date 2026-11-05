@@ -20,6 +20,7 @@ using Serilog;
 using Serilog.Enrichers.Span;
 using Serilog.Events;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -95,6 +96,23 @@ builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationSc
             IssuerSigningKey = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(j.Key)),
             ClockSkew = TimeSpan.Zero,
+        };
+
+        // A valid signature is not enough: the user must still be active. Deactivating a user ends their access
+        // tokens on the next request instead of when they expire (docs/adr/0029-revocacion-de-sesiones.md).
+        bearerOpts.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var authService = context.HttpContext.RequestServices.GetRequiredService<IAuthService>();
+                var subject = context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (!Guid.TryParse(subject, out var userId)
+                    || !await authService.IsActiveUserAsync(userId, context.HttpContext.RequestAborted))
+                {
+                    context.Fail("The user is not active.");
+                }
+            },
         };
     });
 

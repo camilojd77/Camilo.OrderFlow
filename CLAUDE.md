@@ -132,7 +132,7 @@ cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Conv
 - [ADR-0007](docs/adr/0007-errores-excepciones-dominio-problemdetails.md) Excepciones de dominio → `ProblemDetails`, no patrón Result.
 - [ADR-0008](docs/adr/0008-versionado-por-cabecera-y-swashbuckle.md) Versión por cabecera `api-version`; Swashbuckle.
 - [ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) Permisos en base de datos con HybridCache, no roles.
-- [ADR-0010](docs/adr/0010-identidad-propia-bcrypt-jwt.md) Identidad propia, BCrypt, JWT con `ClockSkew = 0`.
+- [ADR-0010](docs/adr/0010-identidad-propia-bcrypt-jwt.md) Reemplazada por ADR-0029.
 - [ADR-0011](docs/adr/0011-migraciones-fuera-del-arranque.md) Migraciones fuera del arranque.
 - [ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md) Reemplazada por ADR-0024.
 - [ADR-0013](docs/adr/0013-configuracion-sin-secretos-y-opciones-validadas.md) Sin secretos en el repo; opciones validadas al arrancar.
@@ -151,6 +151,7 @@ cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Conv
 - [ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite, Testcontainers; cobertura mínima por proyecto con trinquete.
 - [ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md) Hooks de git versionados en `.githooks/` con `core.hooksPath`.
 - [ADR-0028](docs/adr/0028-superficie-publica-de-los-modulos.md) `internal` por defecto en los módulos; fachada `Contracts` solo con un consumidor real.
+- [ADR-0029](docs/adr/0029-revocacion-de-sesiones.md) Identidad propia; usuario activo comprobado en cada petición; refresh tokens con consumo atómico y detección de reutilización.
 
 ## 8. Reglas para modelos de IA
 

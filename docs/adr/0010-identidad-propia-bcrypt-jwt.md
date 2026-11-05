@@ -1,6 +1,6 @@
 # ADR-0010 — Identidad propia con BCrypt y JWT sin tolerancia de reloj
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0029](0029-revocacion-de-sesiones.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** la organización adopte un proveedor de identidad (Entra ID, Keycloak…) o se exija otro algoritmo
   de hash (p. ej. Argon2).

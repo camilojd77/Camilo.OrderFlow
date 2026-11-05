@@ -137,6 +137,11 @@ internal sealed class AuthService : IAuthService
         await _executionContext.CommitAsync(cancellationToken);
     }
 
+    public Task<bool> IsActiveUserAsync(Guid userId, CancellationToken cancellationToken = default) =>
+        _context.Users
+            .AsNoTracking()
+            .AnyAsync(u => u.Id == userId && u.IsActive, cancellationToken);
+
     private static string GenerateRawToken() =>
         Convert.ToBase64String(RandomNumberGenerator.GetBytes(64));
 
