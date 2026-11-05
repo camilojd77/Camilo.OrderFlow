@@ -1,5 +1,4 @@
 using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Messaging;
-using Camilo.OrderFlow.Modules.Identity.Application.Behaviors;
 using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,10 +14,9 @@ public static class ServiceCollectionExtensions
 
         RegisterHandlersFromAssembly(services, assembly);
 
-        // Validators are internal to the module (docs/adr/0028-superficie-publica-de-los-modulos.md).
+        // Validators are internal to the module (docs/adr/0028-superficie-publica-de-los-modulos.md). The behavior
+        // that runs them is registered once by AddBuildingBlocks.
         services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
-
-        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
 
         // Mapperly mappers — stateless source-generated classes registered as Singleton
         services.AddSingleton<UserMapper>();

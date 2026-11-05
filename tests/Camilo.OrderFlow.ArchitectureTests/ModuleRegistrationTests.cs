@@ -1,4 +1,7 @@
+using Camilo.OrderFlow.BuildingBlocks.Infrastructure.DependencyInjection;
+using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Messaging;
 using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Persistence;
+using Camilo.OrderFlow.Modules.Identity.Application.DependencyInjection;
 using Camilo.OrderFlow.Modules.Identity.Infrastructure.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,5 +75,28 @@ public sealed class ModuleRegistrationTests
 
         descriptor.ShouldNotBeNull("Identity debe registrar IIdentityExecutionContext en AddIdentityInfrastructure.");
         descriptor.Lifetime.ShouldBe(ServiceLifetime.Scoped);
+    }
+
+    /// <summary>
+    /// The validation behavior is registered once by AddBuildingBlocks. If a module registered its own,
+    /// every request would be validated twice.
+    /// </summary>
+    [Fact(DisplayName = "Pipeline behaviors are registered once, by the building blocks")]
+    public void PipelineBehaviors_Should_BeRegisteredOnce()
+    {
+        var services = new ServiceCollection();
+        services.AddBuildingBlocks();
+
+        // Al añadir un módulo nuevo, registrar aquí también su Add<Modulo>Application.
+        services.AddIdentityApplication();
+
+        var behaviors = services
+            .Where(d => d.ServiceType == typeof(IPipelineBehavior<,>))
+            .Select(d => d.ImplementationType?.FullName ?? "<factory>")
+            .ToList();
+
+        behaviors.Count.ShouldBe(1,
+            "Los behaviors transversales los registra AddBuildingBlocks; un módulo no registra los suyos. " +
+            "Registrados: " + string.Join(", ", behaviors));
     }
 }

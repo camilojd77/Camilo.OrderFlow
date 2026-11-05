@@ -27,7 +27,7 @@ virtuales de la solución.
 | Proyecto | Capa | Responsabilidad |
 |---|---|---|
 | `Camilo.OrderFlow.BuildingBlocks.SharedKernel` | Kernel | Abstracciones transversales: excepciones de dominio, mensajería CQRS (`IRequest`, `IRequestHandler`, `ISender`, `IPipelineBehavior`), paginación, `IExecutionContext` |
-| `Camilo.OrderFlow.BuildingBlocks.Infrastructure` | Kernel | Implementaciones transversales: `Sender` (dispatcher); `AddBuildingBlocks()` registra el dispatcher y `TimeProvider.System` |
+| `Camilo.OrderFlow.BuildingBlocks.Infrastructure` | Kernel | Implementaciones transversales: `Sender` (dispatcher), `ValidationPipelineBehavior`; `AddBuildingBlocks()` registra el dispatcher, el behavior de validación (una vez para todos los módulos) y `TimeProvider.System` |
 | `Camilo.OrderFlow.Modules.Identity.Domain` | Dominio | Entidades (`User`, `Role`, `Permission`, `RefreshToken`, relaciones) y value objects |
 | `Camilo.OrderFlow.Modules.Identity.Application` | Aplicación | Commands, queries, validators, handlers, DTOs, mappers Mapperly, puertos (`Abstractions/`) |
 | `Camilo.OrderFlow.Modules.Identity.Infrastructure` | Infraestructura | `IdentityDbContext`, configuraciones EF, repositorios, migraciones, JWT, BCrypt, autorización por permisos, seed |
@@ -50,7 +50,7 @@ WebApi ──► Modules.<M>.Infrastructure ──► Modules.<M>.Application �
 | `Modules.<M>.Domain` | SharedKernel | Application, Infrastructure, WebApi, otro módulo; EF Core, ASP.NET Core, FluentValidation, Mapperly, `SharedKernel.Messaging`, MediatR, AutoMapper |
 | `Modules.<M>.Application` | Domain del módulo, SharedKernel; FluentValidation, Mapperly | Infrastructure, WebApi, otro módulo; EF Core, ASP.NET Core, MediatR, AutoMapper |
 | `Modules.<M>.Infrastructure` | Application y Domain del módulo, SharedKernel, BB.Infrastructure; EF Core, ASP.NET Core | WebApi, otro módulo |
-| `BuildingBlocks.Infrastructure` | SharedKernel | Cualquier módulo, WebApi |
+| `BuildingBlocks.Infrastructure` | SharedKernel; FluentValidation | Cualquier módulo, WebApi |
 | `BuildingBlocks.SharedKernel` | — | Todo lo demás |
 | `WebApi` | Todo lo anterior | — (es la composición) |
 
@@ -86,7 +86,8 @@ Identity, y solo lo referencia el host ([ADR-0006](adr/0006-integracion-modulos-
 1. **Request**: `sealed record XCommand(...) : IRequest<TResponse>` (o `XQuery`) en
    `Application/Commands|Queries/<Agregado>/<CasoDeUso>/`.
 2. **Validación**: `XCommandValidator : AbstractValidator<XCommand>` (FluentValidation), ejecutado por
-   `ValidationPipelineBehavior` antes del handler. Un fallo lanza `ValidationException` → 400.
+   `ValidationPipelineBehavior` (BuildingBlocks, común a todos los módulos; ejecuta los validators en secuencia) antes
+   del handler. Un fallo lanza `ValidationException` → 400.
 3. **Handler**: `XCommandHandler : IRequestHandler<XCommand, TResponse>`; usa puertos de `Application/Abstractions`
    (repositorios, `IPasswordHasher`, `ICurrentUser`…), opera sobre entidades y confirma con
    `I<Modulo>ExecutionContext.CommitAsync(ct)` ([ADR-0005](adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md)).

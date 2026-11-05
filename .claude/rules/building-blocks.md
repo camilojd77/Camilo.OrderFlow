@@ -10,6 +10,8 @@ paths:
 - `SharedKernel` no referencia ningún otro proyecto ni paquetes de infraestructura; `BuildingBlocks.Infrastructure`
   solo referencia `SharedKernel`.
 - Un cambio aquí afecta a todos los módulos: pide que se justifique y comprueba los tests de todos los proyectos.
+- Los pipeline behaviors transversales (hoy, la validación) viven aquí y se registran una vez en `AddBuildingBlocks`;
+  lo comprueba `ModuleRegistrationTests`. Los validators se ejecutan en secuencia (pueden usar el `DbContext`).
 - El dispatcher (`Sender`) es propio a propósito; no se sustituye por MediatR
   ([ADR-0004](../../docs/adr/0004-dispatcher-propio-y-mapperly.md)).
 - La hora es `TimeProvider` (registrado en `AddBuildingBlocks`); no se crean abstracciones propias de reloj ([ADR-0025](../../docs/adr/0025-timeprovider-en-todo-el-codigo.md)).
