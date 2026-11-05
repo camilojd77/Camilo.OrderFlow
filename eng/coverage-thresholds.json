@@ -1,0 +1,13 @@
+{
+  "$comment": "Minimum line coverage (%) per production assembly, merged across all test runs (RealDb included). Raise only; never lower. Every production assembly must have an entry. See docs/adr/0026-umbral-de-cobertura-por-proyecto.md.",
+  "total": 85,
+  "assemblies": {
+    "Camilo.OrderFlow.BuildingBlocks.Infrastructure": 100,
+    "Camilo.OrderFlow.BuildingBlocks.SharedKernel": 75,
+    "Camilo.OrderFlow.Modules.Identity.Application": 100,
+    "Camilo.OrderFlow.Modules.Identity.Domain": 95,
+    "Camilo.OrderFlow.Modules.Identity.Infrastructure": 90,
+    "Camilo.OrderFlow.WebApi": 70
+  },
+  "excludedPathSegments": [ "Migrations", "obj" ]
+}

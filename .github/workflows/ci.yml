@@ -51,6 +51,11 @@ jobs:
           --coverage
           --coverage-output-format cobertura
 
+      # Minimum line coverage per assembly, merged across all test runs
+      # (docs/adr/0026-umbral-de-cobertura-por-proyecto.md). Thresholds in eng/coverage-thresholds.json.
+      - name: Coverage gate
+        run: dotnet run eng/coverage-gate.cs -- test-results
+
       - name: Publish test results
         uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
         if: always()

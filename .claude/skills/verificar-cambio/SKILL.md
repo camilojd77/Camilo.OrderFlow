@@ -20,8 +20,11 @@ no `/p:`.
    - Si el cambio toca persistencia, migraciones, consultas o el host y `docker info` responde:
      `dotnet test --no-build -c Release -- --filter-trait "Category=RealDb" --ignore-exit-code 8`. Comprueba que se
      ejecutaron casos (> 0). Si Docker no responde, dilo; no lo arranques tú.
-   - Cobertura (informativa, sin umbral): añade `--coverage --coverage-output-format cobertura` y reporta el % de líneas
-     del proyecto tocado.
+   - **Cobertura** (si `docker info` responde): ejecuta la suite **completa** con cobertura en un directorio temporal
+     (`dotnet test --no-build -c Release --results-directory <tmp> -- --coverage --coverage-output-format cobertura`)
+     y luego `dotnet run eng/coverage-gate.cs -- <tmp>`. Debe pasar; reporta el % del proyecto tocado. Si la cobertura
+     de un proyecto subió, propón subir su mínimo en `eng/coverage-thresholds.json` (nunca bajarlo). Sin Docker la
+     comprobación no es fiable: dilo y no la ejecutes.
 5. **Dependencias** (si cambió `Directory.Packages.props` o un `.csproj`):
    `dotnet list Camilo.OrderFlow.slnx package --vulnerable --include-transitive` → ninguno.
 6. **Staging limpio.** Nada de `bin/`, `obj/`, `TestResults/`, `logs/`, `*.user`, `.vs/`,
@@ -38,7 +41,7 @@ no `/p:`.
 | Build (TWAE) | N avisos, N errores |
 | Tests rápidos | aprobados/total por proyecto |
 | RealDb | aprobados/total, o «no ejecutado: motivo» |
-| Cobertura del proyecto tocado | NN,N % líneas |
+| Cobertura (gate) | OK / qué proyecto queda por debajo; NN,N % del proyecto tocado |
 | Vulnerables | ninguno / lista |
 | Staging | limpio / qué sobra |
 | Documentación | al día / qué falta |

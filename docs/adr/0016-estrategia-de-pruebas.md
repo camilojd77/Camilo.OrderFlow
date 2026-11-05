@@ -1,6 +1,6 @@
 # ADR-0016 — Pruebas con xUnit v3 sobre Microsoft.Testing.Platform, Shouldly, NSubstitute, SQLite y Testcontainers
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0026](0026-umbral-de-cobertura-por-proyecto.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** la suite rápida deje de ser rápida o SQLite no reproduzca un comportamiento de SQL Server que
   importe.
