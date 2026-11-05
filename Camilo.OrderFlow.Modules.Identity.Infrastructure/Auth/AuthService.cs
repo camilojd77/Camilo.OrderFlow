@@ -95,10 +95,23 @@ internal sealed class AuthService : IAuthService
         string clientIp,
         CancellationToken cancellationToken = default)
     {
-        var tokenHash = HashToken(rawRefreshToken);
-        var existing = await _refreshTokenRepository.GetActiveByHashAsync(tokenHash, cancellationToken);
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+        var existing = await _refreshTokenRepository.GetByHashAsync(HashToken(rawRefreshToken), cancellationToken);
 
         if (existing is null)
+            return null;
+
+        if (existing.IsRevoked)
+        {
+            // A token that was already rotated is being presented again: the chain may be stolen. Revoke every
+            // active refresh token of the user (OAuth 2.0 Security BCP, RFC 9700; docs/adr/0029).
+            if (existing.ReplacedByTokenId is not null)
+                await _refreshTokenRepository.RevokeAllActiveAsync(existing.UserId, utcNow, cancellationToken);
+
+            return null;
+        }
+
+        if (existing.IsExpired(utcNow))
             return null;
 
         var user = await _context.Users
@@ -108,17 +121,22 @@ internal sealed class AuthService : IAuthService
         if (user is null)
             return null;
 
-        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var newRawToken = GenerateRawToken();
-        var newTokenHash = HashToken(newRawToken);
-        var expiresAtUtc = utcNow.AddHours(_refreshTokenOptions.ExpiresHours);
         var newTokenId = Guid.NewGuid();
+        var newRefreshToken = new RefreshToken(
+            newTokenId, user.Id, HashToken(newRawToken), utcNow.AddHours(_refreshTokenOptions.ExpiresHours), clientIp);
 
-        var newRefreshToken = new RefreshToken(newTokenId, user.Id, newTokenHash, expiresAtUtc, clientIp);
-        existing.Revoke(utcNow, newTokenId);
+        // Consume the old token and store the new one atomically. If another request consumed it first, this one
+        // loses and the transaction is rolled back on dispose.
+        await using (var transaction = await _context.Database.BeginTransactionAsync(cancellationToken))
+        {
+            if (!await _refreshTokenRepository.TryConsumeAsync(existing.Id, newTokenId, utcNow, cancellationToken))
+                return null;
 
-        _refreshTokenRepository.Add(newRefreshToken);
-        await _executionContext.CommitAsync(cancellationToken);
+            _refreshTokenRepository.Add(newRefreshToken);
+            await _executionContext.CommitAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
 
         var (accessToken, accessExpiresUtc) = _jwtTokenService.GenerateToken(user);
 

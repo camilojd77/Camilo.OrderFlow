@@ -24,6 +24,27 @@ internal sealed class RefreshTokenRepository : IRefreshTokenRepository
             .FirstOrDefaultAsync(ct);
     }
 
+    public Task<RefreshToken?> GetByHashAsync(string tokenHash, CancellationToken ct = default) =>
+        _context.RefreshTokens
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.TokenHash == tokenHash, ct);
+
+    public async Task<bool> TryConsumeAsync(Guid tokenId, Guid replacedByTokenId, DateTime utcNow, CancellationToken ct = default)
+    {
+        var consumed = await _context.RefreshTokens
+            .Where(t => t.Id == tokenId && t.RevokedAtUtc == null && t.ExpiresAtUtc > utcNow)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(t => t.RevokedAtUtc, utcNow)
+                .SetProperty(t => t.ReplacedByTokenId, replacedByTokenId), ct);
+
+        return consumed == 1;
+    }
+
+    public Task<int> RevokeAllActiveAsync(Guid userId, DateTime utcNow, CancellationToken ct = default) =>
+        _context.RefreshTokens
+            .Where(t => t.UserId == userId && t.RevokedAtUtc == null && t.ExpiresAtUtc > utcNow)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.RevokedAtUtc, utcNow), ct);
+
     public async Task<IReadOnlyList<RefreshToken>> GetActiveByUserAsync(Guid userId, DateTime utcNow, CancellationToken ct = default) =>
         await _context.RefreshTokens
             .Where(t => t.UserId == userId && t.RevokedAtUtc == null && t.ExpiresAtUtc > utcNow)
