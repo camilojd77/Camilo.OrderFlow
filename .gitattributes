@@ -1,0 +1,11 @@
+# Fines de línea: en el repositorio siempre LF; en el disco, lo que pide .editorconfig.
+# Hace el resultado independiente de core.autocrlf de cada máquina.
+* text=auto
+
+# Scripts que se ejecutan en Linux/contenedores: LF siempre
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Windows PowerShell 5.1 y C#: CRLF en el disco (como .editorconfig)
+*.ps1 text eol=crlf
+*.cs text eol=crlf
