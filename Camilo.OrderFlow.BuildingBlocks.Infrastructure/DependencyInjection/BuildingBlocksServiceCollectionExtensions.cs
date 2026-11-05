@@ -1,4 +1,5 @@
 using Camilo.OrderFlow.BuildingBlocks.Infrastructure.Messaging;
+using Camilo.OrderFlow.BuildingBlocks.Infrastructure.Validation;
 using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Messaging;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,9 @@ public static class BuildingBlocksServiceCollectionExtensions
     {
         services.AddScoped<ISender, Sender>();
         services.AddSingleton(TimeProvider.System);
+
+        // One validation behavior for every module; modules only register their validators.
+        services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
         return services;
     }
 }

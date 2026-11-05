@@ -26,7 +26,8 @@ paths:
 - Sin `IConfiguration`: la configuración llega como `IOptions<T>` desde Infrastructure.
 
 Referencia: `Camilo.OrderFlow.Modules.Identity.Application/Commands/Users/CreateUser/` (command, validator, handler),
-`Queries/Users/ListUsers/`, `Behaviors/ValidationPipelineBehavior.cs`.
+`Queries/Users/ListUsers/`. El behavior de validación es común a todos los módulos:
+`Camilo.OrderFlow.BuildingBlocks.Infrastructure/Validation/ValidationPipelineBehavior.cs` (no se registra en el módulo).
 
 Fuente: [CLAUDE.md](../../CLAUDE.md) §3 · [docs/architecture.md](../../docs/architecture.md) §5 ·
 [ADR-0004](../../docs/adr/0004-dispatcher-propio-y-mapperly.md) ·
