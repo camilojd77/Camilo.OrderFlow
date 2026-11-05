@@ -10,6 +10,7 @@ Revisar antes de cada deploy a Staging o Production.
 - [ ] `Jwt:Key` es un secreto fuerte (≥ 32 chars), distinto por entorno, **nunca en appsettings.json**
 - [ ] `Jwt:Issuer` y `Jwt:Audience` coinciden con lo que emiten los tokens del entorno
 - [ ] `OpenTelemetry:Enabled` = `true` y `OtlpEndpoint` apunta al collector del entorno
+- [ ] `OpenTelemetry:Environment` fijado al entorno (`staging`, `production`…): por defecto vale `dev`
 - [ ] `Seed:Enabled` = `false` en Production (o confirmado si es first-deploy)
 - [ ] `Cors:AllowedOrigins` contiene solo los orígenes autorizados del entorno
 - [ ] `SecurityHeaders:Enabled` = `true`; revisar CSP si se sirven scripts desde CDN

@@ -32,7 +32,6 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
   código.
 - La revocación de permisos entre varias réplicas no está medida ([ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md));
   desactivar un usuario no invalida sus access tokens vigentes.
-- `deployment.environment` vale `production` en `appsettings.json` aunque el código use `dev` por defecto.
 - El SDK no está fijado en `global.json` ([ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
 
 **Aplazado a propósito**

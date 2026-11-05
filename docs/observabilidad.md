@@ -28,7 +28,7 @@ API (Serilog) ──────────── HTTP :3100 ──────
 |---|---|---|
 | `service.name` | `OpenTelemetry:ServiceName` | `Camilo.OrderFlow.WebApi` |
 | `service.version` | `OpenTelemetry:ServiceVersion` | `1.0.0` |
-| `deployment.environment` | `OpenTelemetry:Environment` | `dev` en código; **`production` en `appsettings.json`** (incoherencia conocida: el contenedor de demo en Development se etiqueta `production`) |
+| `deployment.environment` | `OpenTelemetry:Environment` | `dev` (código y `appsettings.json`); cada entorno compartido lo fija por variable (`OpenTelemetry__Environment`), ver [`ReleaseChecklist.md`](ReleaseChecklist.md) |
 
 Muestreo: `ParentBased(TraceIdRatio(OpenTelemetry:SampleRatio))`, 1.0 por defecto.
 
