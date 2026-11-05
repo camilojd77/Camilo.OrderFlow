@@ -29,7 +29,7 @@ public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCom
     public async Task<UserDto> Handle(RegisterUserCommand request, CancellationToken ct)
     {
         if (await _userRepository.EmailExistsAsync(request.Email, ct))
-            throw new ConflictException($"Email '{request.Email}' is already registered.");
+            throw new ConflictException("The email is already registered.");
 
         var user = new User(Guid.NewGuid(), request.Email, request.UserName, _passwordHasher.Hash(request.Password));
         _userRepository.Add(user);
