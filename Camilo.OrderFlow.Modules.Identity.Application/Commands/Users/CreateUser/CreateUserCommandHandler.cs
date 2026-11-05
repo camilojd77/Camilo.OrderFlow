@@ -30,10 +30,10 @@ public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand
     public async Task<UserDto> Handle(CreateUserCommand request, CancellationToken ct)
     {
         if (await _userRepository.EmailExistsAsync(request.Email, ct))
-            throw new ConflictException($"Email '{request.Email}' is already registered.");
+            throw new ConflictException("The email is already registered.");
 
         if (await _userRepository.UserNameExistsAsync(request.UserName, ct))
-            throw new ConflictException($"Username '{request.UserName}' is already taken.");
+            throw new ConflictException("The username is already taken.");
 
         var user = new User(
             Guid.NewGuid(),
