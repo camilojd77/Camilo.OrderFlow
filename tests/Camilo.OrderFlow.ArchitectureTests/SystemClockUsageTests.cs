@@ -5,9 +5,9 @@ using Xunit;
 namespace Camilo.OrderFlow.ArchitectureTests;
 
 /// <summary>
-/// ADR-0017: new production code gets the time from an injected <see cref="TimeProvider"/>, never from
-/// DateTime.UtcNow / DateTime.Now / DateTimeOffset.UtcNow. Existing reads are listed in <see cref="KnownUsages"/>
-/// with their exact count per file; the list may only shrink as code is migrated.
+/// ADR-0025: production code gets the time from an injected <see cref="TimeProvider"/>, never from
+/// DateTime.UtcNow / DateTime.Now / DateTimeOffset.UtcNow. Every existing read was migrated on 2026-11-05, so
+/// <see cref="KnownUsages"/> is empty; an entry may only be added with an ADR that justifies it.
 /// The check scans source files because NetArchTest cannot detect member access on System.DateTime.
 /// </summary>
 public sealed partial class SystemClockUsageTests
@@ -16,19 +16,9 @@ public sealed partial class SystemClockUsageTests
     private const string ProductionProjectPattern = "Camilo.OrderFlow.*";
     private static readonly string[] SkippedSegments = ["bin", "obj", "Migrations"];
 
-    /// <summary>System clock reads that existed when ADR-0017 was adopted (2026-11-05).</summary>
+    /// <summary>Allowed system clock reads per file. Empty since the migration to TimeProvider (2026-11-05).</summary>
     private static readonly IReadOnlyDictionary<string, int> KnownUsages =
-        new Dictionary<string, int>(StringComparer.Ordinal)
-        {
-            ["Camilo.OrderFlow.BuildingBlocks.Infrastructure/Time/SystemDateTimeProvider.cs"] = 1,
-            ["Camilo.OrderFlow.Modules.Identity.Domain/Entities/RefreshToken.cs"] = 1,
-            ["Camilo.OrderFlow.Modules.Identity.Domain/Entities/User.cs"] = 9,
-            ["Camilo.OrderFlow.Modules.Identity.Infrastructure/Auth/AuthService.cs"] = 4,
-            ["Camilo.OrderFlow.Modules.Identity.Infrastructure/Auth/JwtTokenService.cs"] = 1,
-            ["Camilo.OrderFlow.Modules.Identity.Infrastructure/Persistence/Repositories/RefreshTokenRepository.cs"] = 1,
-            ["Camilo.OrderFlow.WebApi/Controllers/AuthController.cs"] = 1,
-            ["Camilo.OrderFlow.WebApi/Controllers/InfoController.cs"] = 2,
-        };
+        new Dictionary<string, int>(StringComparer.Ordinal);
 
     [GeneratedRegex(@"\bDateTime(Offset)?\.(UtcNow|Now|Today)\b", RegexOptions.CultureInvariant)]
     private static partial Regex SystemClockRead();
@@ -43,7 +33,7 @@ public sealed partial class SystemClockUsageTests
 
         offenders.ShouldBeEmpty(
             "El código nuevo obtiene la hora de un TimeProvider inyectado, no de DateTime.UtcNow/Now " +
-            "(docs/adr/0017-timeprovider-en-codigo-nuevo.md). Archivos con lecturas nuevas: " +
+            "(docs/adr/0025-timeprovider-en-todo-el-codigo.md). Archivos con lecturas nuevas: " +
             string.Join(", ", offenders));
     }
 
@@ -66,6 +56,7 @@ public sealed partial class SystemClockUsageTests
     {
         var root = FindRepositoryRoot();
         var usages = new Dictionary<string, int>(StringComparer.Ordinal);
+        var scannedFiles = 0;
 
         foreach (var project in root.EnumerateDirectories(ProductionProjectPattern))
         {
@@ -77,6 +68,7 @@ public sealed partial class SystemClockUsageTests
                     continue;
                 }
 
+                scannedFiles++;
                 var count = SystemClockRead().Count(File.ReadAllText(file.FullName));
                 if (count > 0)
                 {
@@ -85,8 +77,8 @@ public sealed partial class SystemClockUsageTests
             }
         }
 
-        usages.ShouldNotBeEmpty(
-            "No se encontró ninguna lectura del reloj: revisa que el escaneo apunta a los proyectos de producción.");
+        scannedFiles.ShouldBeGreaterThan(0,
+            "No se escaneó ningún archivo: revisa que el escaneo apunta a los proyectos de producción.");
         return usages;
     }
 

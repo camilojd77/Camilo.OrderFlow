@@ -10,17 +10,20 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
     private readonly IPasswordHasher _passwordHasher;
     private readonly ICurrentUser _currentUser;
     private readonly IIdentityExecutionContext _executionContext;
+    private readonly TimeProvider _timeProvider;
 
     public ChangePasswordCommandHandler(
         IUserRepository userRepository,
         IPasswordHasher passwordHasher,
         ICurrentUser currentUser,
-        IIdentityExecutionContext executionContext)
+        IIdentityExecutionContext executionContext,
+        TimeProvider timeProvider)
     {
         _userRepository = userRepository;
         _passwordHasher = passwordHasher;
         _currentUser = currentUser;
         _executionContext = executionContext;
+        _timeProvider = timeProvider;
     }
 
     public async Task<Unit> Handle(ChangePasswordCommand request, CancellationToken ct)
@@ -35,7 +38,7 @@ public sealed class ChangePasswordCommandHandler : IRequestHandler<ChangePasswor
             throw new ValidationException(new Dictionary<string, string[]>
             { ["CurrentPassword"] = ["Current password is incorrect."] });
 
-        user.UpdatePasswordHash(_passwordHasher.Hash(request.NewPassword));
+        user.UpdatePasswordHash(_passwordHasher.Hash(request.NewPassword), _timeProvider.GetUtcNow().UtcDateTime);
         _userRepository.Update(user);
         await _executionContext.CommitAsync(ct);
 

@@ -20,8 +20,8 @@ paths:
   `AddHttpClient` en `Add<Modulo>Infrastructure`; resiliencia como `ErpClient` y reintentos solo si la operación es
   idempotente ([ADR-0022](../../docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md)).
 - Hashing (`IPasswordHasher` → BCrypt), JWT y refresh tokens no se debilitan sin ADR.
-- **Código nuevo:** `TimeProvider` en lugar de `DateTime.UtcNow`, `[LoggerMessage]`, constructores primarios
-  (ADR-0017/0018/0020); lo existente no se migra.
+- `TimeProvider` inyectado para la hora, nunca `DateTime.UtcNow` (ADR-0025). **Código nuevo:** `[LoggerMessage]` y
+  constructores primarios (ADR-0018/0020); lo existente no se migra.
 
 Referencia: `Persistence/Configurations/UserConfiguration.cs`, `Persistence/Repositories/UserRepository.cs`,
 `Persistence/IdentityExecutionContext.cs`, `DependencyInjection/ServiceCollectionExtensions.cs` (todos en

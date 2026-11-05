@@ -93,7 +93,7 @@ public sealed class UserProfileTests
 public sealed class UserUpdateProfileTests
 {
     private static User CreateUser() =>
-        new(Guid.NewGuid(), "user@example.com", "username", "hash");
+        new(Guid.NewGuid(), "user@example.com", "username", "hash", TestTime.UtcNow);
 
     [Fact]
     public void UpdateProfile_SetsProfile()
@@ -101,7 +101,7 @@ public sealed class UserUpdateProfileTests
         var user = CreateUser();
         var profile = new UserProfile("Alice", "Smith");
 
-        user.UpdateProfile(profile);
+        user.UpdateProfile(profile, TestTime.UtcNow);
 
         user.Profile.ShouldNotBeNull();
         user.Profile!.FirstName.ShouldBe("Alice");
@@ -111,22 +111,21 @@ public sealed class UserUpdateProfileTests
     [Fact]
     public void UpdateProfile_SetsUpdatedAtUtc()
     {
-        var before = DateTime.UtcNow.AddSeconds(-1);
         var user = CreateUser();
+        var later = TestTime.UtcNow.AddMinutes(10);
 
-        user.UpdateProfile(new UserProfile("Alice", "Smith"));
+        user.UpdateProfile(new UserProfile("Alice", "Smith"), later);
 
-        user.UpdatedAtUtc.ShouldNotBeNull();
-        user.UpdatedAtUtc!.Value.ShouldBeGreaterThan(before);
+        user.UpdatedAtUtc.ShouldBe(later);
     }
 
     [Fact]
     public void UpdateProfile_ReplacesExistingProfile()
     {
         var user = CreateUser();
-        user.UpdateProfile(new UserProfile("Alice", "Smith"));
+        user.UpdateProfile(new UserProfile("Alice", "Smith"), TestTime.UtcNow);
 
-        user.UpdateProfile(new UserProfile("Bob", "Jones"));
+        user.UpdateProfile(new UserProfile("Bob", "Jones"), TestTime.UtcNow);
 
         user.Profile!.FirstName.ShouldBe("Bob");
     }
@@ -137,7 +136,7 @@ public sealed class UserUpdateProfileTests
         var user = CreateUser();
 
         Should.Throw<ArgumentNullException>(() =>
-            user.UpdateProfile(null!));
+            user.UpdateProfile(null!, TestTime.UtcNow));
     }
 
     [Fact]

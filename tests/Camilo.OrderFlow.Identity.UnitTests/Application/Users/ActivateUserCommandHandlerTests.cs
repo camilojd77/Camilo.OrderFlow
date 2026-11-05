@@ -14,14 +14,14 @@ public sealed class ActivateUserCommandHandlerTests
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
     private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
 
-    private ActivateUserCommandHandler CreateHandler() => new(_repo, _ctx);
+    private ActivateUserCommandHandler CreateHandler() => new(_repo, _ctx, TestTime.Provider);
 
     [Fact]
     public async Task Handle_InactiveUser_ActivatesAndReturnsUnit()
     {
         var id = Guid.NewGuid();
-        var user = new User(id, "u@test.com", "u", "hash");
-        user.Deactivate();
+        var user = new User(id, "u@test.com", "u", "hash", TestTime.UtcNow);
+        user.Deactivate(TestTime.UtcNow);
         _repo.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(user);
         _ctx.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
 

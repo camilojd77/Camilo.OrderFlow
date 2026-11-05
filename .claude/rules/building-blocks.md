@@ -12,7 +12,7 @@ paths:
 - Un cambio aquí afecta a todos los módulos: pide que se justifique y comprueba los tests de todos los proyectos.
 - El dispatcher (`Sender`) es propio a propósito; no se sustituye por MediatR
   ([ADR-0004](../../docs/adr/0004-dispatcher-propio-y-mapperly.md)).
-- `IDateTimeProvider` está obsoleto: no se usa en código nuevo ([ADR-0017](../../docs/adr/0017-timeprovider-en-codigo-nuevo.md)).
+- La hora es `TimeProvider` (registrado en `AddBuildingBlocks`); no se crean abstracciones propias de reloj ([ADR-0025](../../docs/adr/0025-timeprovider-en-todo-el-codigo.md)).
 - Antes de añadir algo aquí, pregúntate si un módulo podría extraerse sin ello: si la respuesta es no, probablemente
   no es kernel.
 

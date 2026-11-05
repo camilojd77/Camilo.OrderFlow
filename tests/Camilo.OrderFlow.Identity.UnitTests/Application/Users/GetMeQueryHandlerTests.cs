@@ -21,7 +21,7 @@ public sealed class GetMeQueryHandlerTests
     public async Task Handle_AuthenticatedUser_ReturnsDto()
     {
         var userId = Guid.NewGuid();
-        var user = new User(userId, "me@test.com", "me", "hash");
+        var user = new User(userId, "me@test.com", "me", "hash", TestTime.UtcNow);
         _currentUser.UserId.Returns(userId);
         _repo.GetByIdAsync(userId, Arg.Any<CancellationToken>()).Returns(user);
 

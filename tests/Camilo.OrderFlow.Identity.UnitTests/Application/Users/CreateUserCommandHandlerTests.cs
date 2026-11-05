@@ -16,7 +16,7 @@ public sealed class CreateUserCommandHandlerTests
     private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
     private readonly UserMapper _mapper = new();
 
-    private CreateUserCommandHandler CreateHandler() => new(_repo, _hasher, _ctx, _mapper);
+    private CreateUserCommandHandler CreateHandler() => new(_repo, _hasher, _ctx, _mapper, TestTime.Provider);
 
     [Fact]
     public async Task Handle_UniqueEmailAndUsername_ReturnsDto()

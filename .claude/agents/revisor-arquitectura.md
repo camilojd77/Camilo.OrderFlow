@@ -37,7 +37,7 @@ hooks:
 4. **Cadena de funcionalidad**: request + validator + handler; repositorios sin `SaveChanges`;
    `I<Modulo>ExecutionContext.CommitAsync`; DTOs y no entidades en la API; permisos con constantes; excepciones de
    dominio y mapeo en `GlobalExceptionHandler`.
-5. **Reglas de código nuevo**: `TimeProvider` en vez de `DateTime.UtcNow` (ADR-0017), `[LoggerMessage]` (ADR-0018),
+5. **Reglas de código**: `TimeProvider` en vez de `DateTime.UtcNow` en todo el código (ADR-0025); en código nuevo, `[LoggerMessage]` (ADR-0018),
    Minimal APIs con `TypedResults` para endpoints nuevos (ADR-0019), constructores primarios (ADR-0020). Lo existente
    que no se migró **no** es hallazgo.
 6. **Datos**: tablas en el esquema del módulo, sin joins ni FKs entre módulos, migraciones nuevas sin editar las

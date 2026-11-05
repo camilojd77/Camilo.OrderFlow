@@ -15,12 +15,12 @@ paths:
 - Las reglas que protegen la consistencia de la entidad viven en la entidad o en su value object, no en el handler.
 - Errores de dominio: excepciones de `BuildingBlocks.SharedKernel.Exceptions` (`ConflictException`,
   `ValidationException`…); nunca códigos HTTP.
-- **Código nuevo:** la hora llega como parámetro (`DateTimeOffset now`/`DateTime utcNow`) desde un `TimeProvider` del
-  handler; no se añade `DateTime.UtcNow` nuevo (el existente no se migra).
+- La hora llega como parámetro (`DateTime utcNow`) desde el `TimeProvider` del handler; nunca `DateTime.UtcNow`.
+  Lo que depende de la hora es un método (`IsLockedOut(utcNow)`), no una propiedad.
 - Sin servicios inyectados ni `IConfiguration`.
 
 Referencia: `Camilo.OrderFlow.Modules.Identity.Domain/Entities/User.cs`,
 `Camilo.OrderFlow.Modules.Identity.Domain/ValueObjects/UserProfile.cs`.
 
 Fuente: [CLAUDE.md](../../CLAUDE.md) §2 · [ADR-0002](../../docs/adr/0002-monolito-modular-clean-architecture.md) ·
-[ADR-0017](../../docs/adr/0017-timeprovider-en-codigo-nuevo.md)
+[ADR-0025](../../docs/adr/0025-timeprovider-en-todo-el-codigo.md)

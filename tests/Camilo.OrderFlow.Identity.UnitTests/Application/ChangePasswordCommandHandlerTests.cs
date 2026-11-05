@@ -17,11 +17,11 @@ public sealed class ChangePasswordCommandHandlerTests
     private readonly IIdentityExecutionContext _executionContext = Substitute.For<IIdentityExecutionContext>();
 
     private ChangePasswordCommandHandler CreateHandler() =>
-        new(_userRepository, _passwordHasher, _currentUser, _executionContext);
+        new(_userRepository, _passwordHasher, _currentUser, _executionContext, TestTime.Provider);
 
     private static User MakeUser(string passwordHash = "correct-hash")
     {
-        var user = new User(Guid.NewGuid(), "alice@example.com", "alice", passwordHash);
+        var user = new User(Guid.NewGuid(), "alice@example.com", "alice", passwordHash, TestTime.UtcNow);
         return user;
     }
 

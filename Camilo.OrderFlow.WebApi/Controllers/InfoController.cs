@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 using System.Reflection;
 
 namespace Camilo.OrderFlow.WebApi.Controllers;
@@ -13,7 +14,8 @@ namespace Camilo.OrderFlow.WebApi.Controllers;
 [Route("_info")]
 public sealed class InfoController : ControllerBase
 {
-    private static readonly DateTime StartedAt = DateTime.UtcNow;
+    // Monotonic timestamp taken when the controller type is first used; uptime does not depend on the wall clock.
+    private static readonly long StartedAtTimestamp = Stopwatch.GetTimestamp();
 
     private static readonly string ServiceName =
         Assembly.GetExecutingAssembly().GetName().Name ?? "unknown";
@@ -43,7 +45,7 @@ public sealed class InfoController : ControllerBase
             Environment: _env.EnvironmentName,
             CommitSha: Environment.GetEnvironmentVariable("COMMIT_SHA") ?? string.Empty,
             BuildDate: Environment.GetEnvironmentVariable("BUILD_DATE") ?? string.Empty,
-            UptimeSeconds: (long)(DateTime.UtcNow - StartedAt).TotalSeconds);
+            UptimeSeconds: (long)Stopwatch.GetElapsedTime(StartedAtTimestamp).TotalSeconds);
 
         return Ok(response);
     }

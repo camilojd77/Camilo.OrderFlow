@@ -17,9 +17,9 @@ paths:
   verifica también aquí.
 - **Arquitectura**: no se relajan ni se borran reglas para que pase un cambio. Al añadir un módulo, registra su
   `Add<Modulo>Infrastructure` y su execution context en `ModuleRegistrationTests`.
-- Código nuevo con reloj: `FakeTimeProvider` en vez de esperar o comparar con `DateTime.UtcNow`. Si migras una
-  lectura existente de `DateTime.UtcNow` a `TimeProvider`, baja su contador en
-  `SystemClockUsageTests.KnownUsages` (el test falla si la lista queda desfasada).
+- Reloj en tests: `TestTime.UtcNow` y `TestTime.Provider` (`FixedTimeProvider`) de `Identity.UnitTests`, y valores
+  exactos en las aserciones; nunca esperar ni comparar con `DateTime.UtcNow`. `SystemClockUsageTests` tiene la lista
+  de excepciones vacía: no se añade una entrada sin ADR.
 - Filtros: `dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8` (rápida). Un filtro que deja
   RealDb sin casos no valida SQL Server.
 

@@ -14,13 +14,13 @@ public sealed class DeactivateUserCommandHandlerTests
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
     private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
 
-    private DeactivateUserCommandHandler CreateHandler() => new(_repo, _ctx);
+    private DeactivateUserCommandHandler CreateHandler() => new(_repo, _ctx, TestTime.Provider);
 
     [Fact]
     public async Task Handle_RegularUser_DeactivatesAndReturnsUnit()
     {
         var id = Guid.NewGuid();
-        var user = new User(id, "u@test.com", "u", "hash");
+        var user = new User(id, "u@test.com", "u", "hash", TestTime.UtcNow);
         _repo.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(user);
         _repo.IsOnlyActiveAdminAsync(id, Arg.Any<CancellationToken>()).Returns(false);
         _ctx.CommitAsync(Arg.Any<CancellationToken>()).Returns(1);
@@ -36,7 +36,7 @@ public sealed class DeactivateUserCommandHandlerTests
     public async Task Handle_LastAdmin_ThrowsConflictException()
     {
         var id = Guid.NewGuid();
-        var user = new User(id, "admin@test.com", "admin", "hash");
+        var user = new User(id, "admin@test.com", "admin", "hash", TestTime.UtcNow);
         _repo.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(user);
         _repo.IsOnlyActiveAdminAsync(id, Arg.Any<CancellationToken>()).Returns(true);
 

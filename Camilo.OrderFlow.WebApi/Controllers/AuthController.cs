@@ -19,11 +19,13 @@ public sealed class AuthController : ControllerBase
 
     private readonly IAuthService _authService;
     private readonly ISender _sender;
+    private readonly TimeProvider _timeProvider;
 
-    public AuthController(IAuthService authService, ISender sender)
+    public AuthController(IAuthService authService, ISender sender, TimeProvider timeProvider)
     {
         _authService = authService;
         _sender = sender;
+        _timeProvider = timeProvider;
     }
 
     [HttpPost("register")]
@@ -106,7 +108,7 @@ public sealed class AuthController : ControllerBase
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTimeOffset.UtcNow.AddDays(30),
+            Expires = _timeProvider.GetUtcNow().AddDays(30),
         });
     }
 }

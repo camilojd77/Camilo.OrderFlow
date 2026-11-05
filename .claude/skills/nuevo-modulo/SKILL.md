@@ -9,7 +9,7 @@ disable-model-invocation: true
 
 Módulo = dominio de negocio con frontera propia ([ADR-0002](../../../docs/adr/0002-monolito-modular-clean-architecture.md)).
 Toma Identity como referencia de estructura en cada paso; el código nuevo usa constructores primarios, `TimeProvider` y
-`[LoggerMessage]` (ADR-0017/0018/0020). Pide confirmación antes de crear proyectos.
+`[LoggerMessage]` (ADR-0025/0018/0020). Pide confirmación antes de crear proyectos.
 
 1. **Proyectos** `Camilo.OrderFlow.Modules.<M>.Domain`, `.Application`, `.Infrastructure` en la raíz del repo, con los
    `.csproj` copiados en forma de los de Identity (sin `Version=`). Referencias: Domain → SharedKernel; Application →

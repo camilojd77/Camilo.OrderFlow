@@ -19,7 +19,7 @@ paths:
 - Errores con las excepciones de SharedKernel; no se capturan excepciones para silenciarlas.
 - Mensajes de excepción **sin datos personales** (llegan al `Detail` del `ProblemDetails`).
 - **Código nuevo:** constructores primarios ([ADR-0020](../../docs/adr/0020-constructores-primarios-en-codigo-nuevo.md)),
-  `TimeProvider` para la hora ([ADR-0017](../../docs/adr/0017-timeprovider-en-codigo-nuevo.md)) y `[LoggerMessage]`
+  `TimeProvider` para la hora ([ADR-0025](../../docs/adr/0025-timeprovider-en-todo-el-codigo.md); se inyecta en el handler y se pasa al dominio) y `[LoggerMessage]`
   si se registra algo ([ADR-0018](../../docs/adr/0018-loggermessage-para-logs-nuevos.md)). Lo existente no se migra.
 - Sin `IConfiguration`: la configuración llega como `IOptions<T>` desde Infrastructure.
 

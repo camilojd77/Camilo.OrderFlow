@@ -6,6 +6,18 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — `TimeProvider` en todo el código
+
+- **Qué:** las 20 lecturas de `DateTime.UtcNow`/`DateTimeOffset.UtcNow` de producción pasan a `TimeProvider`
+  ([ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md), reemplaza a ADR-0017). El dominio recibe la hora por
+  parámetro (`new User(…, createdAtUtc)`, `Deactivate(utcNow)`, `IsLockedOut(utcNow)`, `RefreshToken.IsActive(utcNow)`…);
+  handlers, `AuthService`, `JwtTokenService`, `RefreshTokenRepository`, el seeder y `AuthController` inyectan
+  `TimeProvider`; el uptime de `/_info` usa `Stopwatch`. Se eliminan `IDateTimeProvider` y `SystemDateTimeProvider`.
+  Los tests de dominio comparan valores exactos con un reloj fijo (`TestTime`). `SystemClockUsageTests` queda con la
+  lista de excepciones vacía.
+- **Provisional:** nada. Sin cambios en el modelo de EF (`has-pending-model-changes`: ninguno).
+- **Cifras:** tests 210/210 (sin cambio de número); 0 avisos; formato OK; 0 lecturas del reloj en producción.
+
 ## 2026-11-05 — Registro con nombre de usuario repetido
 
 - **Qué:** `RegisterUser` comprueba también el nombre de usuario; uno repetido devuelve 409 en vez de 500 (antes lo

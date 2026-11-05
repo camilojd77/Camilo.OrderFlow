@@ -6,6 +6,8 @@ namespace Camilo.OrderFlow.Identity.UnitTests.Domain;
 
 public sealed class RefreshTokenTests
 {
+    private static readonly DateTime Now = TestTime.UtcNow;
+
     private static RefreshToken Create(
         DateTime? expiresAtUtc = null,
         Guid? id = null,
@@ -16,7 +18,7 @@ public sealed class RefreshTokenTests
             id ?? Guid.NewGuid(),
             userId ?? Guid.NewGuid(),
             tokenHash,
-            expiresAtUtc ?? DateTime.UtcNow.AddDays(7),
+            expiresAtUtc ?? Now.AddDays(7),
             createdByIp);
 
     // ── Constructor ─────────────────────────────────────────────────────────
@@ -26,7 +28,7 @@ public sealed class RefreshTokenTests
     {
         var id = Guid.NewGuid();
         var userId = Guid.NewGuid();
-        var expiresAt = DateTime.UtcNow.AddDays(7);
+        var expiresAt = Now.AddDays(7);
 
         var token = new RefreshToken(id, userId, "hash", expiresAt, "10.0.0.1");
 
@@ -51,17 +53,17 @@ public sealed class RefreshTokenTests
     [Fact]
     public void IsExpired_WhenExpiresAtUtcInFuture_IsFalse()
     {
-        var token = Create(expiresAtUtc: DateTime.UtcNow.AddMinutes(5));
+        var token = Create(expiresAtUtc: Now.AddMinutes(5));
 
-        token.IsExpired.ShouldBeFalse();
+        token.IsExpired(Now).ShouldBeFalse();
     }
 
     [Fact]
     public void IsExpired_WhenExpiresAtUtcInPast_IsTrue()
     {
-        var token = Create(expiresAtUtc: DateTime.UtcNow.AddMinutes(-5));
+        var token = Create(expiresAtUtc: Now.AddMinutes(-5));
 
-        token.IsExpired.ShouldBeTrue();
+        token.IsExpired(Now).ShouldBeTrue();
     }
 
     // ── IsRevoked ───────────────────────────────────────────────────────────
@@ -79,7 +81,7 @@ public sealed class RefreshTokenTests
     {
         var token = Create();
 
-        token.Revoke(DateTime.UtcNow);
+        token.Revoke(Now);
 
         token.IsRevoked.ShouldBeTrue();
     }
@@ -89,26 +91,26 @@ public sealed class RefreshTokenTests
     [Fact]
     public void IsActive_NewTokenInFuture_IsTrue()
     {
-        var token = Create(expiresAtUtc: DateTime.UtcNow.AddMinutes(5));
+        var token = Create(expiresAtUtc: Now.AddMinutes(5));
 
-        token.IsActive.ShouldBeTrue();
+        token.IsActive(Now).ShouldBeTrue();
     }
 
     [Fact]
     public void IsActive_ExpiredToken_IsFalse()
     {
-        var token = Create(expiresAtUtc: DateTime.UtcNow.AddMinutes(-5));
+        var token = Create(expiresAtUtc: Now.AddMinutes(-5));
 
-        token.IsActive.ShouldBeFalse();
+        token.IsActive(Now).ShouldBeFalse();
     }
 
     [Fact]
     public void IsActive_RevokedToken_IsFalse()
     {
-        var token = Create(expiresAtUtc: DateTime.UtcNow.AddMinutes(5));
-        token.Revoke(DateTime.UtcNow);
+        var token = Create(expiresAtUtc: Now.AddMinutes(5));
+        token.Revoke(Now);
 
-        token.IsActive.ShouldBeFalse();
+        token.IsActive(Now).ShouldBeFalse();
     }
 
     // ── Revoke ──────────────────────────────────────────────────────────────
@@ -117,7 +119,7 @@ public sealed class RefreshTokenTests
     public void Revoke_SetsRevokedAtUtc()
     {
         var token = Create();
-        var revokedAt = DateTime.UtcNow;
+        var revokedAt = Now;
 
         token.Revoke(revokedAt);
 
@@ -130,7 +132,7 @@ public sealed class RefreshTokenTests
         var token = Create();
         var replacement = Guid.NewGuid();
 
-        token.Revoke(DateTime.UtcNow, replacement);
+        token.Revoke(Now, replacement);
 
         token.ReplacedByTokenId.ShouldBe(replacement);
     }
@@ -140,7 +142,7 @@ public sealed class RefreshTokenTests
     {
         var token = Create();
 
-        token.Revoke(DateTime.UtcNow);
+        token.Revoke(Now);
 
         token.ReplacedByTokenId.ShouldBeNull();
     }

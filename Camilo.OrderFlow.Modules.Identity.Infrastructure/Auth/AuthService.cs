@@ -17,6 +17,7 @@ public sealed class AuthService : IAuthService
     private readonly IIdentityExecutionContext _executionContext;
     private readonly LockoutOptions _lockoutOptions;
     private readonly RefreshTokenOptions _refreshTokenOptions;
+    private readonly TimeProvider _timeProvider;
 
     public AuthService(
         IdentityDbContext context,
@@ -25,7 +26,8 @@ public sealed class AuthService : IAuthService
         IRefreshTokenRepository refreshTokenRepository,
         IIdentityExecutionContext executionContext,
         IOptions<LockoutOptions> lockoutOptions,
-        IOptions<RefreshTokenOptions> refreshTokenOptions)
+        IOptions<RefreshTokenOptions> refreshTokenOptions,
+        TimeProvider timeProvider)
     {
         _context = context;
         _jwtTokenService = jwtTokenService;
@@ -34,6 +36,7 @@ public sealed class AuthService : IAuthService
         _executionContext = executionContext;
         _lockoutOptions = lockoutOptions.Value;
         _refreshTokenOptions = refreshTokenOptions.Value;
+        _timeProvider = timeProvider;
     }
 
     public async Task<LoginResponse?> LoginAsync(
@@ -51,24 +54,27 @@ public sealed class AuthService : IAuthService
         if (user is null)
             return null;
 
-        if (user.IsLockedOut)
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
+
+        if (user.IsLockedOut(utcNow))
             return null;
 
         if (!_passwordHasher.Verify(request.Password, user.PasswordHash))
         {
             user.RegisterFailedLogin(
                 _lockoutOptions.MaxAttempts,
-                TimeSpan.FromMinutes(_lockoutOptions.DurationMinutes));
+                TimeSpan.FromMinutes(_lockoutOptions.DurationMinutes),
+                utcNow);
             await _executionContext.CommitAsync(cancellationToken);
             return null;
         }
 
         if (user.FailedLoginAttempts > 0 || user.LockoutEndUtc.HasValue)
-            user.ResetFailedLoginAttempts();
+            user.ResetFailedLoginAttempts(utcNow);
 
         var rawToken = GenerateRawToken();
         var tokenHash = HashToken(rawToken);
-        var expiresAtUtc = DateTime.UtcNow.AddHours(_refreshTokenOptions.ExpiresHours);
+        var expiresAtUtc = utcNow.AddHours(_refreshTokenOptions.ExpiresHours);
 
         var refreshToken = new RefreshToken(Guid.NewGuid(), user.Id, tokenHash, expiresAtUtc, clientIp);
         _refreshTokenRepository.Add(refreshToken);
@@ -102,13 +108,14 @@ public sealed class AuthService : IAuthService
         if (user is null)
             return null;
 
+        var utcNow = _timeProvider.GetUtcNow().UtcDateTime;
         var newRawToken = GenerateRawToken();
         var newTokenHash = HashToken(newRawToken);
-        var expiresAtUtc = DateTime.UtcNow.AddHours(_refreshTokenOptions.ExpiresHours);
+        var expiresAtUtc = utcNow.AddHours(_refreshTokenOptions.ExpiresHours);
         var newTokenId = Guid.NewGuid();
 
         var newRefreshToken = new RefreshToken(newTokenId, user.Id, newTokenHash, expiresAtUtc, clientIp);
-        existing.Revoke(DateTime.UtcNow, newTokenId);
+        existing.Revoke(utcNow, newTokenId);
 
         _refreshTokenRepository.Add(newRefreshToken);
         await _executionContext.CommitAsync(cancellationToken);
@@ -126,7 +133,7 @@ public sealed class AuthService : IAuthService
         if (existing is null)
             return;
 
-        existing.Revoke(DateTime.UtcNow);
+        existing.Revoke(_timeProvider.GetUtcNow().UtcDateTime);
         await _executionContext.CommitAsync(cancellationToken);
     }
 
