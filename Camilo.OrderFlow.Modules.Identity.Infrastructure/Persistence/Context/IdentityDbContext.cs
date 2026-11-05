@@ -1,4 +1,4 @@
-﻿using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
+using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Persistence.Context

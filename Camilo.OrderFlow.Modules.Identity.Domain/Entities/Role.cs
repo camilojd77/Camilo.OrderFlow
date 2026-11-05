@@ -1,4 +1,4 @@
-﻿namespace Camilo.OrderFlow.Modules.Identity.Domain.Entities
+namespace Camilo.OrderFlow.Modules.Identity.Domain.Entities
 {
     public sealed class Role
     {

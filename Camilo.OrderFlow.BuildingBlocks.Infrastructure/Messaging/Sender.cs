@@ -1,5 +1,5 @@
-using System.Collections.Concurrent;
 using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Messaging;
+using System.Collections.Concurrent;
 
 namespace Camilo.OrderFlow.BuildingBlocks.Infrastructure.Messaging;
 

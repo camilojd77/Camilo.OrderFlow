@@ -1,4 +1,4 @@
-﻿using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Exceptions;
+using Camilo.OrderFlow.BuildingBlocks.SharedKernel.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
