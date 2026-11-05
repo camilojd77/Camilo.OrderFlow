@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Reemplazado por [`docs/architecture.md`](../architecture.md) y los [ADR](../adr/README.md). Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Documento 1 — Arquitectura de la solución
 
 > **Audiencia:** desarrolladores que van a usar `Camilo.OrderFlow` como plantilla para iniciar un nuevo backend dentro de la organización.

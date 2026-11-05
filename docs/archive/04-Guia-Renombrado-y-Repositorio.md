@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** El producto ya está renombrado a Camilo.OrderFlow. Solo es útil si se reutiliza `dev/rename.ps1` sobre una copia de la plantilla original. Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Documento 4 — Renombrado técnico y conservación del repositorio
 
 Producto: **Camilo.OrderFlow**, variantes `camilo-order-flow` y `CamiloOrderFlow`; base local nueva `CamiloOrderFlowDev`. La fase local usa exactamente `develop`, conserva raíz física, `.git`, historia, remotos y cambios previos. No crea commits ni hace push.

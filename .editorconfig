@@ -67,7 +67,8 @@ csharp_style_prefer_not_pattern = true:suggestion
 csharp_style_throw_expression = true:suggestion
 csharp_style_conditional_delegate_call = true:suggestion
 csharp_prefer_simple_using_statement = true:suggestion
-csharp_style_prefer_primary_constructors = false:suggestion
+# Constructores primarios en código nuevo; el existente no se migra (docs/adr/0020)
+csharp_style_prefer_primary_constructors = true:suggestion
 dotnet_style_object_initializer = true:suggestion
 dotnet_style_collection_initializer = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion

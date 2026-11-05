@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Plan de construcción ya ejecutado. Sus decisiones vigentes están en los [ADR](../adr/README.md) 0004, 0005, 0007, 0009, 0010 y 0016. Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Documento 5 — Plan Definitivo de Implementación
 
 > **Audiencia:** desarrollador (humano o IA) responsable de terminar la plantilla `Camilo.OrderFlow`.

@@ -8,7 +8,9 @@ publish/
 *.suo
 .vs/
 .vscode/
-.claude/
+# Claude Code: .claude/ se versiona (reglas, skills, agentes); lo personal no
+.claude/settings.local.json
+CLAUDE.local.md
 
 ## ── .NET / NuGet ─────────────────────────────────────────────────────────────
 *.nupkg

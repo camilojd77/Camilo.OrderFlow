@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Reemplazado por [`docs/observabilidad.md`](../observabilidad.md). Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Observabilidad — Guía rápida
 
 La API exporta **trazas y métricas** por OpenTelemetry al Collector: las trazas van a Tempo y las métricas se exponen para Prometheus. Los **logs** salen de Serilog directamente a Loki cuando el sink GrafanaLoki está configurado. Grafana consulta esos almacenes. El código no registra un pipeline OTel de logs.

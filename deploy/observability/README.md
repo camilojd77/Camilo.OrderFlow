@@ -39,7 +39,7 @@ dotnet run --project Camilo.OrderFlow.WebApi --launch-profile Local+OTel
 4. En Loki consultar `{app="camilo-order-flow-webapi"}` y correlacionar con `{app="camilo-order-flow-webapi"} | json | traceId="<id>"`. El enlace de Tempo a logs depende de los derivedFields provisionados y de que el sink esté activo.
 5. En una solicitud saliente verificar traceparent (OpenTelemetry) y X-Correlation-Id (CorrelationIdHandler). No almacenar tokens ni headers sensibles.
 
-Recorrido real: API/OpenTelemetry → Collector → Tempo (trazas) y exportador Prometheus (métricas); API/Serilog → Loki (logs). Grafana consulta los almacenes. Ver [guía de observabilidad](../../docs/Observability.md).
+Recorrido real: API/OpenTelemetry → Collector → Tempo (trazas) y exportador Prometheus (métricas); API/Serilog → Loki (logs). Grafana consulta los almacenes. Convenciones, catálogo de señales, consultas y runbooks en [docs/observabilidad.md](../../docs/observabilidad.md).
 
 ## Persistencia y convivencia
 

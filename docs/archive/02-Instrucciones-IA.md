@@ -1,3 +1,5 @@
+> **Archivado el 2026-11-05.** Reemplazado por [`CLAUDE.md`](../../CLAUDE.md), las reglas de `.claude/rules/` y las skills de `.claude/skills/`. Su convención de commits en español quedó sustituida por Conventional Commits en inglés. Se conserva como histórico: no describe el estado actual y no se actualiza; sus enlaces internos pueden no resolver.
+
 # Documento 2 — Instrucciones para agentes de IA
 
 > **Audiencia:** modelos de IA (Claude, Copilot, Cursor, etc.) que generan o modifican código en este repositorio.
