@@ -31,4 +31,4 @@ Referencia: `Persistence/Configurations/UserConfiguration.cs`, `Persistence/Repo
 
 Fuente: [ADR-0005](../../docs/adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md) ·
 [ADR-0009](../../docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md) ·
-[ADR-0010](../../docs/adr/0010-identidad-propia-bcrypt-jwt.md) · [docs/architecture.md](../../docs/architecture.md) §7
+[ADR-0029](../../docs/adr/0029-revocacion-de-sesiones.md) · [docs/architecture.md](../../docs/architecture.md) §7

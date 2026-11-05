@@ -13,8 +13,9 @@ public sealed class DeactivateUserCommandHandlerTests
 {
     private readonly IUserRepository _repo = Substitute.For<IUserRepository>();
     private readonly IIdentityExecutionContext _ctx = Substitute.For<IIdentityExecutionContext>();
+    private readonly IRefreshTokenRepository _refreshTokens = Substitute.For<IRefreshTokenRepository>();
 
-    private DeactivateUserCommandHandler CreateHandler() => new(_repo, _ctx, TestTime.Provider);
+    private DeactivateUserCommandHandler CreateHandler() => new(_repo, _ctx, _refreshTokens, TestTime.Provider);
 
     [Fact]
     public async Task Handle_RegularUser_DeactivatesAndReturnsUnit()
@@ -53,5 +54,25 @@ public sealed class DeactivateUserCommandHandlerTests
 
         await Should.ThrowAsync<NotFoundException>(() =>
             CreateHandler().Handle(new DeactivateUserCommand(Guid.NewGuid()), CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task Handle_RegularUser_RevokesActiveRefreshTokens()
+    {
+        var id = Guid.NewGuid();
+        var user = new User(id, "u@test.com", "u", "hash", TestTime.UtcNow);
+        var tokens = new List<RefreshToken>
+        {
+            new(Guid.NewGuid(), id, "hash-1", TestTime.UtcNow.AddDays(7), "127.0.0.1"),
+            new(Guid.NewGuid(), id, "hash-2", TestTime.UtcNow.AddDays(7), "127.0.0.1"),
+        };
+        _repo.GetByIdAsync(id, Arg.Any<CancellationToken>()).Returns(user);
+        _repo.IsOnlyActiveAdminAsync(id, Arg.Any<CancellationToken>()).Returns(false);
+        _refreshTokens.GetActiveByUserAsync(id, TestTime.UtcNow, Arg.Any<CancellationToken>()).Returns(tokens);
+
+        await CreateHandler().Handle(new DeactivateUserCommand(id), TestContext.Current.CancellationToken);
+
+        tokens.ShouldAllBe(token => token.RevokedAtUtc == TestTime.UtcNow);
+        await _ctx.Received(1).CommitAsync(Arg.Any<CancellationToken>());
     }
 }

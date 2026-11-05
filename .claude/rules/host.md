@@ -23,7 +23,8 @@ paths:
   rate limiting → autenticación → autorización → endpoints. No lo reordenes sin motivo escrito.
 - Un tipo de error nuevo = excepción que hereda de `DomainException` + una línea de mapeo en
   `Errors/GlobalExceptionHandler.cs`. No reescribas el handler.
-- No debilites security headers, CORS (`*` con credenciales), `ClockSkew`, ni la validación de opciones.
+- No debilites security headers, CORS (`*` con credenciales), `ClockSkew`, la comprobación de usuario activo en
+  `OnTokenValidated` ([ADR-0029](../../docs/adr/0029-revocacion-de-sesiones.md)) ni la validación de opciones.
 - Una dependencia crítica nueva (base de datos, servicio externo) lleva su health check en
   `Observability/Health/HealthChecksExtensions.cs`, con etiqueta `ready`; `live` no comprueba dependencias.
 - En el host solo van clientes HTTP transversales; el de un único módulo va en su `Infrastructure/Http/`
