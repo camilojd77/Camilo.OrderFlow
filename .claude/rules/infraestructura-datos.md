@@ -16,6 +16,9 @@ paths:
 - Opciones con `AddOptions<T>().BindConfiguration(...).ValidateDataAnnotations().ValidateOnStart()`.
 - Permisos: constantes `<recurso>.<accion>` en `Authorization/<Modulo>Permissions.cs` (en Identity,
   `IdentityPermissions`) + entrada en el seed; nunca literales.
+- Clientes HTTP que usa solo este módulo: en `Http/`, detrás de un puerto de Application, registrados con
+  `AddHttpClient` en `Add<Modulo>Infrastructure`; resiliencia como `ErpClient` y reintentos solo si la operación es
+  idempotente ([ADR-0022](../../docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md)).
 - Hashing (`IPasswordHasher` → BCrypt), JWT y refresh tokens no se debilitan sin ADR.
 - **Código nuevo:** `TimeProvider` en lugar de `DateTime.UtcNow`, `[LoggerMessage]`, constructores primarios
   (ADR-0017/0018/0020); lo existente no se migra.

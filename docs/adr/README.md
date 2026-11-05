@@ -35,3 +35,4 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0019](0019-endpoints-nuevos-minimal-apis.md) | Endpoints nuevos con Minimal APIs y `TypedResults` | Aceptada | 2026-11-05 |
 | [0020](0020-constructores-primarios-en-codigo-nuevo.md) | Constructores primarios en código nuevo | Aceptada | 2026-11-05 |
 | [0021](0021-una-sola-rama-develop.md) | Una sola rama de larga vida: `develop` | Aceptada | 2026-11-05 |
+| [0022](0022-clientes-http-de-modulo-en-infrastructure.md) | Los clientes HTTP de un módulo viven en su Infrastructure, detrás de un puerto | Aceptada | 2026-11-05 |

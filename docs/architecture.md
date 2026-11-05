@@ -86,7 +86,8 @@ lo consume directamente. Para que otro módulo use Identity hará falta la **fac
    `I<Modulo>ExecutionContext.CommitAsync(ct)` ([ADR-0005](adr/0005-dbcontext-esquema-y-execution-context-por-modulo.md)).
 4. **Mapeo**: mapper Mapperly en `Application/Mapping` → DTO de `Application/Dtos`.
 5. **Infraestructura**: repositorio en `Infrastructure/Persistence/Repositories` (no llama a `SaveChanges`),
-   configuración EF en `Persistence/Configurations`, registro en `Add<Modulo>Infrastructure`.
+   configuración EF en `Persistence/Configurations`, clientes HTTP propios del módulo en `Infrastructure/Http`
+   ([ADR-0022](adr/0022-clientes-http-de-modulo-en-infrastructure.md)), registro en `Add<Modulo>Infrastructure`.
 6. **Endpoint**: el host llama a `ISender.Send(...)`. Hoy son controladores; los endpoints nuevos son Minimal APIs
    ([ADR-0019](adr/0019-endpoints-nuevos-minimal-apis.md)).
 
