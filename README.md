@@ -1,292 +1,233 @@
-# Camilo.OrderFlow — Backend Template
+# Camilo.OrderFlow
 
-Plantilla enterprise para APIs REST en **.NET 10** con Clean Architecture + Modular Monolith, lista para clonar y arrancar en minutos. Diseñada para crecer de monolito modular a microservicios sin reescribir el código de negocio.
+Backend REST en **.NET 10** organizado como **monolito modular** con Clean Architecture por módulo, preparado para
+separar módulos en servicios más adelante. Hoy incluye el módulo **Identity** (usuarios, roles, permisos, JWT).
 
----
-
-## Características incluidas
-
-| Área | Detalle |
+| Para… | Lee |
 |---|---|
-| Arquitectura | Clean Architecture + Modular Monolith (Domain / Application / Infrastructure / WebApi) |
-| Auth | JWT Bearer + refresh token rotativo + autorización basada en permisos en BBDD |
-| CQRS | Dispatcher propio (`ISender`) — sin MediatR; validación automática con FluentValidation |
-| Mapping | Mapperly (source generator, compile-time) |
-| Observabilidad | OpenTelemetry → OTel Collector → Tempo + Loki + Prometheus + Grafana |
-| Logging | Serilog estructurado con enrichment de traceId / spanId / correlationId |
-| Caché de permisos | HybridCache (L1 in-memory por defecto, L2 Redis opcional con 1 línea de config) |
-| Resiliencia | `Microsoft.Extensions.Http.Resilience` — timeout + retry + circuit breaker |
-| Rate limiting | Políticas `default` y `auth` configurables por appsettings |
-| API versioning | Por header `api-version`, versión por defecto `1.0` |
-| Health checks | `/health/live` y `/health/ready` (SQL Server) |
-| Seguridad | Security headers, CORS, HTTPS, lockout de cuentas |
-| Tests | xunit.v3 sobre Microsoft Testing Platform: unit (Shouldly + NSubstitute), integración (SQLite), arquitectura (NetArchTest), RealDb (Testcontainers) |
-| Contenedores | `Dockerfile` multi-stage (usuario no-root, healthcheck) + compose de app completa y de dependencias |
-| CI | GitHub Actions — restore → build → test → coverage |
-| Adaptación | `dev/rename.ps1` para renombrar la plantilla a un producto nuevo |
+| Entender la arquitectura | [`docs/architecture.md`](docs/architecture.md) |
+| Saber por qué algo es así | [`docs/adr/`](docs/adr/README.md) |
+| Observabilidad y diagnóstico | [`docs/observabilidad.md`](docs/observabilidad.md) |
+| Historial de cambios con cifras | [`CHANGELOG.md`](CHANGELOG.md) |
+| Índice de toda la documentación | [`docs/README.md`](docs/README.md) |
 
 ---
 
-## Prerrequisitos
+## Estado del proyecto
 
-| Herramienta | Versión mínima | Notas |
-|---|---|---|
-| Git | 2.40 | `git --version` |
-| .NET SDK | 10.0 | `dotnet --version` |
-| `dotnet ef` | — | No viene con el SDK: `dotnet tool restore` (versión fijada en `.config/dotnet-tools.json`) |
-| Docker Desktop | 4.x (Compose v2) | `docker compose version`. Necesario para BBDD en contenedor, observabilidad y tests RealDb |
-| SQL Server | 2019+ | LocalDB, contenedor Docker o instancia local |
-| Certificado HTTPS dev | — | `dotnet dev-certs https --trust`, solo para el perfil `https` |
+**Listo**
 
-> **Mapperly (source generator):** IntelliSense no reconoce los mappers generados hasta el primer `dotnet build`. Compila antes de consumir un mapper nuevo.
+- Módulo Identity completo: registro, login, refresh token rotativo, bloqueo por intentos, usuarios, roles y
+  permisos, autorización por permiso con caché HybridCache.
+- Tests verdes (unitarios, arquitectura, integración con SQLite y con SQL Server real), cero avisos de compilación con
+  avisos como errores, sin paquetes vulnerables, `dotnet format` limpio. Cifras del día en el [`CHANGELOG.md`](CHANGELOG.md).
+- Trazas y métricas por OpenTelemetry; logs estructurados con Serilog; stack local Grafana/Tempo/Prometheus/Loki.
+- Imagen Docker con contenedor de migraciones; CI en GitHub Actions.
 
-> **¿Primera vez en este repositorio?** La guía detallada, con contenedores, verificaciones y tabla de troubleshooting, es [`docs/03-Guia-Nuevo-Equipo.md`](docs/03-Guia-Nuevo-Equipo.md). Lo de abajo es la versión corta.
+**A tener en cuenta**
+
+- Solo hay un módulo: la integración entre módulos ([ADR-0006](docs/adr/0006-integracion-modulos-adaptador-en-host.md))
+  y las Minimal APIs ([ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md)) no tienen todavía un ejemplo en el
+  código.
+- La revocación de permisos entre varias réplicas no está medida ([ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md));
+  desactivar un usuario no invalida sus access tokens vigentes.
+- `deployment.environment` vale `production` en `appsettings.json` aunque el código use `dev` por defecto.
+- El SDK no está fijado en `global.json` ([ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
+
+**Aplazado a propósito**
+
+- Umbral de cobertura y hooks de git (se reportan / se verifican con la skill `verificar-cambio`).
+- Dashboards y alertas como código.
+- Criterios de extracción a microservicios ([`docs/architecture.md`](docs/architecture.md) §11).
 
 ---
 
-## Arranque rápido (5 pasos)
+## Requisitos e instalación
 
-### 1. Clonar
+| Herramienta | Versión | Comprobar | Notas |
+|---|---|---|---|
+| Git | 2.40+ | `git --version` | |
+| .NET SDK | 10.0 | `dotnet --version` | No está fijado; el CI usa `10.0.x` |
+| Docker Desktop | 4.x, Compose v2 | `docker info` | Para SQL Server en contenedor, observabilidad y tests RealDb. En Windows requiere WSL2 |
+| SQL Server | 2019+ | — | Contenedor, LocalDB o instancia propia |
+| Certificado HTTPS de desarrollo | — | `dotnet dev-certs https --check` | Solo para el perfil `https` |
 
 ```pwsh
-git clone <url-del-repo>
+git clone https://github.com/camilojd77/Camilo.OrderFlow.git
 cd Camilo.OrderFlow
-```
-
-### 2. Configurar secretos locales
-
-```pwsh
-Copy-Item Camilo.OrderFlow.WebApi\appsettings.Development.json.example `
-          Camilo.OrderFlow.WebApi\appsettings.Development.json
-```
-
-Editar la copia y ajustar al menos:
-- `ConnectionStrings:DefaultConnection` → apuntar a tu instancia SQL Server
-- `Jwt:Key` → mínimo 32 caracteres (el valor de ejemplo es solo para desarrollo)
-
-### 3. Levantar SQL Server y observabilidad (opcional)
-
-**SQL Server** (si no tienes instancia local):
-```pwsh
-# Levantar SQL Server 2022 en Docker
-.\dev\database.ps1 up
-
-# Derribar cuando termines
-.\dev\database.ps1 down
-```
-
-**Stack de observabilidad** (Grafana / Loki / Tempo / Prometheus — opcional):
-```pwsh
-.\dev\observability.ps1 up
-```
-
-### 4. Aplicar migraciones
-
-```pwsh
-# dotnet ef no viene con el SDK; se instala desde el manifiesto del repo
-dotnet tool restore
-
-dotnet ef database update `
-  --project Camilo.OrderFlow.Modules.Identity.Infrastructure `
-  --startup-project Camilo.OrderFlow.WebApi
-```
-
-Aplica las 4 migraciones en orden:
-1. `20260304152336_InitialIdentity`
-2. `20260507202105_AddUserProfile`
-3. `20260507203931_AddUserLockout`
-4. `20260507203947_AddRefreshTokens`
-
-### 5. Ejecutar
-
-```pwsh
-dotnet run --project Camilo.OrderFlow.WebApi
-```
-
-- Swagger → `http://localhost:5070/swagger`
-- Info de servicio → `http://localhost:5070/_info`
-
----
-
-## Validación rápida
-
-Una vez levantada la API, verifica los endpoints principales:
-
-```pwsh
-# 1. Login con el admin seed
-$login = Invoke-RestMethod -Uri http://localhost:5070/api/auth/login `
-  -Method Post -ContentType "application/json" `
-  -Body '{"usernameOrEmail":"admin@company.com","password":"Admin123!"}'
-$token = $login.accessToken
-
-# 2. Perfil del usuario autenticado
-Invoke-RestMethod -Uri http://localhost:5070/api/users/me `
-  -Headers @{ Authorization = "Bearer $token" }
-
-# 3. Permisos efectivos del admin
-Invoke-RestMethod -Uri http://localhost:5070/api/users/me/permissions `
-  -Headers @{ Authorization = "Bearer $token" }
-```
-
-También puedes usar el archivo `.http` incluido:
-```
-Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.http
-```
-(compatible con Visual Studio y VS Code + REST Client)
-
----
-
-## Tests
-
-```pwsh
-# Todo (unit + architecture + integración + RealDb) — requiere Docker
-dotnet test
-
-# Suite rápida (unit + architecture + integración SQLite) — no requiere Docker
-dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8
-
-# Solo la suite contra SQL Server real vía Testcontainers — requiere Docker
-dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8
-
-# Solo architecture tests
-dotnet test --project tests/Camilo.OrderFlow.ArchitectureTests/Camilo.OrderFlow.ArchitectureTests.csproj
-
-# Con coverage (cobertura) y reporte TRX
-dotnet test -- --coverage --coverage-output-format cobertura --report-trx
-```
-
-> **Sobre la sintaxis:** xunit.v3 corre sobre Microsoft Testing Platform (el runner está
-> declarado en `global.json`). Lo que va después de `--` son argumentos de la app de test, no
-> del SDK. `--ignore-exit-code 8` es necesario porque, al filtrar, algún proyecto se queda sin
-> tests que ejecutar y el runner lo trataría como fallo. Sin filtro (`dotnet test` a secas) corre
-> todo y no hace falta.
-
-Registrar cantidades actuales por suite y fecha de ejecución. RealDb excluida o sin casos no acredita SQL Server.
-
-**Cobertura de referencia (plantilla base):**
-- Unit tests (Domain): ~80% líneas
-- Integration tests (API): ~47% líneas
-
-No hay umbral mínimo en la plantilla; el equipo consumidor decide su umbral.
-
-**Nota sobre la suite RealDb:** arranca un contenedor SQL Server 2022 via Testcontainers. Usa Docker Desktop corriendo. Registrar duración real según el entorno.
-
----
-
-## Estructura del repositorio
-
-```
-<workspace>/
-├── .github/workflows/        ← CI (GitHub Actions)
-├── Dockerfile                ← imagen de la API (build → migrator → runtime)
-├── deploy/
-│   ├── app/                  ← docker-compose de la app completa (BBDD + migraciones + API)
-│   ├── database/             ← docker-compose para SQL Server de desarrollo
-│   └── observability/        ← docker-compose: OTel Collector, Tempo, Loki, Prometheus, Grafana
-├── dev/
-│   ├── database.ps1          ← wrapper: dev/database.ps1 up | down | logs
-│   ├── observability.ps1     ← wrapper: dev/observability.ps1 up | down | logs | status | wipe
-│   └── rename.ps1            ← renombra la plantilla para un proyecto nuevo
-├── docs/                     ← Documentación técnica (ver tabla abajo)
-├── src/ (proyectos — en raíz por convención .slnx)
-│   ├── BuildingBlocks/
-│   │   ├── SharedKernel/     ← DomainException, dispatcher CQRS (ISender), paginación
-│   │   └── Infrastructure/   ← IExecutionContext, abstracciones reutilizables
-│   ├── Modules/Identity/
-│   │   ├── Domain/           ← User, Role, Permission, value objects, excepciones
-│   │   ├── Application/      ← Commands, Queries, DTOs, Mapperly mappers, validators
-│   │   └── Infrastructure/   ← EF Core, repos, JWT, BCrypt, HybridCache, seeders
-│   └── Host/
-│       └── WebApi/           ← Controllers, middleware, DI root, observabilidad, Swagger
-└── tests/
-    ├── ArchitectureTests/    ← Clean Architecture no violable (NetArchTest)
-    ├── Identity.UnitTests/   ← Tests de dominio y handlers (xUnit + Shouldly + NSubstitute)
-    ├── WebApi.IntegrationTests/       ← Tests de endpoints con SQLite in-memory
-    └── WebApi.IntegrationTests.RealDb/ ← Tests E2E con SQL Server real (Testcontainers)
+git switch develop
+dotnet tool restore          # dotnet-ef desde .config/dotnet-tools.json
+dotnet restore Camilo.OrderFlow.slnx
 ```
 
 ---
 
-## Cómo extender la plantilla
+## Desarrollo local
 
-Para agregar un nuevo módulo de negocio (ej. `Catalog`), sigue el [patrón completo de módulo](docs/Standards.md#patrón-completo-de-módulo) en `docs/Standards.md`.
+**1. Configuración.** Copia la plantilla de configuración local (ignorada por git) y rellena al menos
+`ConnectionStrings:DefaultConnection`, `ConnectionStrings:Db` (el mismo valor; lo usa el health check) y `Jwt:Key`
+(≥ 32 caracteres):
 
-Para contribuciones con IA (Copilot, Claude, Cursor), lee primero [`docs/02-Instrucciones-IA.md`](docs/02-Instrucciones-IA.md) — define reglas no-negociables de arquitectura, nomenclatura y orden de implementación.
+```pwsh
+Copy-Item Camilo.OrderFlow.WebApi\appsettings.Development.json.example Camilo.OrderFlow.WebApi\appsettings.Development.json
+```
 
----
+**2. Dependencias.**
 
-## Checklist de aprobación TI
+```pwsh
+.\dev\database.ps1 up          # SQL Server 2022 en localhost:1433 (también: logs, down)
+.\dev\observability.ps1 up     # opcional: Grafana, Tempo, Prometheus, Loki, Collector
+```
 
-El revisor de TI marca estos criterios antes de aprobar la plantilla:
+Las credenciales de esos contenedores son solo de desarrollo local y están en `deploy/database/` y
+`deploy/observability/`.
 
-- [ ] `git clone` + copiar `appsettings.Development.json.example` + `dotnet ef database update` + `dotnet run` arranca con prerrequisitos verificados y tiempo real registrado
-- [ ] Login admin (`admin@company.com` / `Admin123!`) devuelve `accessToken` + cookie `refresh_token`
-- [ ] `dotnet test` → verde con cantidades registradas y casos RealDb realmente ejecutados con Docker
-- [ ] `dotnet build /p:TreatWarningsAsErrors=true` → 0 warnings, 0 errores
-- [ ] `dotnet list package --vulnerable` → vacío
-- [ ] `dotnet list package --deprecated` → vacío
-- [ ] Cada endpoint público tiene `[ProducesResponseType]` y autenticación correcta
-- [ ] Architecture Tests cubren todas las reglas de Clean Architecture y aislamiento entre módulos
-- [ ] `appsettings.Development.json.example` permite arrancar sin adivinar campos
-- [ ] No hay archivos de IDE (`*.user`, `.vs/`, etc.) ni `bin/`/`obj/` versionados
-- [ ] Las 4 migraciones EF aplican limpiamente sobre una BD vacía
-- [ ] `docker compose -f deploy/app/docker-compose.yml up --build` levanta la app y el login del admin funciona
-- [ ] Smoke E2E (login → `/api/users/me` → `/api/users/me/permissions`) pasa
+**3. Migraciones** (no se aplican al arrancar, [ADR-0011](docs/adr/0011-migraciones-fuera-del-arranque.md)):
 
----
+```pwsh
+dotnet ef database update --project Camilo.OrderFlow.Modules.Identity.Infrastructure --startup-project Camilo.OrderFlow.WebApi --context IdentityDbContext
+```
 
-## Documentación de soporte
+**4. Ejecutar.**
 
-Índice completo, por rol y en orden de lectura: [`docs/README.md`](docs/README.md).
+```pwsh
+dotnet run --project Camilo.OrderFlow.WebApi                              # perfil http
+dotnet run --project Camilo.OrderFlow.WebApi --launch-profile Local+OTel  # con telemetría al stack local
+```
 
-| Documento | Contenido |
+| URL | Qué |
 |---|---|
-| [`docs/01-Arquitectura.md`](docs/01-Arquitectura.md) | Visión estructural, reglas de dependencias, decisiones explícitas |
-| [`docs/02-Instrucciones-IA.md`](docs/02-Instrucciones-IA.md) | Convenciones para agentes IA que extiendan la plantilla |
-| [`docs/03-Guia-Nuevo-Equipo.md`](docs/03-Guia-Nuevo-Equipo.md) | Puesta en marcha paso a paso en un equipo nuevo, contenedores y troubleshooting |
-| [`docs/04-Guia-Renombrado-y-Repositorio.md`](docs/04-Guia-Renombrado-y-Repositorio.md) | Renombrar la plantilla y apuntar a un repositorio nuevo |
-| [`docs/Standards.md`](docs/Standards.md) | Patrones completos: módulo, entidad, command, query, endpoint, tests |
-| [`docs/Observability.md`](docs/Observability.md) | Cómo usar Grafana, Loki, Tempo, Prometheus |
-| [`docs/EntenderObservabilidad.md`](docs/EntenderObservabilidad.md) | Ruta de estudio de observabilidad moderna (formación) |
-| [`docs/ReleaseChecklist.md`](docs/ReleaseChecklist.md) | Checklist antes de cada deploy a Staging / Production |
-| [`docs/05-Plan-Definitivo.md`](docs/05-Plan-Definitivo.md) | Decisiones D1–D10 tomadas durante la construcción (histórico) |
-| [`docs/archive/`](docs/archive/) | Planes ya ejecutados; no describen el estado actual |
+| http://localhost:5070/swagger | Swagger (Development y Staging) |
+| http://localhost:5070/health/live · /health/ready | Health checks |
+| http://localhost:5070/_info | Versión, commit y fecha de build |
+| http://localhost:3000 | Grafana (si levantaste la observabilidad) |
+
+En Development el seed crea los permisos, el rol administrador y un usuario de demostración (ver
+`Camilo.OrderFlow.Modules.Identity.Infrastructure/Persistence/Seed/IdentityDataSeeder.cs`). Para probar login, perfil y
+permisos usa `Camilo.OrderFlow.WebApi/Camilo.OrderFlow.WebApi.http`.
+
+**Todo en contenedores** (demo/QA, puertos 8080 y 1434):
+`docker compose -f deploy/app/docker-compose.yml up --build`.
+
+**IDE.** Abre `Camilo.OrderFlow.slnx` (Visual Studio, Rider o VS Code con C# Dev Kit). Los mappers de Mapperly son
+código generado: compila antes de concluir que un método no existe.
 
 ---
 
-## Variables de entorno útiles en CI / deploy
-
-| Variable | Descripción | Ejemplo |
-|---|---|---|
-| `COMMIT_SHA` | SHA del commit del artefacto | `84b52e0` |
-| `BUILD_DATE` | Timestamp ISO-8601 del build | `2026-05-08T11:00:00Z` |
-| `ASPNETCORE_ENVIRONMENT` | Entorno de ejecución | `Production` |
-
-Aparecen en la respuesta de `GET /_info`.
-
----
-
-## Renombrar la plantilla para un proyecto nuevo
-
-El script conserva el origen Company.Product y solo deriva una copia de plantilla sin renombrar. Este producto ya se llama Camilo.OrderFlow; no volver a ejecutar el script esperando renombrarlo arbitrariamente. Los nombres de contenedor, proyectos de
-compose y labels de Loki también forman parte del inventario técnico. Ejemplo sobre una copia de plantilla original:
+## Build, tests y calidad
 
 ```pwsh
-.\dev\rename.ps1 -NewName "Acme.Inventory" -WhatIf   # simula
-.\dev\rename.ps1 -NewName "Acme.Inventory"           # aplica
+dotnet build Camilo.OrderFlow.slnx -c Release -p:TreatWarningsAsErrors=true    # como el CI: 0 avisos
+dotnet test                                                                     # todo (RealDb necesita Docker)
+dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8       # suite rápida, sin Docker
+dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8           # solo SQL Server real
+dotnet test --project tests/Camilo.OrderFlow.ArchitectureTests/Camilo.OrderFlow.ArchitectureTests.csproj
+dotnet test -- --coverage --coverage-output-format cobertura --report-trx       # cobertura + TRX
+dotnet format Camilo.OrderFlow.slnx --verify-no-changes
+dotnet list Camilo.OrderFlow.slnx package --vulnerable --include-transitive
 ```
 
-El procedimiento completo — incluido qué queda a mano, qué hacer con las migraciones y cómo apuntar
-a otro repositorio — está en [`docs/04-Guia-Renombrado-y-Repositorio.md`](docs/04-Guia-Renombrado-y-Repositorio.md).
+- Los tests usan xUnit v3 sobre Microsoft.Testing.Platform (runner en `global.json`): lo que va después de `--` es
+  para la app de test. `--ignore-exit-code 8` evita que un proyecto sin casos tras el filtro cuente como fallo; una
+  suite RealDb filtrada sin casos **no** valida SQL Server.
+- En Git Bash usa `-p:` y no `/p:` (MSYS lo convierte en ruta).
+- Sin umbral de cobertura por ahora ([ADR-0016](docs/adr/0016-estrategia-de-pruebas.md)).
 
 ---
 
-## Alcance de la base actual
+## Arquitectura
 
-Nombre técnico Camilo.OrderFlow, rama develop; la carpeta física del workspace, historia y remotos se conservan. No se ha autorizado una fase de negocio.
+Módulos con tres capas (`Domain ← Application ← Infrastructure`), building blocks compartidos y un host
+(`Camilo.OrderFlow.WebApi`) que los compone. Dependencias solo hacia dentro, validadas con tests de arquitectura.
+Detalle, reglas y cadena de un caso de uso: [`docs/architecture.md`](docs/architecture.md).
 
-HybridCache usa L1 local y L2 Redis opcional. Redis compartido no demuestra revocación inmediata entre réplicas: verificar propagación por clave y por tag y medir la ventana de permisos obsoletos. CacheInvalidationTests solo prueba una WebApiFactory; no hay garantía temporal multiinstancia medida.
+```
+Camilo.OrderFlow.BuildingBlocks.SharedKernel/      abstracciones transversales (excepciones, CQRS, paginación)
+Camilo.OrderFlow.BuildingBlocks.Infrastructure/    dispatcher, reloj
+Camilo.OrderFlow.Modules.Identity.{Domain,Application,Infrastructure}/
+Camilo.OrderFlow.WebApi/                           host: Program.cs, controladores, middleware, observabilidad
+tests/                                             arquitectura, unitarios, integración (SQLite y RealDb)
+deploy/                                            compose: app, database, observability
+dev/                                               scripts: database.ps1, observability.ps1, rename.ps1
+docs/                                              arquitectura, observabilidad, ADR
+```
 
-ModuleCatalog descubre ensamblados referenciados y copiados a la salida de tests. Al agregar un módulo, comprobar esas referencias y registrar manualmente Add<Module>Infrastructure y la resolución de su execution context en ModuleRegistrationTests. El aislamiento entre dos módulos todavía no tiene ejemplo ejecutable: hoy solo existe Identity.
+---
 
-CI: push/PR a main/develop, SDK 10.0.x, restore/build/tests sin filtro y publicación TRX/cobertura. Sin nightly, umbral de cobertura ni auditoría dedicada. global.json fija runner, no SDK. Las cifras de cobertura anteriores son antecedentes, no una medición de esta fase.
+## Configuración y secretos
+
+- `appsettings.json` versionado **sin secretos**; `appsettings.Development.json` local desde el `.example`, ignorado
+  por git; variables de entorno (`ConnectionStrings__DefaultConnection`, `Jwt__Key`, …) en contenedores
+  ([ADR-0013](docs/adr/0013-configuracion-sin-secretos-y-opciones-validadas.md)).
+- La app no arranca si `Jwt:Key` falta o es corta, si falta una cadena de conexión o si una sección validada es
+  inválida.
+
+| Variable de build/despliegue | Para qué |
+|---|---|
+| `COMMIT_SHA`, `BUILD_DATE` | Argumentos de build de la imagen; aparecen en `/_info` |
+| `ASPNETCORE_ENVIRONMENT` | Entorno (`Development` activa Swagger y el seed) |
+
+---
+
+## Observabilidad
+
+Trazas y métricas por OpenTelemetry → Collector → Tempo y Prometheus; logs de Serilog → Loki; Grafana consulta todo y
+enlaza logs y trazas por `traceId`. Convenciones, catálogo de señales, consultas y runbooks:
+[`docs/observabilidad.md`](docs/observabilidad.md).
+
+---
+
+## Despliegue
+
+No hay pipeline de despliegue. El `Dockerfile` produce la imagen de la API (`final`) y la de migraciones (`migrator`);
+`deploy/app/docker-compose.yml` sirve para demos y QA, no para producción. Antes de desplegar:
+[`docs/ReleaseChecklist.md`](docs/ReleaseChecklist.md).
+
+---
+
+## Stack y versiones
+
+Las versiones exactas de paquetes están en `Directory.Packages.props` (fuente única,
+[ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
+
+| Área | Tecnología |
+|---|---|
+| Plataforma | .NET 10, C# 14, ASP.NET Core |
+| Datos | EF Core 10 + SQL Server; HybridCache (+ Redis opcional) |
+| Aplicación | Dispatcher CQRS propio, FluentValidation, Mapperly |
+| API | Controladores (Minimal APIs para endpoints nuevos), Asp.Versioning, Swashbuckle, JWT Bearer |
+| Resiliencia | `Microsoft.Extensions.Http.Resilience`, rate limiting de ASP.NET Core |
+| Observabilidad | OpenTelemetry .NET, Serilog, OTel Collector, Tempo, Prometheus, Loki, Grafana |
+| Pruebas | xUnit v3 + Microsoft.Testing.Platform, Shouldly, NSubstitute, NetArchTest, SQLite, Testcontainers |
+| CI | GitHub Actions |
+
+---
+
+## Resolución de problemas
+
+| Síntoma | Solución |
+|---|---|
+| `dotnet ef` no se encuentra | `dotnet tool restore` |
+| Error de red o instancia de SQL Server | `.\dev\database.ps1 up` y revisa `ConnectionStrings` |
+| SQL Server en contenedor queda `unhealthy` | Dale ≥ 4 GB de RAM a Docker Desktop; `.\dev\database.ps1 logs` |
+| Puerto ocupado (`port is already allocated`) | Cambia el puerto **del host** (el primer número) en el compose y el connection string o `OtlpEndpoint` |
+| Error de validación de `JwtOptions` al arrancar | `Jwt:Key` ausente o < 32 caracteres |
+| `Missing connection string: DefaultConnection` / `Db` | Las dos deben tener valor |
+| Swagger no abre en https | `dotnet dev-certs https --trust` |
+| Errores rojos en mappers nuevos | `dotnet build` (Mapperly genera el código al compilar) |
+| Tests RealDb fallan al arrancar | Docker Desktop apagado (`docker info`) |
+| `Testing with VSTest target is no longer supported` | Ejecuta desde la raíz del repo (allí está `global.json`) |
+| `dotnet test` con filtro sale con código 8 | Añade `--ignore-exit-code 8` |
+| `warning xUnit1051` | Pasa `TestContext.Current.CancellationToken` |
+| `warning NU1902`/`NU1903` | `dotnet list package --vulnerable --include-transitive` y `dotnet nuget why`; ver la skill `actualizar-dependencias` |
+| `MSB1008` con `/p:` en Git Bash | Usa `-p:` |
+| No llegan trazas o logs a Grafana | Runbooks en [`docs/observabilidad.md`](docs/observabilidad.md) §8 |
+
+---
+
+## Contribuir
+
+- Rama base `develop`; `main` solo recibe merges desde `develop`. Ramas `feat/`, `fix/`, `docs/`, `chore/`… en inglés.
+- Commits en inglés con Conventional Commits (`type(scope): subject`), sin `--no-verify`. Documentación en español.
+- Antes de commitear: compilar con avisos como errores, formato y tests (lo hace la skill `verificar-cambio`).
+- Una decisión de arquitectura nueva o cambiada lleva su ADR en el mismo PR.
