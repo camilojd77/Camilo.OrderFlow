@@ -5,6 +5,7 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 
 | Para… | Lee |
 |---|---|
+| Trabajar en el repo (personas y modelos de IA) | [`CLAUDE.md`](CLAUDE.md) |
 | Entender la arquitectura | [`docs/architecture.md`](docs/architecture.md) |
 | Saber por qué algo es así | [`docs/adr/`](docs/adr/README.md) |
 | Observabilidad y diagnóstico | [`docs/observabilidad.md`](docs/observabilidad.md) |
