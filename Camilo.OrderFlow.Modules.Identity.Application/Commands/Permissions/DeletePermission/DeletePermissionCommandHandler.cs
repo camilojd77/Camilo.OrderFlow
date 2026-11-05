@@ -4,7 +4,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Abstractions;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Permissions.DeletePermission;
 
-public sealed class DeletePermissionCommandHandler : IRequestHandler<DeletePermissionCommand, Unit>
+internal sealed class DeletePermissionCommandHandler : IRequestHandler<DeletePermissionCommand, Unit>
 {
     private readonly IPermissionRepository _permissionRepository;
     private readonly IIdentityExecutionContext _executionContext;

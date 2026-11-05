@@ -23,7 +23,10 @@ Toma Identity como referencia de estructura en cada paso; el código nuevo usa c
 4. **Commit**: `I<M>ExecutionContext : IExecutionContext` en `Application/Abstractions` + implementación en
    `Infrastructure/Persistence`, registrada como `I<M>ExecutionContext` (scoped). Nunca `IExecutionContext`. Ref.:
    `IIdentityExecutionContext.cs`, `IdentityExecutionContext.cs`.
-5. **DI**: `Add<M>Application()` (handlers por reflexión, validators, `ValidationPipelineBehavior`, mappers) y
+5. **Superficie** ([ADR-0028](../../../docs/adr/0028-superficie-publica-de-los-modulos.md)): `internal` por defecto; `InternalsVisibleTo` en los `.csproj`
+   solo hacia los proyectos de tests del módulo. `ModuleSurfaceTests` lo comprueba sin registrar nada.
+   **DI**: `Add<M>Application()` (handlers por reflexión, validators con `includeInternalTypes: true`,
+   `ValidationPipelineBehavior`, mappers) y
    `Add<M>Infrastructure(IConfiguration)`. Ref.: los `ServiceCollectionExtensions.cs` de Identity. Ojo: si cada módulo
    registra `IPipelineBehavior<,>` genérico, el behavior se ejecutará varias veces; pregunta cómo centralizarlo antes
    de copiarlo.

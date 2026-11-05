@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Auth;
 
-public sealed class JwtTokenService : IJwtTokenService
+internal sealed class JwtTokenService : IJwtTokenService
 {
     private readonly JwtOptions _options;
     private readonly TimeProvider _timeProvider;

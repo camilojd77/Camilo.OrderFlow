@@ -4,7 +4,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Abstractions;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Roles.DeleteRole;
 
-public sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Unit>
+internal sealed class DeleteRoleCommandHandler : IRequestHandler<DeleteRoleCommand, Unit>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IIdentityExecutionContext _executionContext;

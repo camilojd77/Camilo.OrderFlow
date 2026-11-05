@@ -7,7 +7,9 @@ paths:
 
 - Un caso de uso = una carpeta `Commands|Queries/<Agregado>/<CasoDeUso>/` con `XCommand` (`sealed record … :
   IRequest<T>`), `XCommandValidator` (FluentValidation) y `XCommandHandler` (`IRequestHandler<,>`). Los handlers se
-  registran solos por reflexión; los validators, con `AddValidatorsFromAssembly`.
+  registran solos por reflexión; los validators, con `AddValidatorsFromAssembly(…, includeInternalTypes: true)`.
+- **`internal` por defecto** ([ADR-0028](../../docs/adr/0028-superficie-publica-de-los-modulos.md)): handlers, validators, behaviors y mappers son
+  `internal`; públicos solo requests, DTOs y puertos de `Abstractions`. Lo comprueba `ModuleSurfaceTests`.
 - Puertos (repositorios, `IPasswordHasher`, `ICurrentUser`, `I<Modulo>ExecutionContext`, puertos hacia otros módulos)
   en `Abstractions/`. Sin EF Core, ASP.NET Core, MediatR ni AutoMapper (test de arquitectura).
 - Los handlers usan repositorios, nunca el `DbContext`, y confirman al final con

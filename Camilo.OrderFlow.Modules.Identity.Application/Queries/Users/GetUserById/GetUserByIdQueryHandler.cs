@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Users.GetUserById;
 
-public sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
+internal sealed class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, UserDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly UserMapper _userMapper;

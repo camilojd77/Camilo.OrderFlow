@@ -13,6 +13,8 @@ paths:
 - El commit lo hace `<Modulo>ExecutionContext` (registrado como `I<Modulo>ExecutionContext`, scoped). Nunca registrar
   `IExecutionContext` a secas (lo comprueba `ModuleRegistrationTests`).
 - Todo se registra en `Add<Modulo>Infrastructure(IConfiguration)`; `Program.cs` no registra servicios de un módulo.
+- **`internal` por defecto** ([ADR-0028](../../docs/adr/0028-superficie-publica-de-los-modulos.md)): `DbContext`, configuraciones, repositorios,
+  implementaciones de puertos, servicios y seeders. Público solo lo que el host necesita para componer.
 - Opciones con `AddOptions<T>().BindConfiguration(...).ValidateDataAnnotations().ValidateOnStart()`.
 - Permisos: constantes `<recurso>.<accion>` en `Authorization/<Modulo>Permissions.cs` (en Identity,
   `IdentityPermissions`) + entrada en el seed; nunca literales.

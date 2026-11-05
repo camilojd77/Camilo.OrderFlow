@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Roles.CreateRole;
 
-public sealed class CreateRoleCommandValidator : AbstractValidator<CreateRoleCommand>
+internal sealed class CreateRoleCommandValidator : AbstractValidator<CreateRoleCommand>
 {
     public CreateRoleCommandValidator()
     {

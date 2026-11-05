@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Users.ListUsers;
 
-public sealed class ListUsersQueryHandler : IRequestHandler<ListUsersQuery, PagedResult<UserDto>>
+internal sealed class ListUsersQueryHandler : IRequestHandler<ListUsersQuery, PagedResult<UserDto>>
 {
     private readonly IUserRepository _userRepository;
     private readonly UserMapper _userMapper;

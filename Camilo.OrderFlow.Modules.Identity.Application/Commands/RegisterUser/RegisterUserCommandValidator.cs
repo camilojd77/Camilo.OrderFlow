@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.RegisterUser;
 
-public sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
+internal sealed class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand>
 {
     public RegisterUserCommandValidator()
     {

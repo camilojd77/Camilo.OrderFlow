@@ -8,7 +8,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.ValueObjects;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.CreateUser;
 
-public sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
+internal sealed class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, UserDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;

@@ -5,7 +5,7 @@ using Riok.Mapperly.Abstractions;
 namespace Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 [Mapper]
-public partial class PermissionMapper
+internal partial class PermissionMapper
 {
     public partial PermissionDto ToDto(Permission permission);
 }

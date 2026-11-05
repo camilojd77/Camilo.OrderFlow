@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Roles.UpdateRole;
 
-public sealed class UpdateRoleCommandValidator : AbstractValidator<UpdateRoleCommand>
+internal sealed class UpdateRoleCommandValidator : AbstractValidator<UpdateRoleCommand>
 {
     public UpdateRoleCommandValidator()
     {

@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Users.GetMe;
 
-public sealed class GetMeQueryHandler : IRequestHandler<GetMeQuery, UserDto>
+internal sealed class GetMeQueryHandler : IRequestHandler<GetMeQuery, UserDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUser _currentUser;

@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Permissions.CreatePermission;
 
-public sealed class CreatePermissionCommandValidator : AbstractValidator<CreatePermissionCommand>
+internal sealed class CreatePermissionCommandValidator : AbstractValidator<CreatePermissionCommand>
 {
     public CreatePermissionCommandValidator()
     {

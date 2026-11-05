@@ -5,7 +5,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Permissions.ListPermissions;
 
-public sealed class ListPermissionsQueryHandler : IRequestHandler<ListPermissionsQuery, IReadOnlyList<PermissionDto>>
+internal sealed class ListPermissionsQueryHandler : IRequestHandler<ListPermissionsQuery, IReadOnlyList<PermissionDto>>
 {
     private readonly IPermissionRepository _permissionRepository;
     private readonly PermissionMapper _permissionMapper;

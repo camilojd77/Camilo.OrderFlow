@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Persistence.Context
 {
-    public sealed class IdentityDbContext : DbContext
+    internal sealed class IdentityDbContext : DbContext
     {
         public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 

@@ -4,7 +4,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Abstractions;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.ActivateUser;
 
-public sealed class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, Unit>
+internal sealed class ActivateUserCommandHandler : IRequestHandler<ActivateUserCommand, Unit>
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityExecutionContext _executionContext;

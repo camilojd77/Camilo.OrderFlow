@@ -7,7 +7,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Roles.CreateRole;
 
-public sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, RoleDto>
+internal sealed class CreateRoleCommandHandler : IRequestHandler<CreateRoleCommand, RoleDto>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IIdentityExecutionContext _executionContext;

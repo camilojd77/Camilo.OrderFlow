@@ -39,8 +39,10 @@ Monolito modular; los proyectos están **en la raíz** (no en `src/`). Tabla com
 - **Dónde se valida**: referencias de `.csproj` + `tests/Camilo.OrderFlow.ArchitectureTests` (NetArchTest: dirección
   de capas, paquetes prohibidos, aislamiento, execution context por módulo) y `SystemClockUsageTests` (sin
   `DateTime.UtcNow`). Rompe `dotnet test`.
-- **Contrato público**: no hay `*.Contracts` ni `internal`; el host usa los requests de Application y la autorización
-  de Infrastructure. Lo que otro módulo pueda usar se expone como fachada (ADR-0006).
+- **Superficie pública mínima** ([ADR-0028](docs/adr/0028-superficie-publica-de-los-modulos.md)): `internal` por defecto. Público solo requests, DTOs,
+  puertos de `Abstractions`, `Add<Modulo>…` y lo que el host necesita para componer; handlers, validators, mappers,
+  implementaciones y `DbContext` son `internal` (tests con `InternalsVisibleTo`; lo comprueba `ModuleSurfaceTests`). La
+  fachada para otros módulos (`<M>.Contracts`) se crea con el primer consumidor.
 - Hoy solo existe el módulo **Identity** (esquema `identity`).
 
 ## 3. Cómo implementar algo nuevo
@@ -148,6 +150,7 @@ cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Conv
 - [ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md) `TimeProvider` en todo el código; el dominio recibe la hora por parámetro.
 - [ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite, Testcontainers; cobertura mínima por proyecto con trinquete.
 - [ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md) Hooks de git versionados en `.githooks/` con `core.hooksPath`.
+- [ADR-0028](docs/adr/0028-superficie-publica-de-los-modulos.md) `internal` por defecto en los módulos; fachada `Contracts` solo con un consumidor real.
 
 ## 8. Reglas para modelos de IA
 

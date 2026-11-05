@@ -17,11 +17,11 @@ constructores clásicos: copia la estructura, no ese estilo.
 2. **Request**: `sealed record XCommand(...) : IRequest<TDto>` en `Application/Commands/<Agregado>/<CasoDeUso>/` (o
    `Queries/…`). Ref.: `Application/Commands/Users/CreateUser/CreateUserCommand.cs`; paginada:
    `Application/Queries/Users/ListUsers/`.
-3. **Validator**: `XCommandValidator : AbstractValidator<XCommand>` en la misma carpeta. Ref.:
+3. **Validator**: `internal sealed class XCommandValidator : AbstractValidator<XCommand>` en la misma carpeta. Ref.:
    `CreateUserCommandValidator.cs`.
 4. **Puertos**: si hace falta un método de repositorio nuevo, añádelo a la interfaz de `Application/Abstractions/`.
    Ref.: `Application/Abstractions/IUserRepository.cs`.
-5. **Handler**: `XCommandHandler : IRequestHandler<XCommand, TDto>`; repositorios, entidades,
+5. **Handler**: `internal sealed class XCommandHandler : IRequestHandler<XCommand, TDto>` (ADR-0028); repositorios, entidades,
    `I<Modulo>ExecutionContext.CommitAsync(ct)` al final, DTO con el mapper. Errores con excepciones de SharedKernel
    (mensajes sin datos personales). Ref.: `CreateUserCommandHandler.cs`.
 6. **DTO y mapper**: `Application/Dtos/` y `Application/Mapping/` (Mapperly). Ref.: `Dtos/UserDto.cs`,

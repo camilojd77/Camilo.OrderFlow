@@ -3,7 +3,7 @@ using Microsoft.Extensions.Options;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Authorization;
 
-public sealed class PermissionPolicyProvider : DefaultAuthorizationPolicyProvider
+internal sealed class PermissionPolicyProvider : DefaultAuthorizationPolicyProvider
 {
     private const string PermissionPrefix = "permission:";
 

@@ -62,7 +62,9 @@ WebApi ──► Modules.<M>.Infrastructure ──► Modules.<M>.Application �
    (`ModuleCatalog.cs`), así que un módulo nuevo queda cubierto en cuanto el host lo referencia.
 3. `ModuleRegistrationTests.cs`: nadie registra `IExecutionContext` a secas; cada módulo registra el suyo. El registro
    de cada módulo nuevo se añade **a mano** en este test.
-4. `SystemClockUsageTests.cs`: ningún archivo de producción lee `DateTime.UtcNow`/`Now`; la hora viene de
+4. `ModuleSurfaceTests.cs`: handlers, validators, behaviors, mappers, implementaciones de puertos y `DbContext` no
+   son públicos en ningún módulo ([ADR-0028](adr/0028-superficie-publica-de-los-modulos.md)).
+5. `SystemClockUsageTests.cs`: ningún archivo de producción lee `DateTime.UtcNow`/`Now`; la hora viene de
    `TimeProvider` ([ADR-0025](adr/0025-timeprovider-en-todo-el-codigo.md)). Escanea el código fuente; la lista de excepciones está vacía.
 
 Una violación rompe `dotnet test`, no `dotnet build`.
@@ -73,9 +75,11 @@ Una violación rompe `dotnet test`, no `dotnet build`.
 |---|---|---|
 | Identity | `identity` | Commands y queries de `Application` (vía `ISender`), `IdentityPermissions` y `AuthorizePermission` (autorización), `IAuthService` y `JwtOptions` (login y JWT), `SeedIdentityDataAsync` |
 
-**No hay proyecto `*.Contracts` ni tipos `internal` que limiten la superficie**: todo `Application` es público y el host
-lo consume directamente. Para que otro módulo use Identity hará falta la **fachada pública** de
-[ADR-0006](adr/0006-integracion-modulos-adaptador-en-host.md); delimitarla es trabajo del primer caso real.
+**Superficie mínima** ([ADR-0028](adr/0028-superficie-publica-de-los-modulos.md)): todo es `internal` salvo lo de la tabla anterior, los puertos de
+`Application/Abstractions`, los DTOs y las extensiones `Add<Modulo>…`. Handlers, validators, behaviors, mappers,
+repositorios, servicios, seeder e `IdentityDbContext` son `internal`; sus tests los ven con `InternalsVisibleTo`.
+No hay proyecto `*.Contracts`: se crea, con una fachada pequeña y DTOs propios, cuando otro módulo necesite algo de
+Identity, y solo lo referencia el host ([ADR-0006](adr/0006-integracion-modulos-adaptador-en-host.md)).
 
 ## 5. Dentro de un módulo: la cadena de un caso de uso
 

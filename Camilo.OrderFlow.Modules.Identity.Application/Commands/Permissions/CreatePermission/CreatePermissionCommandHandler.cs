@@ -7,7 +7,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Permissions.CreatePermission;
 
-public sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, PermissionDto>
+internal sealed class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, PermissionDto>
 {
     private readonly IPermissionRepository _permissionRepository;
     private readonly IIdentityExecutionContext _executionContext;

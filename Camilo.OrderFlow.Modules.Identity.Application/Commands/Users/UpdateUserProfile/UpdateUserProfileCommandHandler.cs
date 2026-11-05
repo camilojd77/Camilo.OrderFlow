@@ -7,7 +7,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.ValueObjects;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.UpdateUserProfile;
 
-public sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, UserDto>
+internal sealed class UpdateUserProfileCommandHandler : IRequestHandler<UpdateUserProfileCommand, UserDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly ICurrentUser _currentUser;
