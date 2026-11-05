@@ -6,6 +6,28 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Endurecimiento: datos personales, avisos y versiones fijadas
+
+- **Qué:**
+  - Los mensajes de `ConflictException` de `CreateUser` y `RegisterUser` ya no incluyen el correo ni el nombre de
+    usuario (llegan al `ProblemDetails`).
+  - `TreatWarningsAsErrors=true` en `Directory.Build.props`, también en local
+    ([ADR-0023](docs/adr/0023-avisos-como-errores-en-local-y-ci.md), reemplaza a ADR-0014).
+  - Versiones fijadas ([ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md), reemplaza a ADR-0012):
+    SDK `10.0.403` (`latestPatch`) en `global.json` y en el CI; imágenes `sdk:10.0.403`, `aspnet:10.0.14` y
+    `mssql/server:2022-CU27-GDR1-ubuntu-22.04`; acciones de GitHub por SHA.
+- **Provisional:** `RegisterUser` no comprueba si el nombre de usuario ya existe; con uno repetido, el índice único
+  de la base de datos devolvería un 500 en vez de un 409 (pendiente de corregir).
+- **Cifras:**
+
+  | Comprobación | Resultado |
+  |---|---|
+  | Tests | 208/208: ArchitectureTests 22 · Identity.UnitTests 121 · WebApi.IntegrationTests 59 · WebApi.IntegrationTests.RealDb 6 (SQL Server CU27-GDR1) |
+  | Avisos (ahora siempre como errores) | 0 en Debug y Release |
+  | `dotnet format --verify-no-changes` | OK |
+  | Imágenes Docker | `final` y `migrator` construyen con las etiquetas fijadas |
+  | Cobertura | No se volvió a medir |
+
 ## 2026-11-05 — Seguimiento de la revisión del plan 01
 
 - **Qué:**
