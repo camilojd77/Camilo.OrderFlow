@@ -32,7 +32,6 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
   código.
 - La revocación de permisos entre varias réplicas no está medida ([ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md));
   desactivar un usuario no invalida sus access tokens vigentes.
-- El SDK no está fijado en `global.json` ([ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
 
 **Aplazado a propósito**
 
@@ -47,7 +46,7 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 | Herramienta | Versión | Comprobar | Notas |
 |---|---|---|---|
 | Git | 2.40+ | `git --version` | |
-| .NET SDK | 10.0 | `dotnet --version` | No está fijado; el CI usa `10.0.x` |
+| .NET SDK | 10.0.403 (o parche 10.0.4xx posterior) | `dotnet --version` | Fijado en `global.json`; el CI usa el mismo |
 | Docker Desktop | 4.x, Compose v2 | `docker info` | Para SQL Server en contenedor, observabilidad y tests RealDb. En Windows requiere WSL2 |
 | SQL Server | 2019+ | — | Contenedor, LocalDB o instancia propia |
 | Certificado HTTPS de desarrollo | — | `dotnet dev-certs https --check` | Solo para el perfil `https` |
@@ -187,8 +186,9 @@ No hay pipeline de despliegue. El `Dockerfile` produce la imagen de la API (`fin
 
 ## Stack y versiones
 
-Las versiones exactas de paquetes están en `Directory.Packages.props` (fuente única,
-[ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md)).
+Versiones exactas: paquetes en `Directory.Packages.props`, SDK en `global.json`, imágenes en `Dockerfile` y
+`deploy/**`, acciones del CI por SHA en `.github/workflows/ci.yml`
+([ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md)).
 
 | Área | Tecnología |
 |---|---|

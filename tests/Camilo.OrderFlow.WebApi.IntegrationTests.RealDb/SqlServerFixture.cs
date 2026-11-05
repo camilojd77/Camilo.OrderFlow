@@ -17,7 +17,7 @@ public sealed class SqlServerFixture : IAsyncLifetime
     // Testcontainers 4.14+ exige la imagen en el constructor; el ctor sin parametros
     // y WithImage(...) quedaron obsoletos.
     private readonly MsSqlContainer _container =
-        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-latest").Build();
+        new MsSqlBuilder("mcr.microsoft.com/mssql/server:2022-CU27-GDR1-ubuntu-22.04").Build();
 
     public RealDbWebApiFactory Factory { get; private set; } = default!;
 

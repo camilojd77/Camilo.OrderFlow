@@ -1,6 +1,6 @@
 # ADR-0012 — Versiones centralizadas (CPM) y pines transitivos solo por seguridad
 
-- **Estado:** Aceptada
+- **Estado:** Reemplazada por [ADR-0024](0024-versiones-fijadas-sdk-imagenes-y-acciones.md)
 - **Fecha:** 2026-11-05 · **Decide:** Camilo Jaramillo
 - **Revisar cuando:** se decida fijar el SDK en `global.json` o usar archivos de bloqueo (`packages.lock.json`).
 

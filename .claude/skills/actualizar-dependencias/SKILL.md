@@ -22,8 +22,13 @@ Solo se ejecuta si la persona lo pidió. Nunca como efecto secundario de otra ta
 6. **Pin transitivo** solo para cerrar una vulnerabilidad cuyo padre no publica arreglo: entrada en
    `ItemGroup Label="Transitive pins"` y bloque de comentario «Llega por / Motivo (GHSA y severidad) / Revisar». Saca
    la versión corregida de la asesoría, no de memoria. Revisa si algún pin existente ya sobra y quítalo.
-7. **Herramientas** (`.config/dotnet-tools.json`): `dotnet-ef` igual o más nueva que EF Core. **Imágenes**
-   (`Dockerfile`, `deploy/**`): solo si se pide.
+7. **Herramientas** (`.config/dotnet-tools.json`): `dotnet-ef` igual o más nueva que EF Core.
+   **SDK, imágenes y acciones** ([ADR-0024](../../../docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md)), solo
+   si se pide y en un único cambio:
+   - SDK: `global.json` y `sdk:`/`aspnet:` del `Dockerfile` (el runtime es el que trae ese SDK; compruébalo con
+     `dotnet --info`). Verifica que las etiquetas existen en `mcr.microsoft.com/v2/dotnet/<imagen>/tags/list`.
+   - SQL Server: la misma etiqueta exacta en `deploy/app`, `deploy/database` y `SqlServerFixture.cs`.
+   - Acciones: `git ls-remote https://github.com/<owner>/<repo> refs/tags/<tag>` y `uses: <owner>/<repo>@<sha> # <tag>`.
 8. **Verifica** con la skill `verificar-cambio` completa (RealDb incluida) y
    `dotnet list … package --vulnerable --include-transitive` vacío.
 9. Commit `build(deps): …` o `fix(deps): …` con la skill `commit`; en el cuerpo, versiones antes → después y por qué.
