@@ -40,3 +40,4 @@ Cada decisión vigente con alternativas reales tiene aquí su ADR ([ADR-0001](00
 | [0024](0024-versiones-fijadas-sdk-imagenes-y-acciones.md) | Versiones fijadas: paquetes (CPM), SDK, imágenes y acciones del CI | Aceptada | 2026-11-05 |
 | [0025](0025-timeprovider-en-todo-el-codigo.md) | `TimeProvider` en todo el código de producción; sin `IDateTimeProvider` | Aceptada | 2026-11-05 |
 | [0026](0026-umbral-de-cobertura-por-proyecto.md) | Estrategia de pruebas con umbral de cobertura por proyecto | Aceptada | 2026-11-05 |
+| [0027](0027-hooks-de-git-con-core-hookspath.md) | Hooks de git versionados con `core.hooksPath` | Aceptada | 2026-11-05 |

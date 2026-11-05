@@ -35,7 +35,6 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 
 **Aplazado a propósito**
 
-- Hooks de git (la verificación local es la skill `verificar-cambio`).
 - Dashboards y alertas como código.
 - Criterios de extracción a microservicios ([`docs/architecture.md`](docs/architecture.md) §11).
 
@@ -56,6 +55,7 @@ git clone https://github.com/camilojd77/Camilo.OrderFlow.git
 cd Camilo.OrderFlow
 git switch develop
 dotnet tool restore          # dotnet-ef desde .config/dotnet-tools.json
+git config core.hooksPath .githooks   # hooks de git del repo (commit-msg, pre-commit, pre-push)
 dotnet restore Camilo.OrderFlow.slnx
 ```
 
@@ -234,5 +234,7 @@ Versiones exactas: paquetes en `Directory.Packages.props`, SDK en `global.json`,
   `feat/`, `fix/`, `docs/`, `chore/`… en inglés, creada desde `develop`, y vuelve a `develop` con un merge cuando está
   terminado y verificado.
 - Commits en inglés con Conventional Commits (`type(scope): subject`), sin `--no-verify`. Documentación en español.
+- Hooks de git en `.githooks/` ([ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md)): `commit-msg` valida el mensaje (formato, ≤ 72 caracteres,
+  sin atribución de IA), `pre-commit` el formato de los `.cs` y `pre-push` el build y la suite rápida.
 - Antes de commitear: compilar con avisos como errores, formato y tests (lo hace la skill `verificar-cambio`).
 - Una decisión de arquitectura nueva o cambiada lleva su ADR en el mismo PR.

@@ -5,6 +5,7 @@
 # Scripts que se ejecutan en Linux/contenedores: LF siempre
 *.sh text eol=lf
 Dockerfile text eol=lf
+.githooks/* text eol=lf
 
 # Windows PowerShell 5.1 y C#: CRLF en el disco (como .editorconfig)
 *.ps1 text eol=crlf

@@ -6,6 +6,16 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Hooks de git
+
+- **Qué:** `.githooks/` con `commit-msg` (Conventional Commits, asunto ≤ 72, sin atribución ni mención a modelos o
+  asistentes), `pre-commit` (`dotnet format` de los `.cs` en el commit) y `pre-push` (build Release y suite rápida).
+  Se activan con `git config core.hooksPath .githooks` ([ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md)). Pruebas en
+  `eng/probar-commit-msg.sh`.
+- **Provisional:** nada.
+- **Cifras:** `commit-msg` 24/24 casos y acepta los 35 commits del historial desde `b3ad03a`; `pre-commit` rechaza un
+  `.cs` mal formateado y acepta uno correcto; `pre-push` ~31 s (204 tests).
+
 ## 2026-11-05 — Umbral de cobertura por proyecto
 
 - **Qué:** `eng/coverage-gate.cs` fusiona los informes Cobertura de todas las suites, excluye migraciones y `obj/`, y

@@ -10,6 +10,8 @@ paths:
   - "**/*.csproj"
   - ".editorconfig"
   - "eng/**"
+  - ".githooks/**"
+  - ".gitattributes"
 ---
 
 # Build, paquetes y CI

@@ -17,7 +17,7 @@ Este archivo no los repite. Documentación en español; código, commits y ramas
 7. Comprueba: `http://localhost:5070/health/ready` → 200; Swagger en `/swagger`; con el stack, la traza de esa
    petición en Grafana → Explore → Tempo (servicio `Camilo.OrderFlow.WebApi`).
 
-No hay hooks de git: la verificación antes de commitear es la skill `verificar-cambio`. Detalle y problemas
+Hooks de git: `git config core.hooksPath .githooks` (una vez por clon; [ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md)). Detalle y problemas
 frecuentes: [README](README.md) § Desarrollo local y § Resolución de problemas.
 
 ## 2. Arquitectura
@@ -115,6 +115,8 @@ cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Conv
   (`git merge --no-ff`) y borrar la rama corta. `main` solo avanza desde `develop` cuando la persona lo pide.
 - **Sin atribución de IA** (ni `Co-Authored-By`, ni `Generated with`): `.claude/settings.json` la desactiva.
 - Mensaje en archivo UTF-8 sin BOM y `git commit -F`; nunca `--no-verify`.
+- Hooks (`.githooks/`): `commit-msg` exige el formato y rechaza la atribución; `pre-commit` comprueba el formato de
+  los `.cs`; `pre-push` compila y pasa la suite rápida. Si uno falla, se corrige la causa.
 - Antes: `verificar-cambio`. Para commitear: `/commit`. El push lo hace una persona.
 
 ## 7. Decisiones deliberadas (no «arreglar»)
@@ -145,6 +147,7 @@ cobertura, `dotnet run eng/coverage-gate.cs -- <directorio-de-resultados>`. Conv
 - [ADR-0024](docs/adr/0024-versiones-fijadas-sdk-imagenes-y-acciones.md) CPM; SDK en `global.json`; imágenes por versión exacta; acciones por SHA.
 - [ADR-0025](docs/adr/0025-timeprovider-en-todo-el-codigo.md) `TimeProvider` en todo el código; el dominio recibe la hora por parámetro.
 - [ADR-0026](docs/adr/0026-umbral-de-cobertura-por-proyecto.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite, Testcontainers; cobertura mínima por proyecto con trinquete.
+- [ADR-0027](docs/adr/0027-hooks-de-git-con-core-hookspath.md) Hooks de git versionados en `.githooks/` con `core.hooksPath`.
 
 ## 8. Reglas para modelos de IA
 
