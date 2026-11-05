@@ -29,7 +29,8 @@ paths:
 - En el host solo van clientes HTTP transversales; el de un único módulo va en su `Infrastructure/Http/`
   ([ADR-0022](../../docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md)).
 - `HttpClient` saliente: con `Microsoft.Extensions.Http.Resilience` siguiendo el patrón `ErpClient` y, si aplica,
-  `CorrelationIdHandler`. Ojo: los reintentos solo para operaciones idempotentes.
+  `CorrelationIdHandler`. El pipeline no reintenta `POST`, `PATCH`, `PUT`, `DELETE`
+  ni `CONNECT` (`DisableForUnsafeHttpMethods`); lo comprueba `ResilienceTests`. No lo quites.
 
 Referencia: `Camilo.OrderFlow.WebApi/Program.cs`, `Errors/GlobalExceptionHandler.cs`,
 `Extensions/ServiceCollectionExtensions.Resilience.cs`, `Middleware/CorrelationIdMiddleware.cs`.

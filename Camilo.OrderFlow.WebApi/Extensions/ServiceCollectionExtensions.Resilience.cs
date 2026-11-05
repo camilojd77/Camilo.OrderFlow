@@ -46,13 +46,18 @@ internal static class ResilienceServiceCollectionExtensions
 
                 // 1. Retry on transient errors (5xx, 408, HttpRequestException, TimeoutRejectedException)
                 //    with exponential backoff + jitter
-                builder.AddRetry(new HttpRetryStrategyOptions
+                var retry = new HttpRetryStrategyOptions
                 {
                     MaxRetryAttempts = options.RetryCount,
                     BackoffType = DelayBackoffType.Exponential,
                     UseJitter = true,
                     Delay = TimeSpan.FromMilliseconds(options.BaseDelayMs),
-                });
+                };
+
+                // Never retry POST, PATCH, PUT, DELETE or CONNECT: a retried write can apply twice (a second
+                // order, a second payment). Only safe methods (GET, HEAD, OPTIONS, TRACE) are retried.
+                retry.DisableForUnsafeHttpMethods();
+                builder.AddRetry(retry);
 
                 // 2. Circuit breaker — opens when failure ratio exceeds threshold
                 builder.AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions
