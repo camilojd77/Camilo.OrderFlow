@@ -5,7 +5,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.AssignRolesToUser;
 
-public sealed class AssignRolesToUserCommandHandler : IRequestHandler<AssignRolesToUserCommand, Unit>
+internal sealed class AssignRolesToUserCommandHandler : IRequestHandler<AssignRolesToUserCommand, Unit>
 {
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;

@@ -5,7 +5,7 @@ using System.Security.Claims;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Authorization;
 
-public sealed class PermissionAuthorizationHandler
+internal sealed class PermissionAuthorizationHandler
     : AuthorizationHandler<PermissionRequirement>
 {
     private readonly IPermissionService _permissionService;

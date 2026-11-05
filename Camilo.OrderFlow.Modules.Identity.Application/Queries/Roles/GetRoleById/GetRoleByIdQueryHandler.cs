@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Roles.GetRoleById;
 
-public sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleDto>
+internal sealed class GetRoleByIdQueryHandler : IRequestHandler<GetRoleByIdQuery, RoleDto>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly RoleMapper _roleMapper;

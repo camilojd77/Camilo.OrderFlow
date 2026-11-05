@@ -4,7 +4,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Abstractions;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.DeactivateUser;
 
-public sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, Unit>
+internal sealed class DeactivateUserCommandHandler : IRequestHandler<DeactivateUserCommand, Unit>
 {
     private readonly IUserRepository _userRepository;
     private readonly IIdentityExecutionContext _executionContext;

@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Auth;
 
-public sealed class AuthService : IAuthService
+internal sealed class AuthService : IAuthService
 {
     private readonly IdentityDbContext _context;
     private readonly IJwtTokenService _jwtTokenService;

@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Permissions.UpdatePermission;
 
-public sealed class UpdatePermissionCommandHandler : IRequestHandler<UpdatePermissionCommand, PermissionDto>
+internal sealed class UpdatePermissionCommandHandler : IRequestHandler<UpdatePermissionCommand, PermissionDto>
 {
     private readonly IPermissionRepository _permissionRepository;
     private readonly IIdentityExecutionContext _executionContext;

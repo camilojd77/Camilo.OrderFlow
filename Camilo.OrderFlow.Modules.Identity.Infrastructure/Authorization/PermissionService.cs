@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Hybrid;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Authorization;
 
-public sealed class PermissionService : IPermissionService
+internal sealed class PermissionService : IPermissionService
 {
     private const string UserKeyPrefix = "perms:user:";
     private const string RoleTagPrefix = "role:";

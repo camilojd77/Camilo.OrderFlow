@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Users.UpdateUserProfile;
 
-public sealed class UpdateUserProfileCommandValidator : AbstractValidator<UpdateUserProfileCommand>
+internal sealed class UpdateUserProfileCommandValidator : AbstractValidator<UpdateUserProfileCommand>
 {
     public UpdateUserProfileCommandValidator()
     {

@@ -7,7 +7,7 @@ using Camilo.OrderFlow.Modules.Identity.Domain.Entities;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.RegisterUser;
 
-public sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, UserDto>
+internal sealed class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, UserDto>
 {
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;

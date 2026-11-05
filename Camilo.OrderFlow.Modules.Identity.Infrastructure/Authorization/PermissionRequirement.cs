@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Authorization;
 
-public sealed class PermissionRequirement : IAuthorizationRequirement
+internal sealed class PermissionRequirement : IAuthorizationRequirement
 {
     public string Code { get; }
 

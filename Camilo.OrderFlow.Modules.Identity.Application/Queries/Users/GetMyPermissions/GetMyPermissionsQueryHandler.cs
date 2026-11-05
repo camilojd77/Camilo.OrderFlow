@@ -4,7 +4,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Abstractions;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Queries.Users.GetMyPermissions;
 
-public sealed class GetMyPermissionsQueryHandler : IRequestHandler<GetMyPermissionsQuery, IReadOnlyList<string>>
+internal sealed class GetMyPermissionsQueryHandler : IRequestHandler<GetMyPermissionsQuery, IReadOnlyList<string>>
 {
     private readonly ICurrentUser _currentUser;
     private readonly IPermissionService _permissionService;

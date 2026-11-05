@@ -18,4 +18,9 @@
     <ProjectReference Include="..\Camilo.OrderFlow.Modules.Identity.Domain\Camilo.OrderFlow.Modules.Identity.Domain.csproj" />
   </ItemGroup>
 
+  <!-- Handlers, validators and mappers are internal; only the module's own tests see them (docs/adr/0028). -->
+  <ItemGroup>
+    <InternalsVisibleTo Include="Camilo.OrderFlow.Identity.UnitTests" />
+  </ItemGroup>
+
 </Project>

@@ -6,6 +6,16 @@ proyecto vive en el [README](README.md), no aquí.
 
 Formato de cada entrada: **Qué** cambió, qué es **Provisional** y las **Cifras** del día.
 
+## 2026-11-05 — Superficie pública mínima de Identity
+
+- **Qué:** `internal` por defecto ([ADR-0028](docs/adr/0028-superficie-publica-de-los-modulos.md)). En Identity pasan a `internal` 21 handlers, 8
+  validators, el behavior y 3 mappers (Application), y en Infrastructure `AuthService`, `JwtTokenService`,
+  `IJwtTokenService`, `PermissionService`, el handler/proveedor/requisito de autorización, las opciones de bloqueo y
+  refresh token, el seeder e `IdentityDbContext`. `InternalsVisibleTo` solo hacia los tests del módulo. Nuevo
+  `ModuleSurfaceTests` para todos los módulos. Sin cambios de comportamiento.
+- **Provisional:** la fachada `Identity.Contracts` se creará con el primer módulo que la necesite.
+- **Cifras:** tipos públicos Application 67 → 34 e Infrastructure 21 → 10; tests de arquitectura 22 → 24.
+
 ## 2026-11-05 — Grafana: dashboard como código y acceso de solo lectura
 
 - **Qué:** dashboard «Camilo.OrderFlow — API» provisionado desde `deploy/observability/grafana/dashboards/` (20 paneles:

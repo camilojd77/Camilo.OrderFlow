@@ -15,7 +15,8 @@ public static class ServiceCollectionExtensions
 
         RegisterHandlersFromAssembly(services, assembly);
 
-        services.AddValidatorsFromAssembly(assembly);
+        // Validators are internal to the module (docs/adr/0028-superficie-publica-de-los-modulos.md).
+        services.AddValidatorsFromAssembly(assembly, includeInternalTypes: true);
 
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationPipelineBehavior<,>));
 

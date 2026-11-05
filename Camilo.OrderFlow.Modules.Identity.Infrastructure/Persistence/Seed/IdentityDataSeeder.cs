@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 
 namespace Camilo.OrderFlow.Modules.Identity.Infrastructure.Persistence.Seed;
 
-public sealed class IdentityDataSeeder
+internal sealed class IdentityDataSeeder
 {
     private static readonly Guid UsersReadPermissionId = new("a1b2c3d4-e001-0000-0000-000000000001");
     private static readonly Guid UsersWritePermissionId = new("a1b2c3d4-e001-0000-0000-000000000002");

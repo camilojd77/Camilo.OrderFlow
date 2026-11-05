@@ -6,7 +6,7 @@ using Camilo.OrderFlow.Modules.Identity.Application.Mapping;
 
 namespace Camilo.OrderFlow.Modules.Identity.Application.Commands.Roles.UpdateRole;
 
-public sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, RoleDto>
+internal sealed class UpdateRoleCommandHandler : IRequestHandler<UpdateRoleCommand, RoleDto>
 {
     private readonly IRoleRepository _roleRepository;
     private readonly IIdentityExecutionContext _executionContext;
