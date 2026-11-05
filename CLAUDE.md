@@ -37,7 +37,8 @@ Monolito modular; los proyectos están **en la raíz** (no en `src/`). Tabla com
 - **Un módulo nunca referencia a otro.** Integración: puerto en Application del consumidor + adaptador en el host
   ([ADR-0006](docs/adr/0006-integracion-modulos-adaptador-en-host.md)).
 - **Dónde se valida**: referencias de `.csproj` + `tests/Camilo.OrderFlow.ArchitectureTests` (NetArchTest: dirección
-  de capas, paquetes prohibidos, aislamiento, execution context por módulo). Rompe `dotnet test`.
+  de capas, paquetes prohibidos, aislamiento, execution context por módulo) y `SystemClockUsageTests` (sin
+  `DateTime.UtcNow` nuevo). Rompe `dotnet test`.
 - **Contrato público**: no hay `*.Contracts` ni `internal`; el host usa los requests de Application y la autorización
   de Infrastructure. Lo que otro módulo pueda usar se expone como fachada (ADR-0006).
 - Hoy solo existe el módulo **Identity** (esquema `identity`).

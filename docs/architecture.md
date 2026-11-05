@@ -62,6 +62,9 @@ WebApi ──► Modules.<M>.Infrastructure ──► Modules.<M>.Application �
    (`ModuleCatalog.cs`), así que un módulo nuevo queda cubierto en cuanto el host lo referencia.
 3. `ModuleRegistrationTests.cs`: nadie registra `IExecutionContext` a secas; cada módulo registra el suyo. El registro
    de cada módulo nuevo se añade **a mano** en este test.
+4. `SystemClockUsageTests.cs`: ningún archivo de producción añade lecturas de `DateTime.UtcNow`/`Now`
+   ([ADR-0017](adr/0017-timeprovider-en-codigo-nuevo.md)). Escanea el código fuente; las lecturas existentes están
+   listadas con su número y la lista solo puede bajar.
 
 Una violación rompe `dotnet test`, no `dotnet build`.
 
