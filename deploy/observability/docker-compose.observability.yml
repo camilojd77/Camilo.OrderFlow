@@ -91,19 +91,25 @@ services:
     restart: unless-stopped
 
   # ─────────────────────────────────────────────────────────────────
-  # Grafana  –  visualise traces (Tempo) + metrics (Prometheus)
+  # Grafana  –  visualise traces (Tempo), metrics (Prometheus) and logs (Loki)
   # ─────────────────────────────────────────────────────────────────
   grafana:
     image: grafana/grafana:11.4.0
     platform: linux/amd64
     container_name: grafana
     environment:
+      # Local only. Anonymous visitors can view dashboards and Explore but not edit; editing requires the
+      # admin login. Dashboards are provisioned from ./grafana/dashboards and changed in the repository.
       - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
       - GF_AUTH_DISABLE_LOGIN_FORM=false
+      # Applied only when the grafana-data volume is created; Grafana's factory default unless overridden.
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor
     volumes:
       - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources:ro
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
     ports:
       - "3000:3000"     # Grafana UI

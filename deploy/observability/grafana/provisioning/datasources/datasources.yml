@@ -11,7 +11,9 @@ datasources:
     editable: false
     jsonData:
       httpMethod: POST
-      timeInterval: 15s
+      # The API exports OTLP metrics every 60 s (OpenTelemetry default) and the Collector keeps their timestamps,
+      # so there is one sample per minute. 60s makes $__rate_interval = 4m; with 15s, rate() windows were empty.
+      timeInterval: 60s
 
   # ── Tempo ────────────────────────────────────────────────────────────────────
   # Trace-to-Logs: clicking a span opens the matching Loki log stream.
