@@ -7,7 +7,7 @@ Este archivo no los repite. Documentación en español; código, commits y ramas
 
 ## 1. Primera vez que clonas
 
-1. Única rama de larga vida: `develop` (no hay `main`). SDK .NET 10 (no fijado en `global.json`; el CI usa `10.0.x`).
+1. Trabaja desde `develop` (rama de desarrollo); `main` es la principal. SDK .NET 10 (no fijado en `global.json`; el CI usa `10.0.x`).
 2. `dotnet tool restore` (trae `dotnet-ef`) y `dotnet restore Camilo.OrderFlow.slnx`.
 3. Copia `Camilo.OrderFlow.WebApi/appsettings.Development.json.example` a `appsettings.Development.json` (ignorado) y
    rellena las dos cadenas de conexión y `Jwt:Key` (≥ 32 caracteres).
@@ -108,7 +108,9 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 ## 6. Commits
 
 - Conventional Commits en **inglés**: `type(scope): subject`; el cuerpo explica el porqué. Ramas
-  `<tipo>/<tema-corto>` desde `develop` y PR hacia `develop`.
+  `<tipo>/<tema-corto>` desde `develop`.
+- **Al terminar una rama y estar estable** (`verificar-cambio` en verde): merge local a `develop`
+  (`git merge --no-ff`) y borrar la rama corta. `main` solo avanza desde `develop` cuando la persona lo pide.
 - **Sin atribución de IA** (ni `Co-Authored-By`, ni `Generated with`): `.claude/settings.json` la desactiva.
 - Mensaje en archivo UTF-8 sin BOM y `git commit -F`; nunca `--no-verify`.
 - Antes: `verificar-cambio`. Para commitear: `/commit`. El push lo hace una persona.
@@ -135,7 +137,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0018](docs/adr/0018-loggermessage-para-logs-nuevos.md) Logs nuevos con `[LoggerMessage]`.
 - [ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md) Endpoints nuevos con Minimal APIs; los controladores se quedan.
 - [ADR-0020](docs/adr/0020-constructores-primarios-en-codigo-nuevo.md) Constructores primarios en código nuevo.
-- [ADR-0021](docs/adr/0021-una-sola-rama-develop.md) Una sola rama de larga vida, `develop`; no hay `main`.
+- [ADR-0021](docs/adr/0021-main-principal-y-develop-de-desarrollo.md) `main` principal; `develop` de desarrollo; ramas cortas que vuelven a `develop` con merge.
 - [ADR-0022](docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md) Clientes HTTP de un módulo en su `Infrastructure/Http`, detrás de un puerto.
 
 ## 8. Reglas para modelos de IA

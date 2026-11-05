@@ -162,8 +162,8 @@ seed, configuración y documentación. Nunca se empieza por el endpoint.
   runtime, usuario sin privilegios, puerto 8080, `HEALTHCHECK` a `/health/live`; `COMMIT_SHA` y `BUILD_DATE` llegan a
   `/_info`).
 - `deploy/app/docker-compose.yml`: SQL Server + migrator + API para demos y QA. **No** es un despliegue de producción.
-- No hay pipeline de despliegue; el CI (`.github/workflows/ci.yml`) compila y prueba en push y PR a `develop`, la única
-  rama de larga vida ([ADR-0021](adr/0021-una-sola-rama-develop.md)); su disparador de `main` ya no aplica.
+- No hay pipeline de despliegue; el CI (`.github/workflows/ci.yml`) compila y prueba en push y PR a `main` (rama
+  principal) y `develop` (rama de desarrollo) ([ADR-0021](adr/0021-main-principal-y-develop-de-desarrollo.md)).
 
 ## 11. Ruta a microservicios (pendiente)
 

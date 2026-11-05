@@ -227,9 +227,10 @@ Las versiones exactas de paquetes están en `Directory.Packages.props` (fuente �
 
 ## Contribuir
 
-- Una sola rama de larga vida, `develop` (la rama por defecto; no hay `main`,
-  [ADR-0021](docs/adr/0021-una-sola-rama-develop.md)). Cada cambio en una rama corta `feat/`, `fix/`, `docs/`,
-  `chore/`… en inglés y un PR hacia `develop`.
+- `main` es la rama principal (por defecto) y solo avanza con merges desde `develop`; `develop` es la rama de
+  desarrollo ([ADR-0021](docs/adr/0021-main-principal-y-develop-de-desarrollo.md)). Cada cambio va en una rama corta
+  `feat/`, `fix/`, `docs/`, `chore/`… en inglés, creada desde `develop`, y vuelve a `develop` con un merge cuando está
+  terminado y verificado.
 - Commits en inglés con Conventional Commits (`type(scope): subject`), sin `--no-verify`. Documentación en español.
 - Antes de commitear: compilar con avisos como errores, formato y tests (lo hace la skill `verificar-cambio`).
 - Una decisión de arquitectura nueva o cambiada lleva su ADR en el mismo PR.
