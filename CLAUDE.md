@@ -99,7 +99,7 @@ entre módulos → host. En la duda, en el módulo.
 | Un proyecto | `dotnet test --project tests/<Proyecto>/<Proyecto>.csproj` |
 | Un test o clase | `dotnet test --project <csproj> -- --filter-method "*Nombre*"` (o `--filter-class`) |
 | Cobertura | `dotnet test -- --coverage --coverage-output-format cobertura --report-trx` |
-| Build como el CI | `dotnet build Camilo.OrderFlow.slnx -c Release -p:TreatWarningsAsErrors=true` |
+| Build como el CI (avisos = errores) | `dotnet build Camilo.OrderFlow.slnx -c Release` |
 
 xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van después de `--`. En Git Bash, `-p:` y no
 `/p:`. Sin umbral de cobertura (se reporta). Convenciones: `.claude/rules/pruebas.md` y
@@ -130,7 +130,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0011](docs/adr/0011-migraciones-fuera-del-arranque.md) Migraciones fuera del arranque.
 - [ADR-0012](docs/adr/0012-versiones-centralizadas-y-pines-transitivos.md) CPM; pines transitivos solo por seguridad; SDK sin fijar.
 - [ADR-0013](docs/adr/0013-configuracion-sin-secretos-y-opciones-validadas.md) Sin secretos en el repo; opciones validadas al arrancar.
-- [ADR-0014](docs/adr/0014-estilo-editorconfig-y-cero-avisos-en-ci.md) Estilo en `suggestion`; cero avisos en CI.
+- [ADR-0014](docs/adr/0014-estilo-editorconfig-y-cero-avisos-en-ci.md) Reemplazada por ADR-0023.
 - [ADR-0015](docs/adr/0015-telemetria-otel-y-serilog-loki.md) OTel/OTLP para trazas y métricas; Serilog → Loki para logs.
 - [ADR-0016](docs/adr/0016-estrategia-de-pruebas.md) xUnit v3 + MTP, Shouldly, NSubstitute, SQLite y Testcontainers.
 - [ADR-0017](docs/adr/0017-timeprovider-en-codigo-nuevo.md) `TimeProvider` en código nuevo; `IDateTimeProvider` obsoleto.
@@ -139,6 +139,7 @@ xUnit v3 sobre Microsoft.Testing.Platform: los argumentos del runner van despué
 - [ADR-0020](docs/adr/0020-constructores-primarios-en-codigo-nuevo.md) Constructores primarios en código nuevo.
 - [ADR-0021](docs/adr/0021-main-principal-y-develop-de-desarrollo.md) `main` principal; `develop` de desarrollo; ramas cortas que vuelven a `develop` con merge.
 - [ADR-0022](docs/adr/0022-clientes-http-de-modulo-en-infrastructure.md) Clientes HTTP de un módulo en su `Infrastructure/Http`, detrás de un puerto.
+- [ADR-0023](docs/adr/0023-avisos-como-errores-en-local-y-ci.md) Avisos como errores en local y en CI; estilo en `suggestion`.
 
 ## 8. Reglas para modelos de IA
 

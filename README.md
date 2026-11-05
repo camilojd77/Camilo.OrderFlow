@@ -117,7 +117,7 @@ código generado: compila antes de concluir que un método no existe.
 ## Build, tests y calidad
 
 ```pwsh
-dotnet build Camilo.OrderFlow.slnx -c Release -p:TreatWarningsAsErrors=true    # como el CI: 0 avisos
+dotnet build Camilo.OrderFlow.slnx -c Release                                  # avisos = errores, como el CI
 dotnet test                                                                     # todo (RealDb necesita Docker)
 dotnet test -- --filter-not-trait "Category=RealDb" --ignore-exit-code 8       # suite rápida, sin Docker
 dotnet test -- --filter-trait "Category=RealDb" --ignore-exit-code 8           # solo SQL Server real
