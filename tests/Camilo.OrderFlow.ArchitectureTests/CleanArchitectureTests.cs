@@ -139,10 +139,10 @@ public sealed class CleanArchitectureTests
     }
 
     // ── Module isolation ────────────────────────────────────────────────
-    // Cada módulo es autocontenido: su código NO puede depender del namespace de
-    // otro módulo. La integración entre módulos se hace con una interfaz definida
-    // en la capa Application del consumidor + una implementación en su Infrastructure
-    // que llame a una superficie pública o a HTTP.
+    // Each module is self-contained: its code must NOT depend on another module's
+    // namespace. Modules integrate through a port defined in the consumer's
+    // Application layer, implemented by an adapter in the host that calls the
+    // provider's public facade (docs/adr/0006-integracion-modulos-adaptador-en-host.md).
     //
     // Con un solo módulo el test pasa de forma vacía; en cuanto se agregue un segundo
     // (p. ej. Catalog), la regla se aplica automáticamente.
@@ -169,7 +169,7 @@ public sealed class CleanArchitectureTests
                 {
                     AssertNoDependency(assembly, otherNs,
                         $"{assembly.GetName().Name} no puede depender de {otherNs}. " +
-                        "Define una interfaz en tu capa Application e impleméntala en tu Infrastructure.");
+                        "Define un puerto en tu capa Application e impleméntalo con un adaptador en el host (ADR-0006).");
                 }
             }
         }
