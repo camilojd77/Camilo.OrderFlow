@@ -30,8 +30,9 @@ separar módulos en servicios más adelante. Hoy incluye el módulo **Identity**
 - Solo hay un módulo: la integración entre módulos ([ADR-0006](docs/adr/0006-integracion-modulos-adaptador-en-host.md))
   y las Minimal APIs ([ADR-0019](docs/adr/0019-endpoints-nuevos-minimal-apis.md)) no tienen todavía un ejemplo en el
   código.
-- La revocación de permisos entre varias réplicas no está medida ([ADR-0009](docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md));
-  desactivar un usuario no invalida sus access tokens vigentes.
+- Con varias réplicas, un cambio de permisos tarda hasta 1 min en llegar a las demás instancias (caché local) y
+  Redis es obligatorio ([ADR-0030](docs/adr/0030-cache-de-permisos-con-ventana-acotada.md)). Desactivar a un usuario corta sus sesiones al momento
+  ([ADR-0029](docs/adr/0029-revocacion-de-sesiones.md)).
 
 **Aplazado a propósito**
 

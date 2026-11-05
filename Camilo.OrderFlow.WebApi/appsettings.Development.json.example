@@ -21,7 +21,7 @@
   },
   "Permissions": {
     "CacheTtlMinutes": 10,
-    "LocalCacheTtlMinutes": 5
+    "LocalCacheTtlMinutes": 1
   },
   "Cache": {
     "Redis": null

@@ -6,7 +6,7 @@ argument-hint: "<recurso>.<accion>"
 
 # Nuevo permiso
 
-Autorización por permiso en base de datos, nunca por rol ([ADR-0009](../../../docs/adr/0009-autorizacion-por-permisos-con-hybridcache.md)).
+Autorización por permiso en base de datos, nunca por rol ([ADR-0030](../../../docs/adr/0030-cache-de-permisos-con-ventana-acotada.md)).
 
 1. **Constante.** Lee `Camilo.OrderFlow.Modules.Identity.Infrastructure/Authorization/IdentityPermissions.cs`. Añade
    `public const string XRead = "<recurso>.<accion>";` (minúsculas, punto) y súmala a la lista `All`. En otro módulo,
